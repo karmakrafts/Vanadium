@@ -10,7 +10,7 @@ lexer grammar FerrousLexer;
  */
 
 // ------------------------------ Whitespace and comments (getting rid of them)
-LINE_COMMENT:	'//' ~[\r\n]*                   -> channel(HIDDEN);
+LINE_COMMENT:   '//' ~[\r\n]*                   -> channel(HIDDEN);
 BLOCK_COMMENT:  '/*' (BLOCK_COMMENT | .)*? '*/' -> channel(HIDDEN);
 WS:             [\u0020\u0009\u000C]            -> skip;
 NL:             ('\n' | ('\r' '\n'?))           -> skip;
@@ -20,31 +20,31 @@ RAW_STRING:     'R"' -> pushMode(M_RAW_STRING);
 DOUBLE_QUOTE:   '"' -> pushMode(M_STRING);
 
 // ------------------------------ Parenthese of all variations
-L_PAREN:		'(' -> pushMode(M_INSIDE);
-R_PAREN:		')' -> popMode;
-L_CRL_PAREN:	'{' -> pushMode(M_INSIDE);
+L_PAREN:        '(' -> pushMode(M_INSIDE);
+R_PAREN:        ')' -> popMode;
+L_CRL_PAREN:    '{' -> pushMode(M_INSIDE);
 R_CRL_PAREN:    '}' -> popMode;
-L_SQR_PAREN:	'[' -> pushMode(M_INSIDE);
-R_SQR_PAREN:	']' -> popMode;
+L_SQR_PAREN:    '[' -> pushMode(M_INSIDE);
+R_SQR_PAREN:    ']' -> popMode;
 
 // ------------------------------ Pre-Compiler Keywords
-PC_KW_CONTINUE:	'!continue';
+PC_KW_CONTINUE: '!continue';
 PC_KW_DISCARD:  '!discard';
 PC_KW_DEFINE:   '!define';
-PC_KW_ASSERT:	'!assert';
+PC_KW_ASSERT:   '!assert';
 PC_KW_YIELD:    '!yield';
-PC_KW_UNDEF:	'!undef';
-PC_KW_BREAK:	'!break';
-PC_KW_MACRO:	'!macro';
+PC_KW_UNDEF:    '!undef';
+PC_KW_BREAK:    '!break';
+PC_KW_MACRO:    '!macro';
 PC_KW_WHEN:     '!when';
-PC_KW_ELIF:	    '!elif';
-PC_KW_ELSE:		'!else';
-PC_KW_CONJ:		'!conj';
-PC_KW_DISJ:		'!disj';
-PC_KW_END:		'!end';
-PC_KW_FOR:		'!for';
-PC_KW_FIR:		'!fir';
-PC_KW_IF:		'!if';
+PC_KW_ELIF:     '!elif';
+PC_KW_ELSE:     '!else';
+PC_KW_CONJ:     '!conj';
+PC_KW_DISJ:     '!disj';
+PC_KW_END:      '!end';
+PC_KW_FOR:      '!for';
+PC_KW_FIR:      '!fir';
+PC_KW_IF:       '!if';
 
 // ------------------------------ Built-in type keywords
 KW_TYPE_NUINT:  'nuint';    // Unsigned platform-dependent size type (size_t in C/C++), only usable in conjunction with unsafe
