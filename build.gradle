@@ -1,0 +1,30 @@
+buildscript {
+    def config = new Properties()
+    file('build.properties').withInputStream(config.&load)
+    project.ext.config = config
+}
+
+apply plugin: 'java'
+apply plugin: 'antlr'
+
+repositories {
+    mavenCentral()
+    google()
+    maven { url = 'https://maven.covers1624.net' }
+}
+
+dependencies {
+    antlr group: 'org.antlr', name: 'antlr4', version: config.antlr_version
+
+    implementation group: 'org.jetbrains', name: 'annotations', version: config.annotations_version
+    implementation group: 'io.karma.kommons', name: 'kommons', version: config.kommons_version
+}
+
+generateGrammarSource {
+    arguments += [ // @formatter:off
+        '-Werror',
+        '-visitor',
+        '-encoding', 'UTF-8',
+        '-package', config.project_group
+    ] // @formatter:on
+}
