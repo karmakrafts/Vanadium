@@ -49,7 +49,7 @@ udt_decl:
 
 // Attributes
 attrib_decl:
-    visibility_mod? KW_ATTRIB IDENTIFIER L_CRL_PAREN
+    visibility_mod? KW_CONST KW_ATTRIB IDENTIFIER L_CRL_PAREN
         attrib_body_decl*
     R_CRL_PAREN
     ;
