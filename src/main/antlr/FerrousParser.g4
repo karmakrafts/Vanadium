@@ -298,16 +298,66 @@ raw_expr:
     simple_expr
     | unary_expr
     | binary_expr
+    | when_expr
+    | if_expr
     ;
 
 // When expressions
 when_expr:
-    KW_WHEN // TODO: ...
+    KW_WHEN (L_PAREN (expr | variable_decl) R_PAREN)? L_CRL_PAREN
+    R_CRL_PAREN // TODO: ...
     ;
 
 // If expressions
 if_expr:
-    KW_IF // TODO: ...
+    if_bodied_expr
+    | if_inline_expr
+    ;
+
+if_bodied_expr:
+    KW_IF L_PAREN expr R_PAREN L_CRL_PAREN
+        fn_body_decl*
+    R_CRL_PAREN
+    else_if_branch*
+    else_branch?
+    ;
+
+if_inline_expr:
+    KW_IF L_PAREN expr R_PAREN expr semi?
+    else_if_branch*
+    else_branch?
+    ;
+
+// Else if
+else_if_branch:
+    else_if_bodied_branch
+    | else_if_inline_branch
+    ;
+
+else_if_bodied_branch:
+    KW_ELSE KW_IF L_PAREN expr R_PAREN L_CRL_PAREN
+        fn_body_decl*
+    R_CRL_PAREN
+    ;
+
+else_if_inline_branch:
+    KW_ELSE KW_IF L_PAREN expr R_PAREN expr semi?
+    ;
+
+// Else
+else_branch:
+    else_bodied_branch
+    | else_inline_branch
+    ;
+
+else_bodied_branch:
+    KW_ELSE L_CRL_PAREN
+        fn_body_decl*
+    R_CRL_PAREN
+    ;
+
+else_inline_branch:
+    KW_ELSE expr semi?
     ;
 
 // Unary
@@ -344,6 +394,16 @@ binary_op:
     | OP_AND_ASSIGN
     | OP_OR
     | OP_OR_ASSIGN
+    | OP_XOR
+    | OP_XOR_ASSIGN
+    | OP_LEQ
+    | L_ANGLE
+    | OP_GEQ
+    | R_ANGLE
+    | OP_NEQ
+    | DOUBLE_EQ
+    | TRIPLE_EQ
+    | OP_SPACESHIP
     ;
 
 simple_expr:

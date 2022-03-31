@@ -26,3 +26,5 @@ forge*changelog.txt
 .floo
 .flooignore
 logs/
+
+src/main/gen/
