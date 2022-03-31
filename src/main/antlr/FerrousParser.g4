@@ -164,7 +164,7 @@ fn_body_decl:
     | fn_call
     | fn_return
     | variable_decl
-    | expr
+    | (expr semi?)
     ;
 
 fn_return:
