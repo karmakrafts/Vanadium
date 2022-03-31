@@ -70,7 +70,7 @@ publishing {
     }
     publications {
         vanadium(MavenPublication) {
-            groupId project.group
+            groupId config.artifact_group
             artifactId project.archivesBaseName
             version project.version
             artifact jar
