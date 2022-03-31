@@ -7,6 +7,12 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'antlr'
 
+archivesBaseName = config.project_id
+group = config.project_group
+version = "${config.project_version}.${(System.getenv("CI_PIPELINE_IID") ?: 0)}"
+sourceCompatibility = config.java_version
+targetCompatibility = config.java_version
+
 repositories {
     mavenCentral()
     google()
@@ -22,7 +28,6 @@ dependencies {
 
 generateGrammarSource {
     arguments += [ // @formatter:off
-        '-Werror',
         '-visitor',
         '-encoding', 'UTF-8',
         '-package', config.project_group
