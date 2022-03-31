@@ -161,6 +161,14 @@ fn_return_type:
 
 fn_body_decl:
     fn_decl // Allow nested functions
+    | fn_call
+    | fn_return
+    | variable_decl
+    | expr
+    ;
+
+fn_return:
+    KW_RETURN expr?
     ;
 
 fn_mod:
@@ -169,6 +177,17 @@ fn_mod:
     | KW_INL
     ;
 
+fn_call:
+    IDENTIFIER L_PAREN (fn_call_param COMMA?)* R_PAREN
+    ;
+
+fn_call_param:
+    literal
+    | expr
+    | IDENTIFIER
+    ;
+
+// Parameters
 params_decl:
     L_PAREN (param_decl(COMMA?))* R_PAREN
     ;
@@ -184,6 +203,26 @@ param_default_value:
 param_mod:
     KW_MUT
     | KW_CONST
+    ;
+
+// -------------------- Variables
+variable_decl:
+    implicit_variable_decl
+    | explicit_variable_decl
+    ;
+
+explicit_variable_decl:
+    KW_LET variable_mod? IDENTIFIER COLON type (COLON type)? semi?
+    ;
+
+implicit_variable_decl:
+    KW_LET variable_mod? IDENTIFIER ASSIGN expr semi?
+    ;
+
+variable_mod:
+    KW_STATIC
+    | KW_CONST
+    | KW_MUT
     ;
 
 // -------------------- Fields
@@ -245,6 +284,7 @@ const_generic_param_decl:
     ;
 
 // -------------------- Expressions
+// General expressions
 expr:
     raw_expr
     | grouped_expr
@@ -258,6 +298,16 @@ raw_expr:
     simple_expr
     | unary_expr
     | binary_expr
+    ;
+
+// When expressions
+when_expr:
+    KW_WHEN // TODO: ...
+    ;
+
+// If expressions
+if_expr:
+    KW_IF // TODO: ...
     ;
 
 // Unary
@@ -290,11 +340,16 @@ binary_op:
     | OP_MOD_ASSIGN
     | OP_POW
     | OP_POW_ASSIGN
+    | OP_AMP
+    | OP_AND_ASSIGN
+    | OP_OR
+    | OP_OR_ASSIGN
     ;
 
 simple_expr:
     literal
     | IDENTIFIER
+    | fn_call
     ;
 
 // -------------------- Literals
