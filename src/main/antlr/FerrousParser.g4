@@ -178,7 +178,7 @@ fn_mod:
     ;
 
 fn_call:
-    IDENTIFIER L_PAREN (fn_call_param COMMA?)* R_PAREN
+    IDENTIFIER (DOT IDENTIFIER)* L_PAREN (fn_call_param COMMA?)* R_PAREN
     ;
 
 fn_call_param:
@@ -302,10 +302,73 @@ raw_expr:
     | if_expr
     ;
 
+// Pattern matching - these are not included with the default set of raw expressions!
+pattern_expr:
+    expl_pattern_expr
+    | impl_pattern_expr
+    ;
+
+impl_pattern_expr:
+    impl_type_pattern_expr
+    | impl_contains_pattern_expr
+    ;
+
+expl_pattern_expr:
+    expl_type_pattern_expr
+    | expl_contains_pattern_expr
+    ;
+
+expl_type_pattern_expr:
+    IDENTIFIER impl_type_pattern_expr // Allow inline declaration
+    ;
+
+impl_type_pattern_expr:
+    KW_IS type IDENTIFIER?
+    ;
+
+expl_contains_pattern_expr:
+    IDENTIFIER impl_contains_pattern_expr
+    ;
+
+impl_contains_pattern_expr:
+    KW_IN IDENTIFIER
+    ;
+
 // When expressions
 when_expr:
-    KW_WHEN (L_PAREN (expr | variable_decl) R_PAREN)? L_CRL_PAREN
-    R_CRL_PAREN // TODO: ...
+    KW_WHEN when_head? L_CRL_PAREN
+        when_branch*
+        default_when_branch?
+    R_CRL_PAREN
+    ;
+
+when_head:
+    L_PAREN (expr | variable_decl) R_PAREN
+    ;
+
+when_branch:
+    when_conditional_expr ARROW when_scope_expr
+    ;
+
+default_when_branch:
+    KW_ELSE ARROW when_scope_expr
+    ;
+
+when_scope_expr:
+    when_bodied_scope_expr
+    | when_inline_scope_expr
+    ;
+
+when_bodied_scope_expr:
+    L_CRL_PAREN fn_body_decl R_CRL_PAREN
+    ;
+
+when_inline_scope_expr:
+    fn_body_decl semi? // This just delegates for now..
+    ;
+
+when_conditional_expr:
+    expr | pattern_expr
     ;
 
 // If expressions
@@ -315,7 +378,7 @@ if_expr:
     ;
 
 if_bodied_expr:
-    KW_IF L_PAREN expr R_PAREN L_CRL_PAREN
+    KW_IF L_PAREN if_conditional_expr_type R_PAREN L_CRL_PAREN
         fn_body_decl*
     R_CRL_PAREN
     else_if_branch*
@@ -323,7 +386,7 @@ if_bodied_expr:
     ;
 
 if_inline_expr:
-    KW_IF L_PAREN expr R_PAREN expr semi?
+    KW_IF L_PAREN if_conditional_expr_type R_PAREN fn_body_decl semi?
     else_if_branch*
     else_branch?
     ;
@@ -335,13 +398,13 @@ else_if_branch:
     ;
 
 else_if_bodied_branch:
-    KW_ELSE KW_IF L_PAREN expr R_PAREN L_CRL_PAREN
+    KW_ELSE KW_IF L_PAREN if_conditional_expr_type R_PAREN L_CRL_PAREN
         fn_body_decl*
     R_CRL_PAREN
     ;
 
 else_if_inline_branch:
-    KW_ELSE KW_IF L_PAREN expr R_PAREN expr semi?
+    KW_ELSE KW_IF L_PAREN if_conditional_expr_type R_PAREN fn_body_decl semi?
     ;
 
 // Else
@@ -357,7 +420,12 @@ else_bodied_branch:
     ;
 
 else_inline_branch:
-    KW_ELSE expr semi?
+    KW_ELSE fn_body_decl semi?
+    ;
+
+if_conditional_expr_type:
+    expl_pattern_expr
+    | expr
     ;
 
 // Unary
