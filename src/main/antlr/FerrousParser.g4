@@ -378,11 +378,7 @@ binary_expr:
     ;
 
 binary_op:
-    OP_PLUS
-    | OP_PLUS_ASSIGN
-    | OP_MINUS
-    | OP_MINUS_ASSIGN
-    | OP_TIMES
+    OP_TIMES
     | OP_TIMES_ASSIGN
     | OP_DIV
     | OP_DIV_ASSIGN
@@ -397,13 +393,21 @@ binary_op:
     | OP_XOR
     | OP_XOR_ASSIGN
     | OP_LEQ
+    | OP_L_SHIFT
+    | OP_L_SHIFT_ASSIGN
     | L_ANGLE
     | OP_GEQ
+    | OP_R_SHIFT
+    | OP_R_SHIFT_ASSIGN
     | R_ANGLE
     | OP_NEQ
     | DOUBLE_EQ
     | TRIPLE_EQ
     | OP_SPACESHIP
+    | OP_PLUS
+    | OP_PLUS_ASSIGN
+    | OP_MINUS
+    | OP_MINUS_ASSIGN
     ;
 
 simple_expr:
@@ -417,6 +421,21 @@ literal:
     primitive_literal
     | string_literal
     | KW_NULL
+    | type_literal
+    | size_literal
+    | alignment_literal
+    ;
+
+type_literal:
+    KW_TYPEOF L_PAREN type R_PAREN
+    ;
+
+size_literal:
+    KW_SIZEOF L_PAREN type R_PAREN
+    ;
+
+alignment_literal:
+    KW_ALIGNOF L_PAREN type R_PAREN
     ;
 
 string_literal:
