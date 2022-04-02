@@ -13,8 +13,7 @@ options {
 // -------------------- Files
 script_file:
     package_decl?
-    decl*
-    expr
+    fn_body_decl*
     EOF
     ;
 
@@ -64,6 +63,7 @@ attrib_decl:
 
 attrib_body_decl:
     field_decl
+    | pc_decl
     ;
 
 // Interfaces
@@ -75,6 +75,7 @@ iface_decl:
 
 iface_body_decl:
     iface_proto_decl
+    | pc_decl
     ;
 
 iface_proto_decl:
@@ -91,6 +92,7 @@ struct_decl:
 struct_body_decl:
     field_decl
     | fn_decl
+    | pc_decl
     ;
 
 // Enum classes
@@ -125,7 +127,8 @@ trait_decl:
     ;
 
 trait_body_decl:
-    fn_decl // This delegates for now..
+    fn_decl
+    | pc_decl
     ;
 
 // Enums
@@ -141,18 +144,69 @@ enum_body_decl:
 
 enum_field_decl:
     ident
+    | pc_decl
     ;
 
 // -------------------- Pre-compiler
 pc_decl:
-    pc_macro_decl
+    pc_define_decl
+    | pc_undef_decl
+    | pc_macro_decl
     | pc_assert_decl
     | pc_for_decl
+    | pc_conj_decl
+    | pc_disj_decl
+    ;
+
+// Conjunctive token addition
+pc_conj_decl:
+    pc_lhs_conj_decl
+    | pc_rhs_conj_decl
+    ;
+
+pc_lhs_conj_decl:
+    PC_KW_CONJ L_PAREN expr COMMA (unary_op | binary_op) R_PAREN
+    ;
+
+pc_rhs_conj_decl:
+    PC_KW_CONJ L_PAREN (unary_op | binary_op) COMMA expr R_PAREN
+    ;
+
+// Disjunctive token addition
+pc_disj_decl:
+    pc_lhs_disj_decl
+    | pc_rhs_disj_decl
+    ;
+
+pc_lhs_disj_decl:
+    PC_KW_DISJ L_PAREN expr COMMA (unary_op | binary_op) R_PAREN
+    ;
+
+pc_rhs_disj_decl:
+    PC_KW_DISJ L_PAREN (unary_op | binary_op) COMMA expr R_PAREN
+    ;
+
+// Defines
+pc_define_decl:
+    PC_KW_DEFINE pre_compiler_ident (ASSIGN expr)? semi?
+    ;
+
+pc_undef_decl:
+    PC_KW_UNDEF pre_compiler_ident semi?
     ;
 
 // Assertion
 pc_assert_decl:
+    pc_simple_assert_decl
+    | pc_custom_assert_decl
+    ;
+
+pc_simple_assert_decl:
     PC_KW_ASSERT (expr | expl_pattern_expr) semi?
+    ;
+
+pc_custom_assert_decl:
+    PC_KW_ASSERT L_PAREN ((expr | expl_pattern_expr) COMMA)? string_literal R_PAREN semi?
     ;
 
 // For loops
@@ -163,24 +217,57 @@ pc_for_decl:
 
 pc_bodied_for_decl:
     PC_KW_FOR for_head L_CRL_PAREN
+        decl*
     R_CRL_PAREN
     ;
 
 pc_inline_for_decl:
-    PC_KW_FOR L_PAREN for_head R_PAREN expr
-    ;
-
-// -----------------------------------------------------------------------TODO: move these
-for_head:
-    ranged_for_head
-    ;
-
-ranged_for_head:
-    ident KW_IN (range_expr | ident)
+    PC_KW_FOR L_PAREN for_head R_PAREN (decl | expr) semi?
     ;
 
 // Macros
 pc_macro_decl:
+    pc_simple_macro_decl
+    | pc_matching_macro_decl
+    ;
+
+pc_matching_macro_decl:
+    visibility_mod? PC_KW_MACRO ident L_CRL_PAREN
+        pc_macro_match_branch*
+        pc_default_macro_match_branch?
+    R_CRL_PAREN
+    ;
+
+pc_macro_match_branch:
+    L_PAREN ((pc_macro_params_decl | pc_macro_match_group) COMMA?)* R_PAREN ARROW pc_macro_match_scope
+    ;
+
+pc_default_macro_match_branch:
+    L_PAREN R_PAREN ARROW pc_macro_match_scope
+    ;
+
+pc_macro_match_scope:
+    pc_bodied_macro_match_scope
+    | pc_inline_macro_match_scope
+    ;
+
+pc_bodied_macro_match_scope:
+    L_CRL_PAREN pc_macro_body_decl* R_CRL_PAREN
+    ;
+
+pc_inline_macro_match_scope:
+    pc_macro_body_decl semi?
+    ;
+
+pc_macro_match_group:
+    DOLLAR L_PAREN (pc_macro_params_decl | pc_macro_match_group) R_PAREN pc_macro_match_op?
+    ;
+
+pc_macro_match_op:
+    (QMK | OP_TIMES | OP_PLUS) | (L_CRL_PAREN int_literal R_CRL_PAREN)
+    ;
+
+pc_simple_macro_decl:
     visibility_mod? PC_KW_MACRO ident L_PAREN pc_macro_params_decl R_PAREN L_CRL_PAREN
         pc_macro_body_decl*
     R_CRL_PAREN
@@ -188,14 +275,15 @@ pc_macro_decl:
 
 pc_macro_body_decl:
     decl
+    | fn_body_decl
     ;
 
 pc_macro_params_decl:
-    (pc_macro_param_decl COMMA?)*
+    (pc_macro_param_decl COMMA?)+
     ;
 
 pc_macro_param_decl:
-    DOLLAR ident COLON pc_macro_param_type (ASSIGN expr)?
+    impl_pc_ident COLON pc_macro_param_type (ASSIGN expr)?
     ;
 
 pc_macro_param_type:
@@ -223,7 +311,7 @@ fn_bodied_decl:
     ;
 
 fn_inline_decl:
-    visibility_mod? fn_proto_decl ARROW expr
+    visibility_mod? fn_proto_decl ARROW fn_body_decl semi?
     ;
 
 fn_proto_decl:
@@ -240,6 +328,7 @@ fn_body_decl:
     | fn_return
     | variable_decl
     | (expr semi?)
+    | pc_decl
     ;
 
 fn_return:
@@ -253,7 +342,7 @@ fn_mod:
     ;
 
 fn_call:
-    (variable_ref DOT)* ident L_PAREN (fn_call_param COMMA?)* R_PAREN
+    (variable_ref DOT QMK?)* ident L_PAREN (fn_call_param COMMA?)* R_PAREN
     ;
 
 fn_call_param:
@@ -302,16 +391,21 @@ variable_mod:
 
 // References (null-safety assertion)
 variable_ref:
-    simple_variable_ref
-    | asserted_variable_ref
+    asserted_ref
+    | indexed_ref
+    | ident
     ;
 
-asserted_variable_ref:
-    simple_variable_ref OP_NASRT
+indexed_ref:
+    ident indexed_ref_group
     ;
 
-simple_variable_ref:
-    IDENTIFIER
+indexed_ref_group:
+    L_SQR_PAREN expr (COMMA indexed_ref_group)? R_SQR_PAREN
+    ;
+
+asserted_ref:
+    ident OP_NASRT
     ;
 
 // -------------------- Fields
@@ -332,6 +426,22 @@ field_mod:
     KW_STATIC
     | KW_CONST
     | KW_MUT
+    ;
+
+// -------------------- Loops
+for_head:
+    ranged_for_head
+    | simple_for_head
+    ;
+
+ranged_for_head:
+    ident KW_IN (range_expr | ident)
+    ;
+
+simple_for_head:
+    ident (COLON type)? ASSIGN expr SEMICOLON
+    expr SEMICOLON
+    expr
     ;
 
 // -------------------- Generics
@@ -373,6 +483,11 @@ const_generic_param_decl:
     ;
 
 // -------------------- Expressions
+// Arrays
+array_expr:
+    L_SQR_PAREN (expr COMMA?)* R_SQR_PAREN
+    ;
+
 // Ranges
 range_expr:
     incl_range_expr
@@ -380,16 +495,11 @@ range_expr:
     ;
 
 incl_range_expr:
-    range_bound_decl DOUBLE_DOT range_bound_decl
+    expr_type DOUBLE_DOT expr_type
     ;
 
 excl_range_expr:
-    range_bound_decl DOUBLE_DOT ASSIGN range_bound_decl
-    ;
-
-range_bound_decl:
-    literal
-    | ident
+    expr_type DOUBLE_DOT ASSIGN expr_type
     ;
 
 // General expressions
@@ -409,6 +519,7 @@ raw_expr:
     | when_expr
     | if_expr
     | range_expr
+    | array_expr
     ;
 
 // Pattern matching - these are not included with the default set of raw expressions!
@@ -588,12 +699,49 @@ binary_op:
     | OP_MINUS_ASSIGN
     | OP_IFN
     | OP_IFN_ASSIGN
+    | OP_CONJ_AND
+    | OP_DISJ_OR
     ;
 
+// Increment and decrement
+incr_expr:
+    pre_incr_expr
+    | post_incr_expr
+    ;
+
+pre_incr_expr:
+    OP_INCREMENT variable_ref
+    ;
+
+post_incr_expr:
+    variable_ref OP_INCREMENT
+    ;
+
+decr_expr:
+    pre_decr_expr
+    | post_decr_expr
+    ;
+
+pre_decr_expr:
+    OP_DECREMENT variable_ref
+    ;
+
+post_decr_expr:
+    variable_ref OP_DECREMENT
+    ;
+
+// Misc
 simple_expr:
     literal
     | variable_ref
     | fn_call
+    | incr_expr
+    | decr_expr
+    ;
+
+expr_type:
+    literal
+    | ident
     ;
 
 // -------------------- Literals
@@ -604,6 +752,11 @@ literal:
     | type_literal
     | size_literal
     | alignment_literal
+    | default_literal
+    ;
+
+default_literal:
+    KW_DEFAULT (L_PAREN type R_PAREN)?
     ;
 
 type_literal:
@@ -624,7 +777,7 @@ string_literal:
     ;
 
 raw_string_literal:
-    (RAW_STRING M_RAW_STRING_TEXT DOUBLE_QUOTE)
+    (RAW_STRING (M_RAW_STRING_TEXT | M_RAW_STRING_DONT_LOOK)* M_RAW_STRING_END)
     | EMPTY_RAW_STRING
     ;
 
@@ -737,12 +890,20 @@ visibility_mod:
     ;
 
 ident:
-    pre_compiler_ident
-    | IDENTIFIER
+    (pre_compiler_ident | IDENTIFIER)+
     ;
 
 pre_compiler_ident:
+    impl_pc_ident
+    | expl_pc_ident
+    ;
+
+impl_pc_ident:
     DOLLAR IDENTIFIER
+    ;
+
+expl_pc_ident:
+    DOLLAR L_CRL_PAREN expr R_CRL_PAREN
     ;
 
 semi:
