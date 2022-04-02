@@ -11,6 +11,13 @@ options {
 }
 
 // -------------------- Files
+script_file:
+    package_decl?
+    decl*
+    expr
+    EOF
+    ;
+
 file:
     package_decl?
     decl*
@@ -22,6 +29,7 @@ decl:
     | udt_decl
     | fn_decl
     | field_decl
+    | pc_decl
     ;
 
 import_decl:
@@ -33,7 +41,7 @@ package_decl:
     ;
 
 package_ident:
-    IDENTIFIER (WS* DOT WS* IDENTIFIER)*
+    ident (WS* DOT WS* ident)*
     ;
 
 // -------------------- User defined types
@@ -49,7 +57,7 @@ udt_decl:
 
 // Attributes
 attrib_decl:
-    visibility_mod? KW_CONST KW_ATTRIB IDENTIFIER L_CRL_PAREN
+    visibility_mod? KW_CONST KW_ATTRIB ident L_CRL_PAREN
         attrib_body_decl*
     R_CRL_PAREN
     ;
@@ -60,7 +68,7 @@ attrib_body_decl:
 
 // Interfaces
 iface_decl:
-    visibility_mod? KW_INTERFACE IDENTIFIER generic_params_decl? generic_constraints_decl? L_CRL_PAREN
+    visibility_mod? KW_INTERFACE ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
         iface_body_decl*
     R_CRL_PAREN
     ;
@@ -75,7 +83,7 @@ iface_proto_decl:
 
 // Structures
 struct_decl:
-    visibility_mod? KW_STRUCT IDENTIFIER generic_params_decl? generic_constraints_decl? L_CRL_PAREN
+    visibility_mod? KW_STRUCT ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
         struct_body_decl*
     R_CRL_PAREN
     ;
@@ -87,7 +95,7 @@ struct_body_decl:
 
 // Enum classes
 enum_class_decl:
-    visibility_mod? KW_STATIC? KW_ENUM KW_CLASS IDENTIFIER L_CRL_PAREN
+    visibility_mod? KW_STATIC? KW_ENUM KW_CLASS ident L_CRL_PAREN
         enum_body_decl SEMICOLON
         enum_class_body_decl*
     R_CRL_PAREN
@@ -100,7 +108,7 @@ enum_class_body_decl:
 
 // Classes
 class_decl:
-    visibility_mod? (KW_ABSTRACT|KW_STATIC)? KW_CLASS IDENTIFIER generic_params_decl? generic_constraints_decl? L_CRL_PAREN
+    visibility_mod? (KW_ABSTRACT|KW_STATIC)? KW_CLASS ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
         class_body_decl*
     R_CRL_PAREN
     ;
@@ -111,18 +119,18 @@ class_body_decl:
 
 // Traits
 trait_decl:
-    visibility_mod? KW_TRAIT IDENTIFIER generic_params_decl? generic_constraints_decl? L_CRL_PAREN
+    visibility_mod? KW_TRAIT ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
         trait_body_decl*
     R_CRL_PAREN
     ;
 
 trait_body_decl:
-    fn_decl // TODO: finish this..
+    fn_decl // This delegates for now..
     ;
 
 // Enums
 enum_decl:
-    visibility_mod? KW_ENUM IDENTIFIER L_CRL_PAREN
+    visibility_mod? KW_ENUM ident L_CRL_PAREN
         enum_body_decl
     R_CRL_PAREN
     ;
@@ -132,7 +140,74 @@ enum_body_decl:
     ;
 
 enum_field_decl:
-    IDENTIFIER
+    ident
+    ;
+
+// -------------------- Pre-compiler
+pc_decl:
+    pc_macro_decl
+    | pc_assert_decl
+    | pc_for_decl
+    ;
+
+// Assertion
+pc_assert_decl:
+    PC_KW_ASSERT (expr | expl_pattern_expr) semi?
+    ;
+
+// For loops
+pc_for_decl:
+    pc_bodied_for_decl
+    | pc_inline_for_decl
+    ;
+
+pc_bodied_for_decl:
+    PC_KW_FOR for_head L_CRL_PAREN
+    R_CRL_PAREN
+    ;
+
+pc_inline_for_decl:
+    PC_KW_FOR L_PAREN for_head R_PAREN expr
+    ;
+
+// -----------------------------------------------------------------------TODO: move these
+for_head:
+    ranged_for_head
+    ;
+
+ranged_for_head:
+    ident KW_IN (range_expr | ident)
+    ;
+
+// Macros
+pc_macro_decl:
+    visibility_mod? PC_KW_MACRO ident L_PAREN pc_macro_params_decl R_PAREN L_CRL_PAREN
+        pc_macro_body_decl*
+    R_CRL_PAREN
+    ;
+
+pc_macro_body_decl:
+    decl
+    ;
+
+pc_macro_params_decl:
+    (pc_macro_param_decl COMMA?)*
+    ;
+
+pc_macro_param_decl:
+    DOLLAR ident COLON pc_macro_param_type (ASSIGN expr)?
+    ;
+
+pc_macro_param_type:
+    type
+    | pc_macro_token_type
+    ;
+
+pc_macro_token_type:
+    KW_TYPE
+    | KW_EXPR
+    | KW_IDENT
+    | KW_LITERAL
     ;
 
 // -------------------- Functions
@@ -152,7 +227,7 @@ fn_inline_decl:
     ;
 
 fn_proto_decl:
-    fn_mod* KW_FN IDENTIFIER generic_params_decl? params_decl fn_return_type? generic_constraints_decl?
+    fn_mod* KW_FN ident generic_params_decl? params_decl fn_return_type? generic_constraints_decl?
     ;
 
 fn_return_type:
@@ -178,13 +253,13 @@ fn_mod:
     ;
 
 fn_call:
-    IDENTIFIER (DOT IDENTIFIER)* L_PAREN (fn_call_param COMMA?)* R_PAREN
+    (variable_ref DOT)* ident L_PAREN (fn_call_param COMMA?)* R_PAREN
     ;
 
 fn_call_param:
     literal
     | expr
-    | IDENTIFIER
+    | ident
     ;
 
 // Parameters
@@ -193,7 +268,7 @@ params_decl:
     ;
 
 param_decl:
-    param_mod? IDENTIFIER COLON type param_default_value?
+    param_mod? ident COLON type param_default_value?
     ;
 
 param_default_value:
@@ -212,17 +287,31 @@ variable_decl:
     ;
 
 explicit_variable_decl:
-    KW_LET variable_mod? IDENTIFIER COLON type (COLON type)? semi?
+    KW_LET variable_mod? ident COLON type (ASSIGN expr)? semi?
     ;
 
 implicit_variable_decl:
-    KW_LET variable_mod? IDENTIFIER ASSIGN expr semi?
+    KW_LET variable_mod? ident ASSIGN expr semi?
     ;
 
 variable_mod:
     KW_STATIC
     | KW_CONST
     | KW_MUT
+    ;
+
+// References (null-safety assertion)
+variable_ref:
+    simple_variable_ref
+    | asserted_variable_ref
+    ;
+
+asserted_variable_ref:
+    simple_variable_ref OP_NASRT
+    ;
+
+simple_variable_ref:
+    IDENTIFIER
     ;
 
 // -------------------- Fields
@@ -232,11 +321,11 @@ field_decl:
     ;
 
 init_field_decl:
-    visibility_mod? field_mod* IDENTIFIER COLON type ASSIGN expr semi?
+    visibility_mod? field_mod* ident COLON type ASSIGN expr semi?
     ;
 
 late_field_decl:
-    visibility_mod? field_mod* KW_LATE IDENTIFIER COLON type semi?
+    visibility_mod? field_mod* KW_LATE ident COLON type semi?
     ;
 
 field_mod:
@@ -248,7 +337,7 @@ field_mod:
 // -------------------- Generics
 // Constraints
 generic_constraints_decl:
-    KW_WHERE ((IDENTIFIER COLON generic_constraint_list) COMMA?)+
+    KW_WHERE ((ident COLON generic_constraint_list) COMMA?)+
     ;
 
 generic_constraint_list:
@@ -276,14 +365,33 @@ generic_param_decl:
     ;
 
 simple_generic_param_decl:
-    IDENTIFIER (COLON generic_constraint_list)?
+    ident (COLON generic_constraint_list)?
     ;
 
 const_generic_param_decl:
-    KW_CONST IDENTIFIER COLON type (ASSIGN expr)?
+    KW_CONST ident COLON type (ASSIGN expr)?
     ;
 
 // -------------------- Expressions
+// Ranges
+range_expr:
+    incl_range_expr
+    | excl_range_expr
+    ;
+
+incl_range_expr:
+    range_bound_decl DOUBLE_DOT range_bound_decl
+    ;
+
+excl_range_expr:
+    range_bound_decl DOUBLE_DOT ASSIGN range_bound_decl
+    ;
+
+range_bound_decl:
+    literal
+    | ident
+    ;
+
 // General expressions
 expr:
     raw_expr
@@ -300,6 +408,7 @@ raw_expr:
     | binary_expr
     | when_expr
     | if_expr
+    | range_expr
     ;
 
 // Pattern matching - these are not included with the default set of raw expressions!
@@ -319,19 +428,19 @@ expl_pattern_expr:
     ;
 
 expl_type_pattern_expr:
-    IDENTIFIER impl_type_pattern_expr // Allow inline declaration
+    ident impl_type_pattern_expr // Allow inline declaration
     ;
 
 impl_type_pattern_expr:
-    KW_IS type IDENTIFIER?
+    KW_IS generic_constraint ident?
     ;
 
 expl_contains_pattern_expr:
-    IDENTIFIER impl_contains_pattern_expr
+    ident impl_contains_pattern_expr
     ;
 
 impl_contains_pattern_expr:
-    KW_IN IDENTIFIER
+    KW_IN ident
     ;
 
 // When expressions
@@ -343,7 +452,8 @@ when_expr:
     ;
 
 when_head:
-    L_PAREN (expr | variable_decl) R_PAREN
+    expr
+    | variable_decl
     ;
 
 when_branch:
@@ -378,7 +488,7 @@ if_expr:
     ;
 
 if_bodied_expr:
-    KW_IF L_PAREN if_conditional_expr_type R_PAREN L_CRL_PAREN
+    KW_IF if_conditional_expr_type L_CRL_PAREN
         fn_body_decl*
     R_CRL_PAREN
     else_if_branch*
@@ -398,7 +508,7 @@ else_if_branch:
     ;
 
 else_if_bodied_branch:
-    KW_ELSE KW_IF L_PAREN if_conditional_expr_type R_PAREN L_CRL_PAREN
+    KW_ELSE KW_IF if_conditional_expr_type L_CRL_PAREN
         fn_body_decl*
     R_CRL_PAREN
     ;
@@ -476,11 +586,13 @@ binary_op:
     | OP_PLUS_ASSIGN
     | OP_MINUS
     | OP_MINUS_ASSIGN
+    | OP_IFN
+    | OP_IFN_ASSIGN
     ;
 
 simple_expr:
     literal
-    | IDENTIFIER
+    | variable_ref
     | fn_call
     ;
 
@@ -558,18 +670,28 @@ s_int_literal:
 
 // -------------------- Types
 type:
+    nonnull_type
+    | nullable_type
+    ;
+
+nonnull_type:
     array_type
     | simple_type
     ;
 
+nullable_type:
+    (array_type | simple_type) QMK?
+    ;
+
 array_type:
-    L_SQR_PAREN (array_type | simple_type) R_SQR_PAREN
+    L_SQR_PAREN type R_SQR_PAREN
     ;
 
 simple_type:
     primitive_type
     | native_size_type
-    | IDENTIFIER
+    | KW_TYPE_STR
+    | ident
     ;
 
 s_int_type:
@@ -612,6 +734,15 @@ visibility_mod:
     | KW_PROT
     | KW_INTERN
     | KW_GLOBAL
+    ;
+
+ident:
+    pre_compiler_ident
+    | IDENTIFIER
+    ;
+
+pre_compiler_ident:
+    DOLLAR IDENTIFIER
     ;
 
 semi:

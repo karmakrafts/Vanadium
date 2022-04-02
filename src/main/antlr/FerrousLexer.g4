@@ -31,6 +31,7 @@ R_SQR_PAREN:    ']' -> popMode;
 // ------------------------------ Pre-Compiler Keywords
 PC_KW_CONTINUE: '!continue';
 PC_KW_DISCARD:  '!discard';
+PC_KW_NAMEOF:   '!nameof';
 PC_KW_DEFINE:   '!define';
 PC_KW_ASSERT:   '!assert';
 PC_KW_YIELD:    '!yield';
@@ -77,6 +78,7 @@ KW_TYPE_U16:    'u16';
 KW_TYPE_U8:     'u8';
 KW_TYPE_F64:    'f64';
 KW_TYPE_F32:    'f32';
+KW_TYPE_STR:    'str';
 
 // ------------------------------ Keywords
 KW_STACKALLOC:  'stackalloc';
@@ -283,6 +285,7 @@ M_INSIDE_R_SQR_PAREN:       R_SQR_PAREN         -> popMode, type(R_SQR_PAREN);
 // ---------- Pre-compiler keywords
 M_INSIDE_PC_KW_CONTINUE:    PC_KW_CONTINUE      -> type(PC_KW_CONTINUE);
 M_INSIDE_PC_KW_DISCARD:     PC_KW_DISCARD       -> type(PC_KW_DISCARD);
+M_INSIDE_PC_KW_NAMEOF:      PC_KW_NAMEOF        -> type(PC_KW_NAMEOF);
 M_INSIDE_PC_KW_DEFINE:      PC_KW_DEFINE        -> type(PC_KW_DEFINE);
 M_INSIDE_PC_KW_ASSERT:      PC_KW_ASSERT        -> type(PC_KW_ASSERT);
 M_INSIDE_PC_KW_YIELD:       PC_KW_YIELD         -> type(PC_KW_YIELD);
@@ -332,6 +335,7 @@ M_INSIDE_KW_TYPE_U16:       KW_TYPE_U16         -> type(KW_TYPE_U16);
 M_INSIDE_KW_TYPE_U8:        KW_TYPE_U8          -> type(KW_TYPE_U8);
 M_INSIDE_KW_TYPE_F64:       KW_TYPE_F64         -> type(KW_TYPE_F64);
 M_INSIDE_KW_TYPE_F32:       KW_TYPE_F32         -> type(KW_TYPE_F32);
+M_INSIDE_KW_TYPE_STR:       KW_TYPE_STR         -> type(KW_TYPE_STR);
 // ---------- Keywords
 M_INSIDE_KW_STACKALLOC:     KW_STACKALLOC       -> type(KW_STACKALLOC);
 M_INSIDE_KW_UNMANAGED:      KW_UNMANAGED        -> type(KW_UNMANAGED);
