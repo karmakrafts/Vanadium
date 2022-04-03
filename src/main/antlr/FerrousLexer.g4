@@ -7,10 +7,10 @@ lexer grammar FerrousLexer;
  */
 
 // ------------------------------ Whitespace and comments (getting rid of them)
-LINE_COMMENT:   '//' ~[\r\n]*                   -> channel(HIDDEN);
-BLOCK_COMMENT:  '/*' (BLOCK_COMMENT | .)*? '*/' -> channel(HIDDEN);
-WS:             [\u0020\u0009\u000C]            -> skip;
-NL:             ('\n' | ('\r' '\n'?))           -> skip;
+LINE_COMMENT:   '//' ~[\r\n]*                       -> channel(HIDDEN);
+BLOCK_COMMENT:  '/*' (BLOCK_COMMENT | .)*? '*/'     -> channel(HIDDEN);
+WS:             [\u0020\u0009\u000C]                -> channel(HIDDEN);
+NL:             ('\n' | ('\r' '\n'?))               -> channel(HIDDEN);
 
 // ------------------------------ String stuff
 EMPTY_RAW_STRING:   '#""#';
@@ -119,6 +119,7 @@ KW_CLASS:       'class';
 KW_ALLOC:       'alloc';
 KW_CONST:       'const';
 KW_FALSE:       'false';
+KW_GOTO:        'goto';
 KW_LATE:        'late';
 KW_TRUE:        'true';
 KW_TYPE:        'type';
@@ -142,7 +143,7 @@ KW_MUT:         'mut';
 KW_GET:         'get';
 KW_SET:         'set';
 KW_TRY:         'try';
-KW_VAR:         'var'; // This is NOT for variables. It indicates variadic properties!
+KW_FOR:         'for';
 KW_IF:          'if';
 KW_FN:          'fn';
 KW_OP:          'op';
@@ -372,6 +373,7 @@ M_INSIDE_KW_SUPER:          KW_SUPER            -> type(KW_SUPER);
 M_INSIDE_KW_THROW:          KW_THROW            -> type(KW_THROW);
 M_INSIDE_KW_CATCH:          KW_CATCH            -> type(KW_CATCH);
 M_INSIDE_KW_LATE:           KW_LATE             -> type(KW_LATE);
+M_INSIDE_KW_GOTO:           KW_GOTO             -> type(KW_GOTO);
 M_INSIDE_KW_TRUE:           KW_TRUE             -> type(KW_TRUE);
 M_INSIDE_KW_TYPE:           KW_TYPE             -> type(KW_TYPE);
 M_INSIDE_KW_EXPR:           KW_EXPR             -> type(KW_EXPR);
@@ -394,7 +396,7 @@ M_INSIDE_KW_MUT:            KW_MUT              -> type(KW_MUT);
 M_INSIDE_KW_GET:            KW_GET              -> type(KW_GET);
 M_INSIDE_KW_SET:            KW_SET              -> type(KW_SET);
 M_INSIDE_KW_TRY:            KW_TRY              -> type(KW_TRY);
-M_INSIDE_KW_VAR:            KW_VAR              -> type(KW_VAR);
+M_INSIDE_KW_FOR:            KW_FOR              -> type(KW_FOR);
 M_INSIDE_KW_IF:             KW_IF               -> type(KW_IF);
 M_INSIDE_KW_FN:             KW_FN               -> type(KW_FN);
 M_INSIDE_KW_OP:             KW_OP               -> type(KW_OP);
@@ -596,6 +598,7 @@ M_INTERP_KW_SUPER:          KW_SUPER            -> type(KW_SUPER);
 M_INTERP_KW_THROW:          KW_THROW            -> type(KW_THROW);
 M_INTERP_KW_CATCH:          KW_CATCH            -> type(KW_CATCH);
 M_INTERP_KW_LATE:           KW_LATE             -> type(KW_LATE);
+M_INTERP_KW_GOTO:           KW_GOTO             -> type(KW_GOTO);
 M_INTERP_KW_TRUE:           KW_TRUE             -> type(KW_TRUE);
 M_INTERP_KW_TYPE:           KW_TYPE             -> type(KW_TYPE);
 M_INTERP_KW_EXPR:           KW_EXPR             -> type(KW_EXPR);
@@ -618,7 +621,7 @@ M_INTERP_KW_MUT:            KW_MUT              -> type(KW_MUT);
 M_INTERP_KW_GET:            KW_GET              -> type(KW_GET);
 M_INTERP_KW_SET:            KW_SET              -> type(KW_SET);
 M_INTERP_KW_TRY:            KW_TRY              -> type(KW_TRY);
-M_INTERP_KW_VAR:            KW_VAR              -> type(KW_VAR);
+M_INTERP_KW_FOR:            KW_FOR              -> type(KW_FOR);
 M_INTERP_KW_IF:             KW_IF               -> type(KW_IF);
 M_INTERP_KW_FN:             KW_FN               -> type(KW_FN);
 M_INTERP_KW_OP:             KW_OP               -> type(KW_OP);

@@ -29,6 +29,11 @@ decl:
     | fn_decl
     | field_decl
     | pc_decl
+    | label_decl
+    ;
+
+label_decl:
+    ident COLON semi?
     ;
 
 import_decl:
@@ -156,7 +161,11 @@ pc_decl:
     | pc_for_decl
     | pc_conj_decl
     | pc_disj_decl
+    | pc_macro_call
     ;
+
+// Control flow
+
 
 // Conjunctive token addition
 pc_conj_decl:
@@ -165,11 +174,11 @@ pc_conj_decl:
     ;
 
 pc_lhs_conj_decl:
-    PC_KW_CONJ L_PAREN expr COMMA (unary_op | binary_op) R_PAREN
+    PC_KW_CONJ L_PAREN expr COMMA pc_junction_del R_PAREN
     ;
 
 pc_rhs_conj_decl:
-    PC_KW_CONJ L_PAREN (unary_op | binary_op) COMMA expr R_PAREN
+    PC_KW_CONJ L_PAREN pc_junction_del COMMA expr R_PAREN
     ;
 
 // Disjunctive token addition
@@ -179,11 +188,19 @@ pc_disj_decl:
     ;
 
 pc_lhs_disj_decl:
-    PC_KW_DISJ L_PAREN expr COMMA (unary_op | binary_op) R_PAREN
+    PC_KW_DISJ L_PAREN expr COMMA pc_junction_del R_PAREN
     ;
 
 pc_rhs_disj_decl:
-    PC_KW_DISJ L_PAREN (unary_op | binary_op) COMMA expr R_PAREN
+    PC_KW_DISJ L_PAREN pc_junction_del COMMA expr R_PAREN
+    ;
+
+pc_junction_del:
+    unary_op
+    | binary_op
+    | COMMA
+    | DOT
+    | (QMK DOT)
     ;
 
 // Defines
@@ -226,6 +243,10 @@ pc_inline_for_decl:
     ;
 
 // Macros
+pc_macro_call:
+    ident OP_NOT L_PAREN (fn_call_param COMMA?)* R_PAREN
+    ;
+
 pc_macro_decl:
     pc_simple_macro_decl
     | pc_matching_macro_decl
@@ -264,7 +285,7 @@ pc_macro_match_group:
     ;
 
 pc_macro_match_op:
-    (QMK | OP_TIMES | OP_PLUS) | (L_CRL_PAREN int_literal R_CRL_PAREN)
+    (QMK | OP_TIMES | OP_PLUS) | (HASH L_CRL_PAREN (int_literal | range_expr) R_CRL_PAREN)
     ;
 
 pc_simple_macro_decl:
@@ -315,7 +336,16 @@ fn_inline_decl:
     ;
 
 fn_proto_decl:
+    fn_named_proto_decl
+    | fn_op_proto_decl
+    ;
+
+fn_named_proto_decl:
     fn_mod* KW_FN ident generic_params_decl? params_decl fn_return_type? generic_constraints_decl?
+    ;
+
+fn_op_proto_decl:
+    fn_mod* KW_OP KW_FN (unary_op | binary_op) generic_params_decl? params_decl fn_return_type? generic_constraints_decl?
     ;
 
 fn_return_type:
@@ -326,9 +356,21 @@ fn_body_decl:
     fn_decl // Allow nested functions
     | fn_call
     | fn_return
+    | for_decl
+    | goto_statement
     | variable_decl
+    | named_scope_decl
     | (expr semi?)
     | pc_decl
+    | label_decl
+    ;
+
+named_scope_decl:
+    label_decl L_CRL_PAREN fn_body_decl* R_CRL_PAREN
+    ;
+
+goto_statement:
+    KW_GOTO ident
     ;
 
 fn_return:
@@ -342,7 +384,7 @@ fn_mod:
     ;
 
 fn_call:
-    (variable_ref DOT QMK?)* ident L_PAREN (fn_call_param COMMA?)* R_PAREN
+    variable_ref* ident L_PAREN (fn_call_param COMMA?)* R_PAREN
     ;
 
 fn_call_param:
@@ -393,7 +435,7 @@ variable_mod:
 variable_ref:
     asserted_ref
     | indexed_ref
-    | ident
+    | (ident (DOT QMK? ident)*)
     ;
 
 indexed_ref:
@@ -429,6 +471,21 @@ field_mod:
     ;
 
 // -------------------- Loops
+for_decl:
+    bodied_for_decl
+    | inline_for_decl
+    ;
+
+bodied_for_decl:
+    KW_FOR for_head L_CRL_PAREN
+        decl*
+    R_CRL_PAREN
+    ;
+
+inline_for_decl:
+    KW_FOR L_PAREN for_head R_PAREN (decl | expr) semi?
+    ;
+
 for_head:
     ranged_for_head
     | simple_for_head
@@ -485,7 +542,12 @@ const_generic_param_decl:
 // -------------------- Expressions
 // Arrays
 array_expr:
-    L_SQR_PAREN (expr COMMA?)* R_SQR_PAREN
+    L_SQR_PAREN ((expr | pc_decl) COMMA?)* R_SQR_PAREN
+    ;
+
+// Object initializer
+obj_init_expr:
+    type L_CRL_PAREN ((expr | pc_decl) COMMA?)* R_CRL_PAREN
     ;
 
 // Ranges
@@ -732,11 +794,13 @@ post_decr_expr:
 
 // Misc
 simple_expr:
-    literal
+    pc_macro_call
+    | obj_init_expr
     | variable_ref
     | fn_call
     | incr_expr
     | decr_expr
+    | literal
     ;
 
 expr_type:
@@ -844,6 +908,7 @@ simple_type:
     primitive_type
     | native_size_type
     | KW_TYPE_STR
+    | KW_SELF
     | ident
     ;
 
@@ -903,7 +968,7 @@ impl_pc_ident:
     ;
 
 expl_pc_ident:
-    DOLLAR L_CRL_PAREN expr R_CRL_PAREN
+    DOLLAR L_CRL_PAREN (impl_pc_ident | expr) R_CRL_PAREN
     ;
 
 semi:
