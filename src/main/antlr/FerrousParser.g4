@@ -34,7 +34,7 @@ decl:
     ;
 
 type_decl:
-    visibility_mod? KW_TYPE ident ASSIGN type generic_usage? semi?
+    visibility_mod? KW_TYPE ident ASSIGN type semi?
     ;
 
 label_decl:
@@ -436,11 +436,16 @@ variable_mod:
     | KW_MUT
     ;
 
-// References (null-safety assertion)
+// References
 variable_ref:
     asserted_ref
     | indexed_ref
-    | (ident (DOT QMK? ident)*)
+    | (ident (variable_ref_op variable_ref)*) // LHS recursive parsing
+    ;
+
+variable_ref_op:
+    (QMK? DOT)
+    | ARROW // De-referencing pointers
     ;
 
 indexed_ref:
@@ -577,21 +582,102 @@ excl_range_expr:
 expr:
     raw_expr
     | grouped_expr
+    | cast_expr
+    | if_null_expr
     ;
 
 grouped_expr:
-    L_PAREN raw_expr R_PAREN
+    L_PAREN expr R_PAREN
     ;
 
 raw_expr:
     simple_expr
     | unary_expr
     | binary_expr
+    | mem_expr
     | when_expr
     | if_expr
     | range_expr
     | array_expr
+    | constructor_call_expr
+    | destructor_call_expr
     | expl_type_pattern_expr
+    ;
+
+// Casting
+cast_expr:
+    unsafe_cast_expr
+    | safe_cast_expr
+    ;
+
+unsafe_cast_expr:
+    raw_expr KW_AS type
+    ;
+
+safe_cast_expr:
+    raw_expr KW_AS_SAFE type
+    ;
+
+// Memory management expressions (new, delete, alloc, free, stackalloc)
+mem_expr:
+    mem_stackalloc_expr
+    | mem_new_expr
+    | mem_delete_expr
+    ;
+
+// new
+mem_new_expr:
+    mem_simple_new_expr
+    | mem_array_new_expr
+    ;
+
+mem_simple_new_expr:
+    KW_NEW constructor_call_expr semi?
+    ;
+
+mem_array_new_expr:
+    KW_NEW type array_alloc_bounds semi?
+    ;
+
+// delete
+mem_delete_expr:
+    mem_simple_delete_expr
+    | mem_array_delete_expr
+    ;
+
+mem_simple_delete_expr:
+    KW_DELETE expr semi?
+    ;
+
+mem_array_delete_expr:
+    KW_DELETE L_SQR_PAREN R_SQR_PAREN expr semi?
+    ;
+
+// stackalloc
+mem_stackalloc_expr:
+    mem_simple_stackalloc_expr
+    | mem_array_stackalloc_expr
+    ;
+
+mem_simple_stackalloc_expr:
+    KW_STACKALLOC constructor_call_expr semi?
+    ;
+
+mem_array_stackalloc_expr:
+    KW_STACKALLOC type array_alloc_bounds semi?
+    ;
+
+array_alloc_bounds:
+    L_SQR_PAREN expr (COMMA array_alloc_bounds)? R_SQR_PAREN
+    ;
+
+// Constructors & destructors
+constructor_call_expr:
+    type L_PAREN (expr COMMA?)* R_PAREN
+    ;
+
+destructor_call_expr:
+    variable_ref variable_ref_op OP_INV L_PAREN R_PAREN
     ;
 
 // Pattern matching - these are not included with the default set of raw expressions!
@@ -623,7 +709,7 @@ expl_contains_pattern_expr:
     ;
 
 impl_contains_pattern_expr:
-    KW_IN ident
+    KW_IN (ident | range_expr)
     ;
 
 // When expressions
@@ -738,6 +824,10 @@ binary_expr:
     (simple_expr | unary_expr | grouped_expr) binary_op expr
     ;
 
+if_null_expr:
+    (simple_expr | unary_expr | grouped_expr | cast_expr) OP_IFN (expr | fn_return)
+    ;
+
 binary_op:
     OP_TIMES
     | OP_TIMES_ASSIGN
@@ -761,16 +851,16 @@ binary_op:
     | OP_R_SHIFT
     | OP_R_SHIFT_ASSIGN
     | R_ANGLE
-    | OP_NEQ
-    | DOUBLE_EQ
     | TRIPLE_EQ
+    | DOUBLE_EQ
+    | OP_NEQ
     | OP_SPACESHIP
-    | OP_PLUS
     | OP_PLUS_ASSIGN
-    | OP_MINUS
+    | OP_PLUS
     | OP_MINUS_ASSIGN
-    | OP_IFN
+    | OP_MINUS
     | OP_IFN_ASSIGN
+    | OP_IFN
     | OP_CONJ_AND
     | OP_DISJ_OR
     ;
@@ -897,8 +987,13 @@ s_int_literal:
 
 // -------------------- Types
 type:
-    nonnull_type
+    pointer_type
+    | nonnull_type
     | nullable_type
+    ;
+
+pointer_type:
+    nonnull_type OP_TIMES
     ;
 
 nonnull_type:
@@ -919,7 +1014,7 @@ simple_type:
     | native_size_type
     | KW_TYPE_STR
     | KW_SELF
-    | ident
+    | ident generic_usage?
     ;
 
 s_int_type:
