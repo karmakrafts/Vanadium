@@ -28,8 +28,13 @@ decl:
     | udt_decl
     | fn_decl
     | field_decl
+    | type_decl
     | pc_decl
     | label_decl
+    ;
+
+type_decl:
+    visibility_mod? KW_TYPE ident ASSIGN type generic_usage? semi?
     ;
 
 label_decl:
@@ -384,7 +389,7 @@ fn_mod:
     ;
 
 fn_call:
-    variable_ref* ident L_PAREN (fn_call_param COMMA?)* R_PAREN
+    variable_ref* ident generic_usage? L_PAREN (fn_call_param COMMA?)* R_PAREN
     ;
 
 fn_call_param:
@@ -539,6 +544,10 @@ const_generic_param_decl:
     KW_CONST ident COLON type (ASSIGN expr)?
     ;
 
+generic_usage:
+    L_ANGLE (type COMMA?)+ R_ANGLE
+    ;
+
 // -------------------- Expressions
 // Arrays
 array_expr:
@@ -582,6 +591,7 @@ raw_expr:
     | if_expr
     | range_expr
     | array_expr
+    | expl_type_pattern_expr
     ;
 
 // Pattern matching - these are not included with the default set of raw expressions!
