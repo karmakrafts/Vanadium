@@ -548,7 +548,8 @@ pc_macro_match_op:
     (QMK
     | OP_TIMES
     | OP_PLUS)
-    | (HASH L_CRL_PAREN
+    | (HASH
+    L_CRL_PAREN
     (int_literal
     | range_expr)
     R_CRL_PAREN)
@@ -572,11 +573,16 @@ pc_macro_body_decl:
     ;
 
 pc_macro_params_decl:
-    (pc_macro_param_decl COMMA?)+
+    (pc_macro_param_decl
+    COMMA?)+
     ;
 
 pc_macro_param_decl:
-    simple_pc_ident COLON pc_macro_param_type (ASSIGN expr)?
+    simple_pc_ident
+    COLON
+    pc_macro_param_type
+    (ASSIGN
+    expr)?
     ;
 
 pc_macro_param_type:
