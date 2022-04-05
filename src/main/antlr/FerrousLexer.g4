@@ -1,6 +1,9 @@
 lexer grammar FerrousLexer;
 
 /*
+ * Reference implementation of a lexer for the Ferrous
+ * programming language.
+ *
  * Version: 1.0
  * Author(s):
  *	- Alexander 'KitsuneAlex' Hinze
@@ -35,6 +38,7 @@ PC_KW_ASSERT:   '!assert';
 PC_KW_UNDEF:    '!undef';
 PC_KW_BREAK:    '!break';
 PC_KW_MACRO:    '!macro';
+PC_KW_WHILE:    '!while';
 PC_KW_ELIF:     '!elif';
 PC_KW_ELSE:     '!else';
 PC_KW_CONJ:     '!conj';
@@ -42,6 +46,7 @@ PC_KW_DISJ:     '!disj';
 PC_KW_FOR:      '!for';
 PC_KW_FIR:      '!fir';
 PC_KW_IF:       '!if';
+PC_KW_DO:       '!do';
 
 // ------------------------------ Primitive literals
 LITERAL_I8:     IMPL_INT_LITERAL KW_TYPE_I8;
@@ -90,6 +95,7 @@ KW_DISCARD:     'discard';
 KW_ALIGNOF:     'alignof';
 KW_LITERAL:     'literal';
 KW_DEFAULT:     'default';
+KW_NAMEOF:      'nameof';
 KW_IMPORT:      'import';
 KW_RETURN:      'return';
 KW_INTERN:      'intern';
@@ -118,6 +124,7 @@ KW_YIELD:       'yield';
 KW_CLASS:       'class';
 KW_CONST:       'const';
 KW_FALSE:       'false';
+KW_WHILE:       'while';
 KW_GOTO:        'goto';
 KW_LATE:        'late';
 KW_TRUE:        'true';
@@ -142,6 +149,7 @@ KW_GET:         'get';
 KW_SET:         'set';
 KW_TRY:         'try';
 KW_FOR:         'for';
+KW_DO:          'do';
 KW_IF:          'if';
 KW_FN:          'fn';
 KW_OP:          'op';
@@ -285,6 +293,7 @@ M_INSIDE_PC_KW_ASSERT:      PC_KW_ASSERT        -> type(PC_KW_ASSERT);
 M_INSIDE_PC_KW_UNDEF:       PC_KW_UNDEF         -> type(PC_KW_UNDEF);
 M_INSIDE_PC_KW_BREAK:       PC_KW_BREAK         -> type(PC_KW_BREAK);
 M_INSIDE_PC_KW_MACRO:       PC_KW_MACRO         -> type(PC_KW_MACRO);
+M_INSIDE_PC_KW_WHILE:       PC_KW_WHILE         -> type(PC_KW_WHILE);
 M_INSIDE_PC_KW_ELIF:        PC_KW_ELIF          -> type(PC_KW_ELIF);
 M_INSIDE_PC_KW_ELSE:        PC_KW_ELSE          -> type(PC_KW_ELSE);
 M_INSIDE_PC_KW_CONJ:        PC_KW_CONJ          -> type(PC_KW_CONJ);
@@ -292,6 +301,7 @@ M_INSIDE_PC_KW_DISJ:        PC_KW_DISJ          -> type(PC_KW_DISJ);
 M_INSIDE_PC_KW_FOR:         PC_KW_FOR           -> type(PC_KW_FOR);
 M_INSIDE_PC_KW_FIR:         PC_KW_FIR           -> type(PC_KW_FIR);
 M_INSIDE_PC_KW_IF:          PC_KW_IF            -> type(PC_KW_IF);
+M_INSIDE_PC_KW_DO:          PC_KW_DO            -> type(PC_KW_DO);
 // ---------- String literals
 M_INSIDE_DOUBLE_QUOTE:      DOUBLE_QUOTE        -> pushMode(M_STRING), type(DOUBLE_QUOTE);
 M_INSIDE_RAW_STRING:        RAW_STRING          -> pushMode(M_RAW_STRING), type(RAW_STRING);
@@ -341,6 +351,7 @@ M_INSIDE_KW_DISCARD:        KW_DISCARD          -> type(KW_DISCARD);
 M_INSIDE_KW_ALIGNOF:        KW_ALIGNOF          -> type(KW_ALIGNOF);
 M_INSIDE_KW_LITERAL:        KW_LITERAL          -> type(KW_LITERAL);
 M_INSIDE_KW_DEFAULT:        KW_DEFAULT          -> type(KW_DEFAULT);
+M_INSIDE_KW_NAMEOF:         KW_NAMEOF           -> type(KW_NAMEOF);
 M_INSIDE_KW_IMPORT:         KW_IMPORT           -> type(KW_IMPORT);
 M_INSIDE_KW_RETURN:         KW_RETURN           -> type(KW_RETURN);
 M_INSIDE_KW_INTERN:         KW_INTERN           -> type(KW_INTERN);
@@ -364,6 +375,7 @@ M_INSIDE_KW_YIELD:          KW_YIELD            -> type(KW_YIELD);
 M_INSIDE_KW_CLASS:          KW_CLASS            -> type(KW_CLASS);
 M_INSIDE_KW_CONST:          KW_CONST            -> type(KW_CONST);
 M_INSIDE_KW_FALSE:          KW_FALSE            -> type(KW_FALSE);
+M_INSIDE_KW_WHILE:          KW_WHILE            -> type(KW_WHILE);
 M_INSIDE_KW_VALUE:          KW_VALUE            -> type(KW_VALUE);
 M_INSIDE_KW_WHERE:          KW_WHERE            -> type(KW_WHERE);
 M_INSIDE_KW_SUPER:          KW_SUPER            -> type(KW_SUPER);
@@ -393,6 +405,7 @@ M_INSIDE_KW_GET:            KW_GET              -> type(KW_GET);
 M_INSIDE_KW_SET:            KW_SET              -> type(KW_SET);
 M_INSIDE_KW_TRY:            KW_TRY              -> type(KW_TRY);
 M_INSIDE_KW_FOR:            KW_FOR              -> type(KW_FOR);
+M_INSIDE_KW_DO:             KW_DO               -> type(KW_DO);
 M_INSIDE_KW_IF:             KW_IF               -> type(KW_IF);
 M_INSIDE_KW_FN:             KW_FN               -> type(KW_FN);
 M_INSIDE_KW_OP:             KW_OP               -> type(KW_OP);
@@ -476,7 +489,7 @@ mode M_RAW_STRING;
 M_RAW_STRING_DONT_LOOK:     '\\"#'          -> type(M_RAW_STRING_DONT_LOOK);
 M_RAW_STRING_END:           '"#'            -> popMode, type(M_RAW_STRING_END);
 M_RAW_STRING_INTERP:        '${'            -> pushMode(M_INTERP_STRING);
-M_RAW_STRING_TEXT:          ~('$')+ | '$';
+M_RAW_STRING_TEXT:          ~('\\' | '"' | '$')+ | '$';
 
 // ------------------------------ String lexing mode
 mode M_STRING;
@@ -508,6 +521,7 @@ M_INTERP_PC_KW_ASSERT:      PC_KW_ASSERT        -> type(PC_KW_ASSERT);
 M_INTERP_PC_KW_UNDEF:       PC_KW_UNDEF         -> type(PC_KW_UNDEF);
 M_INTERP_PC_KW_BREAK:       PC_KW_BREAK         -> type(PC_KW_BREAK);
 M_INTERP_PC_KW_MACRO:       PC_KW_MACRO         -> type(PC_KW_MACRO);
+M_INTERP_PC_KW_WHILE:       PC_KW_WHILE         -> type(PC_KW_WHILE);
 M_INTERP_PC_KW_ELIF:        PC_KW_ELIF          -> type(PC_KW_ELIF);
 M_INTERP_PC_KW_ELSE:        PC_KW_ELSE          -> type(PC_KW_ELSE);
 M_INTERP_PC_KW_CONJ:        PC_KW_CONJ          -> type(PC_KW_CONJ);
@@ -515,6 +529,7 @@ M_INTERP_PC_KW_DISJ:        PC_KW_DISJ          -> type(PC_KW_DISJ);
 M_INTERP_PC_KW_FOR:         PC_KW_FOR           -> type(PC_KW_FOR);
 M_INTERP_PC_KW_FIR:         PC_KW_FIR           -> type(PC_KW_FIR);
 M_INTERP_PC_KW_IF:          PC_KW_IF            -> type(PC_KW_IF);
+M_INTERP_PC_KW_DO:          PC_KW_DO            -> type(PC_KW_DO);
 // ---------- String literals
 M_INTERP_DOUBLE_QUOTE:      DOUBLE_QUOTE        -> pushMode(M_STRING), type(DOUBLE_QUOTE);
 M_INTERP_RAW_STRING:        RAW_STRING          -> pushMode(M_RAW_STRING), type(RAW_STRING);
@@ -564,6 +579,7 @@ M_INTERP_KW_DISCARD:        KW_DISCARD          -> type(KW_DISCARD);
 M_INTERP_KW_ALIGNOF:        KW_ALIGNOF          -> type(KW_ALIGNOF);
 M_INTERP_KW_LITERAL:        KW_LITERAL          -> type(KW_LITERAL);
 M_INTERP_KW_DEFAULT:        KW_DEFAULT          -> type(KW_DEFAULT);
+M_INTERP_KW_NAMEOF:         KW_NAMEOF           -> type(KW_NAMEOF);
 M_INTERP_KW_IMPORT:         KW_IMPORT           -> type(KW_IMPORT);
 M_INTERP_KW_RETURN:         KW_RETURN           -> type(KW_RETURN);
 M_INTERP_KW_INTERN:         KW_INTERN           -> type(KW_INTERN);
@@ -587,6 +603,7 @@ M_INTERP_KW_YIELD:          KW_YIELD            -> type(KW_YIELD);
 M_INTERP_KW_CLASS:          KW_CLASS            -> type(KW_CLASS);
 M_INTERP_KW_CONST:          KW_CONST            -> type(KW_CONST);
 M_INTERP_KW_FALSE:          KW_FALSE            -> type(KW_FALSE);
+M_INTERP_KW_WHILE:          KW_WHILE            -> type(KW_WHILE);
 M_INTERP_KW_VALUE:          KW_VALUE            -> type(KW_VALUE);
 M_INTERP_KW_WHERE:          KW_WHERE            -> type(KW_WHERE);
 M_INTERP_KW_SUPER:          KW_SUPER            -> type(KW_SUPER);
@@ -616,6 +633,7 @@ M_INTERP_KW_GET:            KW_GET              -> type(KW_GET);
 M_INTERP_KW_SET:            KW_SET              -> type(KW_SET);
 M_INTERP_KW_TRY:            KW_TRY              -> type(KW_TRY);
 M_INTERP_KW_FOR:            KW_FOR              -> type(KW_FOR);
+M_INTERP_KW_DO:             KW_DO               -> type(KW_DO);
 M_INTERP_KW_IF:             KW_IF               -> type(KW_IF);
 M_INTERP_KW_FN:             KW_FN               -> type(KW_FN);
 M_INTERP_KW_OP:             KW_OP               -> type(KW_OP);

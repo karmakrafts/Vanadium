@@ -1,6 +1,9 @@
 parser grammar FerrousParser;
 
 /*
+ * Reference implementation of a parser for the Ferrous
+ * programming language.
+ *
  * Version: 1.0
  * Author(s):
  *	- Alexander 'KitsuneAlex' Hinze
@@ -10,292 +13,556 @@ options {
     tokenVocab = FerrousLexer;
 }
 
-// -------------------- Files
-script_file:
-    package_decl?
-    fn_body_decl*
-    EOF
+// ---------------------------------------- Files
+
+/*
+ * This is used when evaluating the entire source file as one big expression,
+ * thus being able to return a result value from the root-scope of the source file.
+ */
+script_file:                    // ---------- Root-rule for parsing .fes files.
+    package_decl?               // Optional package declaration
+    (decl                       // Allow zero or more declarations..
+    | fn_body_decl)*            // ..or function-body declarations.
+    EOF                         // End of file.
     ;
 
-file:
-    package_decl?
-    decl*
-    EOF
+/*
+ * This is used when parsing a normal .fe source file for compilation.
+ * It only allows regular declarations in it's root-scope.
+ */
+file:                           // ---------- Root-rule for parsing .fe files.
+    package_decl?               // Optional package declaration.
+    decl*                       // Zero or more declarations.
+    EOF                         // End of file.
     ;
 
-decl:
-    import_decl
-    | udt_decl
-    | fn_decl
-    | field_decl
-    | type_decl
-    | pc_decl
-    | label_decl
+// ---------------------------------------- Declarations
+
+decl:                           // ---------- Declaration
+    import_decl                 // Imports.
+    | udt_decl                  // User defined types (class, struct etc.).
+    | fn_decl                   // Functions.
+    | field_decl                // Fields.
+    | type_decl                 // Type definitions.
+    | pc_decl                   // Pre-compiler directives.
+    | label_decl                // Labels.
     ;
 
-type_decl:
-    visibility_mod? KW_TYPE ident ASSIGN type semi?
+type_decl:                      // ---------- Type definition declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    KW_TYPE                     // 'type'
+    ident                       // The name of the type definition.
+    ASSIGN                      // '='
+    type                        // The type being aliased.
+    semi?                       // Optional ';' or \n(\r).
     ;
 
-label_decl:
-    ident COLON semi?
+label_decl:                     // ---------- Label declarations.
+    ident                       // The name of the label.
+    COLON                       // ':'
+    semi?                       // Optional ';' or \n(\r).
     ;
 
-import_decl:
-    KW_IMPORT package_ident semi?
+import_decl:                    // ---------- Import declaration.
+    KW_IMPORT                   // 'import'
+    package_ident               // The name(-group) of the package.
+    semi?                       // Optional ';' or \n(\r).
     ;
 
-package_decl:
-    KW_PACKAGE package_ident semi?
+package_decl:                   // ---------- Package declaration.
+    KW_PACKAGE                  // 'package'
+    package_ident               // The name(-group) of the package.
+    semi?                       // Optional ';' or \n(\r).
     ;
 
-package_ident:
-    ident (WS* DOT WS* ident)*
+package_ident:                  // ---------- Package identifier (name-group).
+    ident                       // At least one identifier..
+    (DOT ident)*                // ..and zero or more following groups separated by a '.'.
     ;
 
-// -------------------- User defined types
-udt_decl:
-    attrib_decl
-    | iface_decl
-    | struct_decl
-    | class_decl
-    | enum_class_decl
-    | trait_decl
-    | enum_decl
+// ---------------------------------------- User Defined Types
+
+udt_decl:                       // ---------- User defined type declaration.
+    attrib_decl                 // Attributes.
+    | iface_decl                // Interfaces.
+    | struct_decl               // Structures.
+    | class_decl                // Classes.
+    | e_class_decl              // Enum classes.
+    | trait_decl                // Traits.
+    | enum_decl                 // Enums.
     ;
 
-// Attributes
-attrib_decl:
-    visibility_mod? KW_CONST KW_ATTRIB ident L_CRL_PAREN
-        attrib_body_decl*
+attrib_decl:                    // ---------- Attribute declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    KW_CONST?                   // Optional 'const' for compile-time-only attributes.
+    KW_ATTRIB                   // 'attrib'
+    ident                       // The name of the attribute.
+    L_CRL_PAREN                 // '{'
+    attrib_body_decl*           // Zero or more attribute body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+attrib_body_decl:               // ---------- Attribute body declaration.
+    field_decl                  // Fields.
+    | pc_decl                   // Pre-compiler directives.
+    ;
+
+iface_decl:                     // ---------- Interface declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    KW_INTERFACE                // 'interface'
+    ident                       // The name of the interface.
+    generic_params_decl?        // Optional generic parameters.
+    generic_constraints_decl?   // Optional generic constraints.
+    L_CRL_PAREN                 // '{'
+    iface_body_decl*            // Zero or more interface body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+iface_body_decl:                // ---------- Interface body declaration.
+    iface_proto_decl            // Interface function prototypes.
+    | pc_decl                   // Pre-compiler directives.
+    ;
+
+iface_proto_decl:               // ---------- Interface function prototype declaration.
+    fn_proto_decl               // Function prototype.
+    semi?                       // Optional ';' or \n(\r).
+    ;
+
+struct_decl:                    // ---------- Structure declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    KW_STRUCT                   // 'struct'
+    ident                       // The name of the structure.
+    generic_params_decl?        // Optional generic parameters.
+    generic_constraints_decl?   // Optional generic constraints.
+    L_CRL_PAREN                 // '{'
+    struct_body_decl*           // Zero or more structure body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+struct_body_decl:               // ---------- Structure body declaration.
+    field_decl                  // Fields.
+    | fn_decl                   // Functions.
+    | pc_decl                   // Pre-compiler directives.
+    ;
+
+e_class_decl:                   // ---------- Enum class declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    KW_STATIC?                  // Optional 'static', since this counts as a class.
+    KW_ENUM                     // 'enum'
+    KW_CLASS                    // 'class'
+    ident                       // The name of the enum class.
+    L_CRL_PAREN                 // '{'
+    enum_body                   // Zero or more enum constants.
+    (SEMICOLON                  // Optional ';' to indicate the start of the normal class body..
+    e_class_body_decl*)?        // ..as well as zero or more enum class body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+e_class_body_decl:              // ---------- Enum class body declaration.
+    field_decl                  // Fields.
+    | fn_decl                   // Functions.
+    ;
+
+class_decl:                     // ---------- Class declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    (KW_ABSTRACT                // Optional 'abstract'..
+    |KW_STATIC)?                // ..or 'static' modifier.
+    KW_CLASS                    // 'class'
+    ident                       // The name of the class.
+    generic_params_decl?        // Optional generic parameters.
+    generic_constraints_decl?   // Optional generic constraints.
+    L_CRL_PAREN                 // '{'
+    class_body_decl*            // Zero or more class body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+class_body_decl:                // ---------- Class body declaration.
+    decl                        // Declarations.
+    ;
+
+trait_decl:                     // ---------- Trait declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    KW_TRAIT                    // 'trait'
+    ident                       // The name of the trait.
+    generic_params_decl?        // Optional generic parameters.
+    generic_constraints_decl?   // Optional generic constrants.
+    L_CRL_PAREN                 // '{'
+    trait_body_decl*            // Zero or more trait body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+trait_body_decl:                // ---------- Trait body declaration.
+    fn_decl                     // Functions.
+    | pc_decl                   // Pre-compiler directive.
+    ;
+
+enum_decl:                      // ---------- Enum declaration.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    KW_ENUM                     // 'enum'
+    ident                       // The name of the enum.
+    L_CRL_PAREN                 // '{'
+    enum_body                   // Enum body declaration.
+    R_CRL_PAREN                 // '}'
+    ;
+
+enum_body:                      // ---------- Enum body.
+    (enum_field_decl            // Zero or more enum field declarations..
+    COMMA?)*                    // ..separated by commas.
+    ;
+
+enum_field_decl:                // ---------- Enum field declaration.
+    ident                       // The name of the constant.
+    | pc_decl                   // Pre-compiler directive.
+    ;
+
+// ---------------------------------------- Pre-compiler
+
+pc_decl:                        // ---------- Pre-compiler declaration.
+    pc_define_decl              // Defines.
+    | pc_undef_decl             // Undefines.
+    | pc_macro_decl             // Macros.
+    | pc_assert_decl            // Assertions.
+    | pc_if_expr                // Ifs.
+    | pc_for_decl               // For-loops.
+    | pc_while_decl             // While-loops.
+    | pc_conj_decl              // Conjunctive token addition.
+    | pc_disj_decl              // Disjunctive token addition.
+    | pc_literal                // Pre-compiler specific literals.
+    | pc_macro_call             // Macro calls.
+    ;
+
+pc_conj_decl:                   // ---------- Conjunctive token addition.
+    pc_lhs_conj_decl            // LHS conjunction.
+    | pc_rhs_conj_decl          // RHS conjunction.
+    ;
+
+pc_lhs_conj_decl:               // ---------- LHS token conjunction.
+    PC_KW_CONJ                  // '!conj'
+    L_PAREN                     // '('
+    expr                        // Some expression.
+    COMMA                       // ','
+    pc_junction_op              // Some type of junction-capable operator.
+    R_PAREN                     // ')'
+    ;
+
+pc_rhs_conj_decl:               // ---------- RHS token conjunction.
+    PC_KW_CONJ                  // '!conj'
+    L_PAREN                     // '('
+    pc_junction_op              // Some type of junction-capable operator.
+    COMMA                       // ','
+    expr                        // Some expression.
+    R_PAREN                     // ')'
+    ;
+
+pc_disj_decl:                   // ---------- Disjunctive token addition.
+    pc_lhs_disj_decl            // LHS disjunction.
+    | pc_rhs_disj_decl          // RHS disjunction.
+    ;
+
+pc_lhs_disj_decl:               // ---------- LHS disjunction.
+    PC_KW_DISJ                  // '!disj'
+    L_PAREN                     // '('
+    expr                        // Some expression.
+    COMMA                       // ','
+    pc_junction_op              // Some type of junction-capable operator.
+    R_PAREN                     // ')'
+    ;
+
+pc_rhs_disj_decl:               // ---------- RHS disjunction.
+    PC_KW_DISJ                  // '!disj'
+    L_PAREN                     // '('
+    pc_junction_op              // Some type of junction-capable operator.
+    COMMA                       // ','
+    expr                        // Some expression.
+    R_PAREN                     // ')'
+    ;
+
+pc_junction_op:                 // ---------- Pre-compiler junction capable operator(s)
+    unary_op                    // Unary operators.
+    | binary_op                 // Binary operators.
+    | COMMA                     // ','
+    | (QMK?                     // Optional '?'..
+    DOT)                        // ..lead by a required '.'.
+    ;
+
+pc_literal:                     // ---------- Pre-compiler literals
+    pc_nameof_literal           // Name literals.
+    ;
+
+pc_nameof_literal:              // ---------- Pre-compiler type-name-derivative
+    PC_KW_NAMEOF                // '!nameof'
+    L_PAREN                     // '('
+    type                        // Some type.
+    R_PAREN                     // ')'
+    ;
+
+pc_define_decl:                 // ---------- Pre-compiler defines
+    PC_KW_DEFINE                // '!define'
+    pc_ident                    // The name of the definition.
+    (ASSIGN                     // Optional '='..
+    expr)?                      // ..followed by any type of expression.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_undef_decl:                  // ---------- Pre-compiler undefines
+    PC_KW_UNDEF                 // '!undef'
+    pc_ident                    // The name of the definition to be undefined.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_assert_decl:                 // ---------- Pre-compiler assertions
+    pc_simple_assert_decl       // Simple assertions.
+    | pc_custom_assert_decl     // Custom assertions (custom message).
+    ;
+
+pc_simple_assert_decl:          // ---------- Simple pre-compiler assertion
+    PC_KW_ASSERT                // '!assert'
+    (expr                       // Any type of expression..
+    | expl_pattern_expr)        // ..or explicit pattern matching expression.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_custom_assert_decl:          // ---------- Custom pre-compiler assertions
+    PC_KW_ASSERT                // '!assert'
+    L_PAREN                     // '('
+    ((expr                      // Some type of expression..
+    | expl_pattern_expr)        // ..or an explicit pattern matching expression..
+    COMMA)?                     // ..followed by ','.
+    string_literal              // Any type of string literal.
+    R_PAREN                     // ')'
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_if_expr:                     // ---------- Pre-compiler if expression
+    pc_if_bodied_expr           // Bodied ifs.
+    | pc_if_inline_expr         // Inline ifs.
+    ;
+
+pc_if_bodied_expr:              // ---------- Bodied pre-compiler if
+    PC_KW_IF                    // '!if'
+    if_conditional_expr_type    // Some type of conditional expression.
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function-body declarations.
+    R_CRL_PAREN                 // '}'
+    pc_else_if_branch*          // Zero or more else-if branches.
+    pc_else_branch?             // Zero or one else branch.
+    ;
+
+pc_if_inline_expr:              // ---------- Inline pre-compiler if
+    PC_KW_IF                    // '!if'
+    L_PAREN                     // '('
+    if_conditional_expr_type    // Some type of conditional expression.
+    R_PAREN                     // ')'
+    fn_body_decl                // Zero or more function-body declarations.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    pc_else_if_branch*          // Zero or more else-if branches.
+    pc_else_branch?             // Zero or one else branch.
+    ;
+
+pc_else_if_branch:              // ---------- Pre-compiler else-if
+    pc_else_if_bodied_branch    // Bodied else-ifs.
+    | pc_else_if_inline_branch  // Inline else-ifs.
+    ;
+
+pc_else_if_bodied_branch:       // ---------- Bodied pre-compiler else-if
+    PC_KW_ELSE                  // '!else'
+    PC_KW_IF                    // '!if'
+    if_conditional_expr_type    // Some type of conditional expression.
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function-body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+pc_else_if_inline_branch:       // ---------- Inline pre-compiler else-if
+    PC_KW_ELSE                  // '!else'
+    PC_KW_IF                    // '!if'
+    L_PAREN                     // '('
+    if_conditional_expr_type    // Some type of conditional expression.
+    R_PAREN                     // ')'
+    fn_body_decl                // Exactly one function-body declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_else_branch:                 // ---------- Pre-compiler else
+    pc_else_bodied_branch       // Bodied elses.
+    | pc_else_inline_branch     // Inline elses.
+    ;
+
+pc_else_bodied_branch:          // ---------- Bodied pre-compiler else
+    PC_KW_ELSE                  // '!else'
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+pc_else_inline_branch:          // ---------- Inline pre-compiler else
+    PC_KW_ELSE                  // '!else'
+    fn_body_decl                // Exactly one function-body declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_while_decl:                  // ---------- Pre-compiler while
+    pc_while_bodied_decl        // Bodied while.
+    | pc_while_inline_decl      // Inline while.
+    | pc_do_while_decl          // do-while.
+    ;
+
+pc_while_bodied_decl:           // ---------- Bodied pre-compiler while
+    PC_KW_WHILE                 // '!while'
+    expr                        // Some type of expression.
+    L_CRL_PAREN                 // '{'
+    (decl                       // Some type of declaration..
+    | fn_body_decl              // ..function-body declaration..
+    | pc_cf_statement)*         // ..or pre-compiler control flow statement.
+    R_CRL_PAREN                 // '}'
+    ;
+
+pc_while_inline_decl:           // ---------- Inline pre-compiler while
+    PC_KW_WHILE                 // '!while'
+    L_PAREN                     // '('
+    expr                        // Some type of expression.
+    R_PAREN                     // ')'
+    fn_body_decl                // Exactly one function-body declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_do_while_decl:               // ---------- Pre-compiler do-while
+    pc_do_decl                  // do-declaration.
+    PC_KW_WHILE                 // '!while'
+    L_PAREN                     // '('
+    expr                        // Some type of expression.
+    R_PAREN                     // ')'
+    ;
+
+pc_do_decl:                     // ---------- Pre-compiler do
+    pc_do_bodied_decl           // Bodied do.
+    | pc_do_inline_decl         // Inline do.
+    ;
+
+pc_do_bodied_decl:              // ---------- Bodied pre-compiler do
+    PC_KW_DO                    // '!do'
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function-body declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+pc_do_inline_decl:              // ---------- Inline pre-compiler do
+    PC_KW_DO                    // '!do'
+    fn_body_decl                // Exactly one function-body declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_for_decl:                    // ---------- Pre-compiler for
+    pc_bodied_for_decl          // Bodied for.
+    | pc_inline_for_decl        // Inline for.
+    ;
+
+pc_bodied_for_decl:             // ---------- Bodied pre-compiler for
+    PC_KW_FOR                   // '!for'
+    for_head                    // Some type of for-head.
+    L_CRL_PAREN                 // '{'
+    (decl                       // Zero or more declarations..
+    | fn_body_decl              // ..function-body declarations..
+    | pc_cf_statement)*         // ..or pre-compiler control flow statements.
+    R_CRL_PAREN                 // '}'
+    ;
+
+pc_inline_for_decl:             // ---------- Inline pre-compiler for
+    PC_KW_FOR                   // '!for'
+    L_PAREN                     // '('
+    for_head                    // Some type of for-head.
+    R_PAREN                     // ')'
+    (decl                       // Exactly one declarations..
+    | fn_body_decl)             // ..or function-body declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_macro_call:                  // ---------- Pre-compiler macro call
+    ident                       // The name of the macro.
+    OP_NOT                      // '!'
+    L_PAREN                     // '('
+    (fn_call_param              // Zero or more function-call parameters..
+    COMMA?)*                    // ..separated by commas.
+    R_PAREN                     // ')'
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_macro_decl:                  // ---------- Pre-compiler macro
+    pc_simple_macro_decl        // Simple macros.
+    | pc_matching_macro_decl    // Matching macros.
+    ;
+
+pc_matching_macro_decl:         // ---------- Matching macro
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    PC_KW_MACRO                 // '!macro'
+    ident                       // The name of the macro.
+    L_CRL_PAREN                 // '{'
+    pc_macro_branch*            // Zero or more macro branches.
+    pc_default_macro_branch?    // Zero or one default macro branch.
+    R_CRL_PAREN                 // '}'
+    ;
+
+pc_macro_branch:                // ---------- Macro branch
+    L_PAREN                     // '('
+    ((pc_macro_params_decl      // Zero or more macro param declarations..
+    | pc_macro_match_group)     // ..or macro matching groups..
+    COMMA?)*                    // ..separated by ','.
+    R_PAREN                     // '}'
+    ARROW                       // '->'
+    pc_macro_scope              // Some type of macro-match scope.
+    ;
+
+pc_default_macro_branch:        // ---------- Default macro branch
+    L_PAREN                     // '('
+    R_PAREN                     // ')'
+    ARROW                       // '->'
+    pc_macro_scope              // Some type of macro-match-scope.
+    ;
+
+pc_macro_scope:
+    pc_bodied_macro_scope
+    | pc_inline_macro_scope
+    ;
+
+pc_bodied_macro_scope:
+    L_CRL_PAREN
+    pc_macro_body_decl*
     R_CRL_PAREN
     ;
 
-attrib_body_decl:
-    field_decl
-    | pc_decl
-    ;
-
-// Interfaces
-iface_decl:
-    visibility_mod? KW_INTERFACE ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
-        iface_body_decl*
-    R_CRL_PAREN
-    ;
-
-iface_body_decl:
-    iface_proto_decl
-    | pc_decl
-    ;
-
-iface_proto_decl:
-    fn_proto_decl semi?
-    ;
-
-// Structures
-struct_decl:
-    visibility_mod? KW_STRUCT ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
-        struct_body_decl*
-    R_CRL_PAREN
-    ;
-
-struct_body_decl:
-    field_decl
-    | fn_decl
-    | pc_decl
-    ;
-
-// Enum classes
-enum_class_decl:
-    visibility_mod? KW_STATIC? KW_ENUM KW_CLASS ident L_CRL_PAREN
-        enum_body_decl SEMICOLON
-        enum_class_body_decl*
-    R_CRL_PAREN
-    ;
-
-enum_class_body_decl:
-    field_decl
-    | fn_decl
-    ;
-
-// Classes
-class_decl:
-    visibility_mod? (KW_ABSTRACT|KW_STATIC)? KW_CLASS ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
-        class_body_decl*
-    R_CRL_PAREN
-    ;
-
-class_body_decl:
-    decl // This just delegates for now..
-    ;
-
-// Traits
-trait_decl:
-    visibility_mod? KW_TRAIT ident generic_params_decl? generic_constraints_decl? L_CRL_PAREN
-        trait_body_decl*
-    R_CRL_PAREN
-    ;
-
-trait_body_decl:
-    fn_decl
-    | pc_decl
-    ;
-
-// Enums
-enum_decl:
-    visibility_mod? KW_ENUM ident L_CRL_PAREN
-        enum_body_decl
-    R_CRL_PAREN
-    ;
-
-enum_body_decl:
-    (enum_field_decl COMMA?)*
-    ;
-
-enum_field_decl:
-    ident
-    | pc_decl
-    ;
-
-// -------------------- Pre-compiler
-pc_decl:
-    pc_define_decl
-    | pc_undef_decl
-    | pc_macro_decl
-    | pc_assert_decl
-    | pc_for_decl
-    | pc_conj_decl
-    | pc_disj_decl
-    | pc_macro_call
-    ;
-
-// Control flow
-
-
-// Conjunctive token addition
-pc_conj_decl:
-    pc_lhs_conj_decl
-    | pc_rhs_conj_decl
-    ;
-
-pc_lhs_conj_decl:
-    PC_KW_CONJ L_PAREN expr COMMA pc_junction_del R_PAREN
-    ;
-
-pc_rhs_conj_decl:
-    PC_KW_CONJ L_PAREN pc_junction_del COMMA expr R_PAREN
-    ;
-
-// Disjunctive token addition
-pc_disj_decl:
-    pc_lhs_disj_decl
-    | pc_rhs_disj_decl
-    ;
-
-pc_lhs_disj_decl:
-    PC_KW_DISJ L_PAREN expr COMMA pc_junction_del R_PAREN
-    ;
-
-pc_rhs_disj_decl:
-    PC_KW_DISJ L_PAREN pc_junction_del COMMA expr R_PAREN
-    ;
-
-pc_junction_del:
-    unary_op
-    | binary_op
-    | COMMA
-    | DOT
-    | (QMK DOT)
-    ;
-
-// Defines
-pc_define_decl:
-    PC_KW_DEFINE pre_compiler_ident (ASSIGN expr)? semi?
-    ;
-
-pc_undef_decl:
-    PC_KW_UNDEF pre_compiler_ident semi?
-    ;
-
-// Assertion
-pc_assert_decl:
-    pc_simple_assert_decl
-    | pc_custom_assert_decl
-    ;
-
-pc_simple_assert_decl:
-    PC_KW_ASSERT (expr | expl_pattern_expr) semi?
-    ;
-
-pc_custom_assert_decl:
-    PC_KW_ASSERT L_PAREN ((expr | expl_pattern_expr) COMMA)? string_literal R_PAREN semi?
-    ;
-
-// For loops
-pc_for_decl:
-    pc_bodied_for_decl
-    | pc_inline_for_decl
-    ;
-
-pc_bodied_for_decl:
-    PC_KW_FOR for_head L_CRL_PAREN
-        decl*
-    R_CRL_PAREN
-    ;
-
-pc_inline_for_decl:
-    PC_KW_FOR L_PAREN for_head R_PAREN (decl | expr) semi?
-    ;
-
-// Macros
-pc_macro_call:
-    ident OP_NOT L_PAREN (fn_call_param COMMA?)* R_PAREN
-    ;
-
-pc_macro_decl:
-    pc_simple_macro_decl
-    | pc_matching_macro_decl
-    ;
-
-pc_matching_macro_decl:
-    visibility_mod? PC_KW_MACRO ident L_CRL_PAREN
-        pc_macro_match_branch*
-        pc_default_macro_match_branch?
-    R_CRL_PAREN
-    ;
-
-pc_macro_match_branch:
-    L_PAREN ((pc_macro_params_decl | pc_macro_match_group) COMMA?)* R_PAREN ARROW pc_macro_match_scope
-    ;
-
-pc_default_macro_match_branch:
-    L_PAREN R_PAREN ARROW pc_macro_match_scope
-    ;
-
-pc_macro_match_scope:
-    pc_bodied_macro_match_scope
-    | pc_inline_macro_match_scope
-    ;
-
-pc_bodied_macro_match_scope:
-    L_CRL_PAREN pc_macro_body_decl* R_CRL_PAREN
-    ;
-
-pc_inline_macro_match_scope:
-    pc_macro_body_decl semi?
+pc_inline_macro_scope:
+    pc_macro_body_decl
+    semi?
     ;
 
 pc_macro_match_group:
-    DOLLAR L_PAREN (pc_macro_params_decl | pc_macro_match_group) R_PAREN pc_macro_match_op?
+    DOLLAR
+    L_PAREN
+    (pc_macro_params_decl
+    | pc_macro_match_group)
+    R_PAREN
+    pc_macro_match_op?
     ;
 
 pc_macro_match_op:
-    (QMK | OP_TIMES | OP_PLUS) | (HASH L_CRL_PAREN (int_literal | range_expr) R_CRL_PAREN)
+    (QMK
+    | OP_TIMES
+    | OP_PLUS)
+    | (HASH L_CRL_PAREN
+    (int_literal
+    | range_expr)
+    R_CRL_PAREN)
     ;
 
 pc_simple_macro_decl:
-    visibility_mod? PC_KW_MACRO ident L_PAREN pc_macro_params_decl R_PAREN L_CRL_PAREN
-        pc_macro_body_decl*
+    visibility_mod?
+    PC_KW_MACRO
+    ident
+    L_PAREN
+    pc_macro_params_decl
+    R_PAREN
+    L_CRL_PAREN
+    pc_macro_body_decl*
     R_CRL_PAREN
     ;
 
@@ -309,7 +576,7 @@ pc_macro_params_decl:
     ;
 
 pc_macro_param_decl:
-    impl_pc_ident COLON pc_macro_param_type (ASSIGN expr)?
+    simple_pc_ident COLON pc_macro_param_type (ASSIGN expr)?
     ;
 
 pc_macro_param_type:
@@ -322,6 +589,19 @@ pc_macro_token_type:
     | KW_EXPR
     | KW_IDENT
     | KW_LITERAL
+    ;
+
+pc_cf_statement:
+    pc_cf_continue
+    | pc_cf_break
+    ;
+
+pc_cf_continue:
+    PC_KW_CONTINUE semi?
+    ;
+
+pc_cf_break:
+    PC_KW_BREAK semi?
     ;
 
 // -------------------- Functions
@@ -362,6 +642,7 @@ fn_body_decl:
     | fn_call
     | fn_return
     | for_decl
+    | while_decl
     | goto_statement
     | variable_decl
     | named_scope_decl
@@ -481,6 +762,43 @@ field_mod:
     ;
 
 // -------------------- Loops
+// While
+while_decl:
+    while_bodied_decl
+    | while_inline_decl
+    | do_while_decl
+    ;
+
+while_bodied_decl:
+    KW_WHILE expr L_CRL_PAREN
+        fn_body_decl*
+    R_CRL_PAREN
+    ;
+
+while_inline_decl:
+    KW_WHILE L_PAREN expr R_PAREN fn_body_decl semi?
+    ;
+
+do_while_decl:
+    do_decl KW_WHILE L_PAREN expr R_PAREN
+    ;
+
+do_decl:
+    do_bodied_decl
+    | do_inline_decl
+    ;
+
+do_bodied_decl:
+    KW_DO L_CRL_PAREN
+        fn_body_decl*
+    R_CRL_PAREN
+    ;
+
+do_inline_decl:
+    KW_DO fn_body_decl semi?
+    ;
+
+// For
 for_decl:
     bodied_for_decl
     | inline_for_decl
@@ -757,15 +1075,20 @@ if_expr:
     ;
 
 if_bodied_expr:
-    KW_IF if_conditional_expr_type L_CRL_PAREN
-        fn_body_decl*
+    KW_IF
+    if_conditional_expr_type
+    L_CRL_PAREN
+    fn_body_decl*
     R_CRL_PAREN
     else_if_branch*
     else_branch?
     ;
 
 if_inline_expr:
-    KW_IF L_PAREN if_conditional_expr_type R_PAREN fn_body_decl semi?
+    KW_IF L_PAREN
+    if_conditional_expr_type
+    R_PAREN
+    fn_body_decl semi?
     else_if_branch*
     else_branch?
     ;
@@ -777,13 +1100,20 @@ else_if_branch:
     ;
 
 else_if_bodied_branch:
-    KW_ELSE KW_IF if_conditional_expr_type L_CRL_PAREN
-        fn_body_decl*
+    KW_ELSE KW_IF
+    if_conditional_expr_type
+    L_CRL_PAREN
+    fn_body_decl*
     R_CRL_PAREN
     ;
 
 else_if_inline_branch:
-    KW_ELSE KW_IF L_PAREN if_conditional_expr_type R_PAREN fn_body_decl semi?
+    KW_ELSE
+    KW_IF
+    L_PAREN
+    if_conditional_expr_type
+    R_PAREN
+    fn_body_decl semi?
     ;
 
 // Else
@@ -793,13 +1123,16 @@ else_branch:
     ;
 
 else_bodied_branch:
-    KW_ELSE L_CRL_PAREN
-        fn_body_decl*
+    KW_ELSE
+    L_CRL_PAREN
+    fn_body_decl*
     R_CRL_PAREN
     ;
 
 else_inline_branch:
-    KW_ELSE fn_body_decl semi?
+    KW_ELSE
+    fn_body_decl
+    semi?
     ;
 
 if_conditional_expr_type:
@@ -820,12 +1153,31 @@ unary_op:
     ;
 
 // Binary
+
 binary_expr:
-    (simple_expr | unary_expr | grouped_expr) binary_op expr
+    binary_lhs_expr
+    binary_op
+    expr
+    ;
+
+binary_lhs_expr:
+    simple_expr
+    | unary_expr
+    | grouped_expr
     ;
 
 if_null_expr:
-    (simple_expr | unary_expr | grouped_expr | cast_expr) OP_IFN (expr | fn_return)
+    if_null_lhs_expr
+    OP_IFN
+    (expr
+    | fn_return)
+    ;
+
+if_null_lhs_expr:
+    simple_expr
+    | unary_expr
+    | grouped_expr
+    | cast_expr
     ;
 
 binary_op:
@@ -872,11 +1224,13 @@ incr_expr:
     ;
 
 pre_incr_expr:
-    OP_INCREMENT variable_ref
+    OP_INCREMENT
+    variable_ref
     ;
 
 post_incr_expr:
-    variable_ref OP_INCREMENT
+    variable_ref
+    OP_INCREMENT
     ;
 
 decr_expr:
@@ -885,11 +1239,13 @@ decr_expr:
     ;
 
 pre_decr_expr:
-    OP_DECREMENT variable_ref
+    OP_DECREMENT
+    variable_ref
     ;
 
 post_decr_expr:
-    variable_ref OP_DECREMENT
+    variable_ref
+    OP_DECREMENT
     ;
 
 // Misc
@@ -909,30 +1265,51 @@ expr_type:
     ;
 
 // -------------------- Literals
+
 literal:
-    primitive_literal
+    KW_NULL
     | string_literal
-    | KW_NULL
+    | primitive_literal
     | type_literal
     | size_literal
     | alignment_literal
+    | name_literal
     | default_literal
     ;
 
+name_literal:
+    KW_NAMEOF
+    L_PAREN
+    type
+    R_PAREN
+    ;
+
 default_literal:
-    KW_DEFAULT (L_PAREN type R_PAREN)?
+    KW_DEFAULT
+    (L_PAREN
+    type
+    R_PAREN)?
     ;
 
 type_literal:
-    KW_TYPEOF L_PAREN type R_PAREN
+    KW_TYPEOF
+    L_PAREN
+    type
+    R_PAREN
     ;
 
 size_literal:
-    KW_SIZEOF L_PAREN type R_PAREN
+    KW_SIZEOF
+    L_PAREN
+    type
+    R_PAREN
     ;
 
 alignment_literal:
-    KW_ALIGNOF L_PAREN type R_PAREN
+    KW_ALIGNOF
+    L_PAREN
+    type
+    R_PAREN
     ;
 
 string_literal:
@@ -941,12 +1318,17 @@ string_literal:
     ;
 
 raw_string_literal:
-    (RAW_STRING (M_RAW_STRING_TEXT | M_RAW_STRING_DONT_LOOK)* M_RAW_STRING_END)
+    (RAW_STRING
+    (M_RAW_STRING_TEXT
+    | M_RAW_STRING_DONT_LOOK)*
+    M_RAW_STRING_END)
     | EMPTY_RAW_STRING
     ;
 
 simple_string_literal:
-    (DOUBLE_QUOTE M_STRING_TEXT DOUBLE_QUOTE)
+    (DOUBLE_QUOTE
+    M_STRING_TEXT
+    DOUBLE_QUOTE)
     | EMPTY_STRING
     ;
 
@@ -986,6 +1368,7 @@ s_int_literal:
     ;
 
 // -------------------- Types
+
 type:
     pointer_type
     | nonnull_type
@@ -993,7 +1376,8 @@ type:
     ;
 
 pointer_type:
-    nonnull_type OP_TIMES
+    nonnull_type
+    OP_TIMES
     ;
 
 nonnull_type:
@@ -1002,11 +1386,15 @@ nonnull_type:
     ;
 
 nullable_type:
-    (array_type | simple_type) QMK?
+    (array_type
+    | simple_type)
+    QMK?
     ;
 
 array_type:
-    L_SQR_PAREN type R_SQR_PAREN
+    L_SQR_PAREN
+    type
+    R_SQR_PAREN
     ;
 
 simple_type:
@@ -1014,7 +1402,8 @@ simple_type:
     | native_size_type
     | KW_TYPE_STR
     | KW_SELF
-    | ident generic_usage?
+    | ident
+    generic_usage?
     ;
 
 s_int_type:
@@ -1051,6 +1440,7 @@ native_size_type:
     ;
 
 // -------------------- Misc rules
+
 visibility_mod:
     KW_PUB
     | KW_PRIV
@@ -1060,23 +1450,31 @@ visibility_mod:
     ;
 
 ident:
-    (pre_compiler_ident | IDENTIFIER)+
+    (pc_ident
+    | IDENTIFIER)+
     ;
 
-pre_compiler_ident:
-    impl_pc_ident
-    | expl_pc_ident
+pc_ident:
+    simple_pc_ident
+    | complex_pc_ident
     ;
 
-impl_pc_ident:
-    DOLLAR IDENTIFIER
+simple_pc_ident:
+    DOLLAR
+    IDENTIFIER
     ;
 
-expl_pc_ident:
-    DOLLAR L_CRL_PAREN (impl_pc_ident | expr) R_CRL_PAREN
+complex_pc_ident:
+    DOLLAR
+    L_CRL_PAREN
+    (pc_ident
+    | expr)
+    R_CRL_PAREN
     ;
 
 semi:
-    (SEMICOLON | NL) NL*
+    (SEMICOLON
+    | NL)
+    NL*
     | EOF
     ;
