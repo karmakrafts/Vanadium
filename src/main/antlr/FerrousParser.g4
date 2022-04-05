@@ -519,15 +519,15 @@ pc_default_macro_branch:        // ---------- Default macro branch
     pc_macro_scope              // Some type of macro-match-scope.
     ;
 
-pc_macro_scope:
-    pc_bodied_macro_scope
-    | pc_inline_macro_scope
+pc_macro_scope:                 // ---------- Macro scope
+    pc_bodied_macro_scope       // Bodied pre-compiler macro scope.
+    | pc_inline_macro_scope     // Inline pre-compiler macro scope.
     ;
 
-pc_bodied_macro_scope:
-    L_CRL_PAREN
-    pc_macro_body_decl*
-    R_CRL_PAREN
+pc_bodied_macro_scope:          // ---------- Bodied macro scope
+    L_CRL_PAREN                 // '('
+    pc_macro_body_decl*         // Zero or more pre-compiler macro body-declarations.
+    R_CRL_PAREN                 // ')'
     ;
 
 pc_inline_macro_scope:
