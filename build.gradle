@@ -22,8 +22,8 @@ repositories {
 }
 
 dependencies {
-    antlr group: 'org.antlr', name: 'antlr4', version: config.antlr_version
-    implementation group: 'org.jetbrains', name: 'annotations', version: config.annotations_version
+    antlr group: 'org.antlr', name: 'antlr4', version: config.antlr_version, changing: true
+    implementation group: 'org.jetbrains', name: 'annotations', version: config.annotations_version, changing: true
 }
 
 generateGrammarSource {
