@@ -530,143 +530,171 @@ pc_bodied_macro_scope:          // ---------- Bodied macro scope
     R_CRL_PAREN                 // ')'
     ;
 
-pc_inline_macro_scope:
-    pc_macro_body_decl
-    semi?
+pc_inline_macro_scope:          // ---------- Inline macro scope
+    pc_macro_body_decl          // Exactly one pre-compiler macro body-declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
     ;
 
-pc_macro_match_group:
-    DOLLAR
-    L_PAREN
-    (pc_macro_params_decl
-    | pc_macro_match_group)
-    R_PAREN
-    pc_macro_match_op?
+pc_macro_match_group:           // ---------- Macro match group
+    DOLLAR                      // '$'
+    L_PAREN                     // '('
+    (pc_macro_params_decl       // At least one macro parameter list..
+    | pc_macro_match_group)+    // ..or another nested match group.
+    R_PAREN                     // ')'
+    pc_macro_match_op?          // Some type of matching operator (+, * or ?).
     ;
 
-pc_macro_match_op:
-    (QMK
-    | OP_TIMES
-    | OP_PLUS)
-    | (HASH
+pc_macro_match_op:              // ---------- Match match operator
+    (QMK                        // '?'
+    | OP_TIMES                  // '*'
+    | OP_PLUS)                  // '+'
+    | (HASH                     // '#'
+    L_CRL_PAREN                 // '{'
+    (int_literal                // Some type of integral literal..
+    | range_expr)               // ..or a range expression.
+    R_CRL_PAREN)                // '}'
+    ;
+
+pc_simple_macro_decl:           // ---------- Simple pre-compiler macro declaration
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    PC_KW_MACRO                 // '!macro'
+    ident                       // The name of the macro.
+    L_PAREN                     // '('
+    pc_macro_params_decl        // Zero or more macro parameter declarations.
+    R_PAREN                     // ')'
+    L_CRL_PAREN                 // '{'
+    pc_macro_body_decl*         // Zero or more pre-compiler macro body-declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+pc_macro_body_decl:             // ---------- Macro body delclaration
+    decl                        // Some type of declaration..
+    | fn_body_decl              // ..or some type of function body-declaration.
+    ;
+
+pc_macro_params_decl:           // ---------- Macro parameter list
+    (pc_macro_param_decl        // One or more macro parameter declarations..
+    COMMA?)+                    // ..separated by a comma.
+    ;
+
+pc_macro_param_decl:            // ---------- Macro parameter declaration
+    simple_pc_ident             // The name of the macro.
+    COLON                       // ':'
+    pc_macro_param_type         // Some macro parameter type.
+    (ASSIGN                     // Optional '='..
+    expr)?                      // ..and some type of expression at the end.
+    ;
+
+pc_macro_param_type:            // ---------- Macro parameter type
+    type                        // A regular type..
+    | pc_macro_token_type       // ..or a pre-compiler token-type.
+    ;
+
+pc_macro_token_type:            // ---------- Macro token type
+    KW_TYPE                     // 'type'
+    | KW_EXPR                   // 'expr'
+    | KW_IDENT                  // 'ident'
+    | KW_LITERAL                // 'literal'
+    ;
+
+pc_cf_statement:                // ---------- Pre-compiler control flow statements
+    pc_cf_continue              // Continue.
+    | pc_cf_break               // Break.
+    ;
+
+pc_cf_continue:                 // ---------- Pre-compiler continue
+    PC_KW_CONTINUE              // '!continue'
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+pc_cf_break:                    // ---------- Pre-compiler break
+    PC_KW_BREAK                 // '!break'
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+fn_decl:                        // ---------- Function declarations
+    fn_bodied_decl              // Bodied functions.
+    | fn_inline_decl            // Inline functions.
+    ;
+
+fn_bodied_decl:                 // ---------- Bodied function declarations.
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    fn_proto_decl               // Function prototype.
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function body-declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+fn_inline_decl:                 // ---------- Inline function declarations
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    fn_proto_decl               // Function prototype.
+    ARROW                       // '->'
+    fn_body_decl                // Exactly one function body-declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+fn_proto_decl:                  // ---------- Function prototypes
+    fn_named_proto_decl         // Named prototype.
+    | fn_op_proto_decl          // Operator prototype.
+    ;
+
+fn_named_proto_decl:            // ---------- Named function prototypes
+    fn_mod*                     // Zero or more function modifiers.
+    KW_FN                       // 'fn'
+    ident                       // The name of the function.
+    generic_params_decl?        // Optional generic parameters.
+    params_decl                 // Parameter list.
+    fn_return_type?             // Optional return type.
+    generic_constraints_decl?   // Optional generic constraints.
+    ;
+
+fn_op_proto_decl:               // ---------- Operator function prototypes
+    fn_mod*                     // Zero or more function modifiers.
+    KW_OP                       // 'op'
+    KW_FN                       // 'fn'
+    (unary_op                   // Either a unary..
+    | binary_op)                // ..or a binary operator.
+    generic_params_decl?        // Optional generic parameters.
+    params_decl                 // Parameter list.
+    fn_return_type?             // Optional return type.
+    generic_constraints_decl?   // Optional generic constraints.
+    ;
+
+fn_return_type:                 // ---------- Function return type
+    COLON                       // ':'
+    type                        // Some type.
+    ;
+
+fn_body_decl:                   // ---------- Function body declarations
+    fn_decl                     // Function declarations.
+    | fn_call                   // Function calls.
+    | fn_return                 // Function return statement.
+    | for_decl                  // For-loops.
+    | while_decl                // While-loops.
+    | goto_statement            // Goto statemenent.
+    | variable_decl             // Variable declarations.
+    | named_scope_decl          // Named scope declarations.
+    | (expr                     // Any type of expression..
+    semi?)                      // ..optional ';' or \n(\r) at the end.
+    | pc_decl                   // Pre-compiler declarations.
+    | label_decl                // Label declarations.
+    ;
+
+named_scope_decl:    
+    label_decl
     L_CRL_PAREN
-    (int_literal
-    | range_expr)
-    R_CRL_PAREN)
-    ;
-
-pc_simple_macro_decl:
-    visibility_mod?
-    PC_KW_MACRO
-    ident
-    L_PAREN
-    pc_macro_params_decl
-    R_PAREN
-    L_CRL_PAREN
-    pc_macro_body_decl*
+    fn_body_decl*
     R_CRL_PAREN
-    ;
-
-pc_macro_body_decl:
-    decl
-    | fn_body_decl
-    ;
-
-pc_macro_params_decl:
-    (pc_macro_param_decl
-    COMMA?)+
-    ;
-
-pc_macro_param_decl:
-    simple_pc_ident
-    COLON
-    pc_macro_param_type
-    (ASSIGN
-    expr)?
-    ;
-
-pc_macro_param_type:
-    type
-    | pc_macro_token_type
-    ;
-
-pc_macro_token_type:
-    KW_TYPE
-    | KW_EXPR
-    | KW_IDENT
-    | KW_LITERAL
-    ;
-
-pc_cf_statement:
-    pc_cf_continue
-    | pc_cf_break
-    ;
-
-pc_cf_continue:
-    PC_KW_CONTINUE semi?
-    ;
-
-pc_cf_break:
-    PC_KW_BREAK semi?
-    ;
-
-// -------------------- Functions
-fn_decl:
-    fn_bodied_decl
-    | fn_inline_decl
-    ;
-
-fn_bodied_decl:
-    visibility_mod? fn_proto_decl L_CRL_PAREN
-        fn_body_decl*
-    R_CRL_PAREN
-    ;
-
-fn_inline_decl:
-    visibility_mod? fn_proto_decl ARROW fn_body_decl semi?
-    ;
-
-fn_proto_decl:
-    fn_named_proto_decl
-    | fn_op_proto_decl
-    ;
-
-fn_named_proto_decl:
-    fn_mod* KW_FN ident generic_params_decl? params_decl fn_return_type? generic_constraints_decl?
-    ;
-
-fn_op_proto_decl:
-    fn_mod* KW_OP KW_FN (unary_op | binary_op) generic_params_decl? params_decl fn_return_type? generic_constraints_decl?
-    ;
-
-fn_return_type:
-    COLON type
-    ;
-
-fn_body_decl:
-    fn_decl // Allow nested functions
-    | fn_call
-    | fn_return
-    | for_decl
-    | while_decl
-    | goto_statement
-    | variable_decl
-    | named_scope_decl
-    | (expr semi?)
-    | pc_decl
-    | label_decl
-    ;
-
-named_scope_decl:
-    label_decl L_CRL_PAREN fn_body_decl* R_CRL_PAREN
     ;
 
 goto_statement:
-    KW_GOTO ident
+    KW_GOTO
+    ident
     ;
 
 fn_return:
-    KW_RETURN expr?
+    KW_RETURN
+    expr?
     ;
 
 fn_mod:
@@ -676,7 +704,13 @@ fn_mod:
     ;
 
 fn_call:
-    variable_ref* ident generic_usage? L_PAREN (fn_call_param COMMA?)* R_PAREN
+    variable_ref*
+    ident
+    generic_usage?
+    L_PAREN
+    (fn_call_param
+    COMMA?)*
+    R_PAREN
     ;
 
 fn_call_param:
@@ -687,15 +721,23 @@ fn_call_param:
 
 // Parameters
 params_decl:
-    L_PAREN (param_decl(COMMA?))* R_PAREN
+    L_PAREN
+    (param_decl
+    (COMMA?))*
+    R_PAREN
     ;
 
 param_decl:
-    param_mod? ident COLON type param_default_value?
+    param_mod?
+    ident
+    COLON
+    type
+    param_default_value?
     ;
 
 param_default_value:
-    ASSIGN expr
+    ASSIGN
+    expr
     ;
 
 param_mod:
@@ -740,7 +782,8 @@ indexed_ref:
     ;
 
 indexed_ref_group:
-    L_SQR_PAREN expr (COMMA indexed_ref_group)? R_SQR_PAREN
+    L_SQR_PAREN
+    expr (COMMA indexed_ref_group)? R_SQR_PAREN
     ;
 
 asserted_ref:
@@ -1326,7 +1369,7 @@ string_literal:
 raw_string_literal:
     (RAW_STRING
     (M_RAW_STRING_TEXT
-    | M_RAW_STRING_DONT_LOOK)*
+    | M_RAW_STRING_ESCAPED_END)*
     M_RAW_STRING_END)
     | EMPTY_RAW_STRING
     ;

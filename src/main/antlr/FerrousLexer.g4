@@ -486,7 +486,7 @@ M_INSIDE_NL:                NL                  -> channel(HIDDEN);
 mode M_RAW_STRING;
 
 // ---------- Nested rules for recursive parsing
-M_RAW_STRING_DONT_LOOK:     '\\"#'          -> type(M_RAW_STRING_DONT_LOOK);
+M_RAW_STRING_ESCAPED_END:   '\\"#'          -> type(M_RAW_STRING_ESCAPED_END);
 M_RAW_STRING_END:           '"#'            -> popMode, type(M_RAW_STRING_END);
 M_RAW_STRING_INTERP:        '${'            -> pushMode(M_INTERP_STRING);
 M_RAW_STRING_TEXT:          ~('\\' | '"' | '$')+ | '$';
