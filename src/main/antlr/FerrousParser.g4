@@ -13,7 +13,7 @@ options {
     tokenVocab = FerrousLexer;
 }
 
-// ---------------------------------------- Files
+// -------------------------------------------------------------------------------- Files
 
 /*
  * This is used when evaluating the entire source file as one big expression,
@@ -36,7 +36,7 @@ file:                           // ---------- Root-rule for parsing .fe files.
     EOF                         // End of file.
     ;
 
-// ---------------------------------------- Declarations
+// -------------------------------------------------------------------------------- Declarations
 
 decl:                           // ---------- Declaration
     import_decl                 // Imports.
@@ -80,7 +80,7 @@ package_ident:                  // ---------- Package identifier (name-group).
     (DOT ident)*                // ..and zero or more following groups separated by a '.'.
     ;
 
-// ---------------------------------------- User Defined Types
+// -------------------------------------------------------------------------------- User Defined Types
 
 udt_decl:                       // ---------- User defined type declaration.
     attrib_decl                 // Attributes.
@@ -91,6 +91,8 @@ udt_decl:                       // ---------- User defined type declaration.
     | trait_decl                // Traits.
     | enum_decl                 // Enums.
     ;
+
+// -------------------------------------------------------------------------------- Attributes
 
 attrib_decl:                    // ---------- Attribute declaration.
     visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
@@ -106,6 +108,8 @@ attrib_body_decl:               // ---------- Attribute body declaration.
     field_decl                  // Fields.
     | pc_decl                   // Pre-compiler directives.
     ;
+
+// -------------------------------------------------------------------------------- Interfaces
 
 iface_decl:                     // ---------- Interface declaration.
     visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
@@ -128,6 +132,8 @@ iface_proto_decl:               // ---------- Interface function prototype decla
     semi?                       // Optional ';' or \n(\r).
     ;
 
+// -------------------------------------------------------------------------------- Structures
+
 struct_decl:                    // ---------- Structure declaration.
     visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
     KW_STRUCT                   // 'struct'
@@ -144,6 +150,8 @@ struct_body_decl:               // ---------- Structure body declaration.
     | fn_decl                   // Functions.
     | pc_decl                   // Pre-compiler directives.
     ;
+
+// -------------------------------------------------------------------------------- Enum classes
 
 e_class_decl:                   // ---------- Enum class declaration.
     visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
@@ -163,6 +171,8 @@ e_class_body_decl:              // ---------- Enum class body declaration.
     | fn_decl                   // Functions.
     ;
 
+// -------------------------------------------------------------------------------- Classes
+
 class_decl:                     // ---------- Class declaration.
     visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
     (KW_ABSTRACT                // Optional 'abstract'..
@@ -180,6 +190,8 @@ class_body_decl:                // ---------- Class body declaration.
     decl                        // Declarations.
     ;
 
+// -------------------------------------------------------------------------------- Traits
+
 trait_decl:                     // ---------- Trait declaration.
     visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
     KW_TRAIT                    // 'trait'
@@ -195,6 +207,8 @@ trait_body_decl:                // ---------- Trait body declaration.
     fn_decl                     // Functions.
     | pc_decl                   // Pre-compiler directive.
     ;
+
+// -------------------------------------------------------------------------------- Enums
 
 enum_decl:                      // ---------- Enum declaration.
     visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
@@ -215,7 +229,7 @@ enum_field_decl:                // ---------- Enum field declaration.
     | pc_decl                   // Pre-compiler directive.
     ;
 
-// ---------------------------------------- Pre-compiler
+// -------------------------------------------------------------------------------- Pre-compiler
 
 pc_decl:                        // ---------- Pre-compiler declaration.
     pc_define_decl              // Defines.
@@ -544,7 +558,7 @@ pc_macro_match_group:           // ---------- Macro match group
     pc_macro_match_op?          // Some type of matching operator (+, * or ?).
     ;
 
-pc_macro_match_op:              // ---------- Match match operator
+pc_macro_match_op:              // ---------- Token match operator
     (QMK                        // '?'
     | OP_TIMES                  // '*'
     | OP_PLUS)                  // '+'
@@ -560,21 +574,21 @@ pc_simple_macro_decl:           // ---------- Simple pre-compiler macro declarat
     PC_KW_MACRO                 // '!macro'
     ident                       // The name of the macro.
     L_PAREN                     // '('
-    pc_macro_params_decl        // Zero or more macro parameter declarations.
+    pc_macro_params_decl?       // Optional macro parameter list.
     R_PAREN                     // ')'
     L_CRL_PAREN                 // '{'
     pc_macro_body_decl*         // Zero or more pre-compiler macro body-declarations.
     R_CRL_PAREN                 // '}'
     ;
 
+pc_macro_params_decl:
+    (pc_macro_param_decl        // One or more macro parameter declarations..
+    COMMA?)+                    // ..separated by a comma.
+    ;
+
 pc_macro_body_decl:             // ---------- Macro body delclaration
     decl                        // Some type of declaration..
     | fn_body_decl              // ..or some type of function body-declaration.
-    ;
-
-pc_macro_params_decl:           // ---------- Macro parameter list
-    (pc_macro_param_decl        // One or more macro parameter declarations..
-    COMMA?)+                    // ..separated by a comma.
     ;
 
 pc_macro_param_decl:            // ---------- Macro parameter declaration
@@ -611,6 +625,8 @@ pc_cf_break:                    // ---------- Pre-compiler break
     PC_KW_BREAK                 // '!break'
     semi?                       // Optional ';' or \n(\r) at the end.
     ;
+
+// -------------------------------------------------------------------------------- Functions
 
 fn_decl:                        // ---------- Function declarations
     fn_bodied_decl              // Bodied functions.
@@ -653,7 +669,9 @@ fn_op_proto_decl:               // ---------- Operator function prototypes
     KW_OP                       // 'op'
     KW_FN                       // 'fn'
     (unary_op                   // Either a unary..
-    | binary_op)                // ..or a binary operator.
+    | binary_op                 // ..a binary operator..
+    | (L_SQR_PAREN              // ..or '['..
+    R_SQR_PAREN))               // ..and ']'.
     generic_params_decl?        // Optional generic parameters.
     params_decl                 // Parameter list.
     fn_return_type?             // Optional return type.
@@ -667,387 +685,553 @@ fn_return_type:                 // ---------- Function return type
 
 fn_body_decl:                   // ---------- Function body declarations
     fn_decl                     // Function declarations.
-    | fn_call                   // Function calls.
-    | fn_return                 // Function return statement.
+    | return_statement          // Function return statement.
     | for_decl                  // For-loops.
     | while_decl                // While-loops.
     | goto_statement            // Goto statemenent.
-    | variable_decl             // Variable declarations.
+    | (var_decl                 // Variable declarations.
+    semi?)
     | named_scope_decl          // Named scope declarations.
-    | (expr                     // Any type of expression..
-    semi?)                      // ..optional ';' or \n(\r) at the end.
     | pc_decl                   // Pre-compiler declarations.
+    | (expr                     // Any type of expression..
+    semi?)                      // ..followed by ';' or \n(\r) at the end.
     | label_decl                // Label declarations.
     ;
 
-named_scope_decl:    
-    label_decl
-    L_CRL_PAREN
-    fn_body_decl*
-    R_CRL_PAREN
+named_scope_decl:               // ---------- Named scope declarations
+    label_decl                  // Labels.
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function body-declarations.
+    R_CRL_PAREN                 // '}'
     ;
 
-goto_statement:
-    KW_GOTO
-    ident
+goto_statement:                 // ---------- Goto statements
+    KW_GOTO                     // 'goto'
+    ident                       // The name of the label being jumped to.
+    semi?                       // Optional ';' or \n(\r) at the end.
     ;
 
-fn_return:
-    KW_RETURN
-    expr?
+return_statement:               // ---------- Return statements
+    KW_RETURN                   // 'return'
+    expr?                       // Some type of expression.
+    semi?                       // Optional ';' or \n(\r) at the end.
     ;
 
-fn_mod:
-    KW_STATIC
-    | KW_CONST
-    | KW_INL
+fn_mod:                         // ---------- Function modifiers
+    KW_STATIC                   // 'static'
+    | KW_CONST                  // 'const'
+    | KW_INL                    // 'inl'
     ;
 
-fn_call:
-    variable_ref*
-    ident
-    generic_usage?
-    L_PAREN
-    (fn_call_param
+scoped_fn_call:
+    ident                       // The name of the function to call.
+    generic_usage?              // Optional generic usage parameters.
+    (L_PAREN                    // '('
+    (fn_call_param              // Zero or more function call parameters..
+    COMMA?)*                    // ..separated by commas.
+    R_PAREN)?                   // ')'
+    lambda_expr
+    ;
+
+fn_call:                        // ---------- Function calls
+    ident                       // The name of the function to call.
+    generic_usage?              // Optional generic usage parameters.
+    L_PAREN                     // '('
+    (fn_call_param              // Zero or more function call parameters..
+    COMMA?)*                    // ..separated by commas.
+    R_PAREN                     // ')'
+    ;
+
+fn_call_param:                  // ---------- Function call parameter
+    literal                     // Some type of literal.
+    | expr                      // Some type of expression.
+    | var_ref                   // Some type of variable reference.
+    ;
+
+params_decl:                    // ---------- Function call parameter list
+    L_PAREN                     // '('
+    (param_decl                 // Zero or more parameter declarations..
+    COMMA?)*                    // ..separated by commas.
+    R_PAREN                     // ')'
+    ;
+
+param_decl:                     // ---------- Parameter declarations
+    param_mod?                  // Optional parameter modifier.
+    ident                       // The name of the parameter.
+    COLON                       // ':'
+    type                        // Some type.
+    TRIPLE_DOT?                 // Optional '...' for indicating a parameter pack.
+    param_default_value?        // Optional default value.
+    ;
+
+param_default_value:            // ---------- Parameter default value
+    ASSIGN                      // '='
+    expr                        // Some expression.
+    ;
+
+param_mod:                      // ---------- Parameter modifiers
+    KW_MUT                      // 'mut'
+    | KW_CONST                  // 'const'
+    | KW_IN                     // 'in'
+    | KW_OUT                    // 'out'
+    ;
+
+// -------------------------------------------------------------------------------- Variables
+
+var_decl:                       // ---------- Variables
+    impl_var_decl               // Implicit variable declaration.
+    | expl_var_decl             // Explicit varaible declaration.
+    ;
+
+expl_var_decl:                  // ---------- Explicit variable declarations
+    KW_LET                      // 'let'
+    var_mod?                    // Visibility modifier (pub, prot, priv etc.).
+    ident                       // The name of the variable.
+    COLON                       // ':'
+    type                        // Some type.
+    (ASSIGN                     // Optional '='..
+    expr)?                      // ..and any type of expression.
+    ;
+
+impl_var_decl:                  // ---------- Implicit variable declarations
+    KW_LET                      // 'let'
+    var_mod?                    // Optional veriable modifier.
+    ident                       // The name of the variable.
+    ASSIGN                      // '='
+    expr                        // Some type of expression.
+    ;
+
+var_mod:                        // ---------- Variable modifiers
+    KW_STATIC                   // 'static'
+    | KW_CONST                  // 'const'
+    | KW_MUT                    // 'mut'
+    ;
+
+var_ref:                        // ---------- Simple variable references
+    (OP_TIMES                   // Optional '*' to indicate de-reference..
+    | OP_AMP                    // ..a '&' to indicate taking the address of something..
+    | OP_CONJ_AND)?             // ..a '&&' to indicate passing a value-type by reference.
+    (KW_THIS                    // 'this'..
+    | fn_call                   // ..function calls..
+    | mem_expr                  // ..memory expressions..
+    | grouped_expr              // ..grouped expressions..
+    | ident)                    // ..or identifiers.
+    indexed_ref?                // Optional indexed accessor.
+    OP_NASRT?                   // Optional '!!'.
+    (var_ref_op                 // Optional reference operator..
+    var_ref                     // ..some type of another variable reference (recursive)..
+    indexed_ref?                // ..an optional indexed accessor..
+    OP_NASRT?)*                 // ..and an optional '!!' at the end.
+    ;
+
+indexed_ref:                    // ---------- Indexed variable references
+    L_SQR_PAREN                 // '['
+    expr                        // Some type of expression.
+    (COMMA                      // Optional ','..
+    expr)*                      // ..and an optional amount of expressions.
+    R_SQR_PAREN                 // ']'
+    ;
+
+var_ref_op:                     // ---------- Variable reference operators
+    OP_SAFE_CALL                // '?.'
+    | OP_SAFE_DEREF             // '?->'
+    | DOT                       // '.'
+    | ARROW                     // '->'
+    ;
+
+// -------------------------------------------------------------------------------- Fields
+
+field_decl:                     // ---------- Field declarations
+    init_field_decl             // Init field declaration.
+    | late_field_decl           // Late field declaration.
+    ;
+
+init_field_decl:                // ---------- Initialized field declarations
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    field_mod*                  // Zero or more fields modifiers.
+    ident                       // The name of the field.
+    COLON                       // ':'
+    type                        // The type of the field.
+    ASSIGN                      // '='
+    expr                        // Some type of expression.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+late_field_decl:                // ---------- Late field declarations
+    visibility_mod?             // Visibility modifier (pub, prot, priv etc.).
+    field_mod*                  // Zero or more field modifiers.
+    KW_LATE                     // 'late'
+    ident                       // The name of the field.
+    COLON                       // ':'
+    type                        // Some type.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+field_mod:                      // ---------- Field modifiers
+    KW_STATIC                   // 'static'
+    | KW_CONST                  // 'const'
+    | KW_MUT                    // 'mut'
+    ;
+
+// -------------------------------------------------------------------------------- While Loops
+
+while_decl:                     // ---------- While declarations
+    while_bodied_decl           // Bodied while declarations.
+    | while_inline_decl         // Inline while declarations.
+    | do_while_decl             // Do-while declarations.
+    ;
+
+while_bodied_decl:              // ---------- Bodied while declarations
+    KW_WHILE                    // 'while'
+    expr                        // Some type of expression.
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function body-declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+while_inline_decl:              // ---------- Inline while declarations
+    KW_WHILE                    // 'while'
+    L_PAREN                     // '('
+    expr                        // Some type of expression.
+    R_PAREN                     // ')'
+    fn_body_decl                // Exactly one function body-declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+do_while_decl:                  // ---------- Do-while declarations
+    do_decl                     // Some type do-declaration.
+    KW_WHILE                    // 'while'
+    L_PAREN                     // '('
+    expr                        // Some type of expression.
+    R_PAREN                     // ')'
+    ;
+
+do_decl:                        // ---------- Do declarations
+    do_bodied_decl              // Bodied dos.
+    | do_inline_decl            // Inline dos.
+    ;
+
+do_bodied_decl:                 // ---------- Bodied do declarations
+    KW_DO                       // 'do'
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function body-declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+do_inline_decl:                 // ---------- Inline do declarations
+    KW_DO                       // 'do'
+    fn_body_decl                // Exactly one function body-declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+// -------------------------------------------------------------------------------- For loops
+
+for_decl:                       // ---------- For declarations
+    bodied_for_decl             // Bodied fors
+    | inline_for_decl           // Inline fors
+    ;
+
+bodied_for_decl:                // ---------- Bodied for declarations
+    KW_FOR                      // 'for'
+    for_head                    // Some type of for-head.
+    L_CRL_PAREN                 // '{'
+    fn_body_decl*               // Zero or more function body-declarations.
+    R_CRL_PAREN                 // '}'
+    ;
+
+inline_for_decl:                // ---------- Inline for declarations
+    KW_FOR                      // 'for'
+    L_PAREN                     // '('
+    for_head                    // Some type of for-head.
+    R_PAREN                     // ')'
+    fn_body_decl                // Exactly one function body-declaration.
+    semi?                       // Optional ';' or \n(\r) at the end.
+    ;
+
+for_head:                       // ---------- For-heads
+    ranged_for_head             // Ranged for-heads.
+    | simple_for_head           // Simple for-heads.
+    ;
+
+ranged_for_head:                // ---------- Ranged for-heads
+    ident                       // The name of the iteration variable.
+    KW_IN                       // 'in'
+    (range_expr                 // Some type of range-expression..
+    | var_ref)                  // ..or some type of variable.
+    ;
+
+simple_for_head:                // ---------- Simple for-heads
+    ident                       // The name of the iteration variable.
+    (COLON                      // Optional ':'..
+    type)?                      // ..and type.
+    ASSIGN                      // '='
+    expr                        // Some type of expression.
+    SEMICOLON                   // ';'
+    expr                        // Some type of expression.
+    SEMICOLON                   // ';'
+    expr                        // Some type of expression.
+    ;
+
+// -------------------------------------------------------------------------------- Generics
+
+generic_constraints_decl:       // ---------- Generic constraints
+    KW_WHERE                    // 'where'
+    ((ident                     // One or more names of a generic parameter..
+    COLON                       // ..a ':' as a separator..
+    generic_constraint)         // ..and a generic constraint..
+    COMMA?)+                    // ..separated by a comma ','.
+    ;
+
+generic_constraint_list:        // ---------- Generic constrains
+    (generic_constraint         // Some type of generic constraint..
+    COMMA?)+                    // ..separated by a comma ','.
+    ;
+
+generic_constraint:             // ---------- Generic constraint
+    type                        // Some type..
+    | generic_constraint_group  // ..or a generic constraint group.
+    ;
+
+generic_constraint_group:       // ---------- Generic constraint group
+    L_PAREN                     // '('
+    ((generic_constraint_group  // A nested generic constraint group (recursive)..
+    | type)                     // ..or some type..
+    (OP_AMP                     // ..separated by '&'..
+    | OP_OR)?)+                 // ..or '|'.
+    R_PAREN                     // ')'
+    ;
+
+generic_params_decl:            // ---------- Generic parameter list
+    L_ANGLE                     // '<'
+    (generic_param_decl         // One or more generic parameters..
+    COMMA?)+                    // ..separated by a comma ','.
+    R_ANGLE                     // '>'
+    ;
+
+generic_param_decl:             // ---------- Generic parameters
+    simple_generic_param_decl   // Simple generic parameters..
+    | const_generic_param_decl  // ..or constant generic parameters.
+    ;
+
+simple_generic_param_decl:      // ---------- Simple generic parameters
+    ident                       // The name of the porameter.
+    (COLON                      // Optional ':'..
+    generic_constraint_list)?   // ..and a generic constraint list.
+    ;
+
+const_generic_param_decl:       // ---------- Constant generic parameters
+    KW_CONST                    // 'const'
+    ident                       // The name of the parameter.
+    COLON                       // ':'
+    type                        // The type of the parameter.
+    (ASSIGN                     // Optional '='..
+    expr)?                      // ..and some type of expression at the end.
+    ;
+
+generic_usage:                  // ---------- Generic usages
+    L_ANGLE                     // '<'
+    ((type                      // One or more types..
+    | expr)                     // ..or expressions..
+    COMMA?)+                    // ..separated by a comma ','.
+    R_ANGLE                     // '>'
+    ;
+
+// -------------------------------------------------------------------------------- Expressions
+
+array_expr:
+    L_SQR_PAREN
+    ((expr
+    | pc_decl)
     COMMA?)*
-    R_PAREN
+    R_SQR_PAREN
     ;
 
-fn_call_param:
-    literal
-    | expr
-    | ident
+obj_init_expr:
+    seq_obj_init_expr
+    | named_obj_init_expr
     ;
 
-// Parameters
-params_decl:
-    L_PAREN
-    (param_decl
-    (COMMA?))*
-    R_PAREN
-    ;
-
-param_decl:
-    param_mod?
-    ident
-    COLON
+named_obj_init_expr:
     type
-    param_default_value?
-    ;
-
-param_default_value:
+    L_CRL_PAREN
+    (ident
     ASSIGN
     expr
-    ;
-
-param_mod:
-    KW_MUT
-    | KW_CONST
-    ;
-
-// -------------------- Variables
-variable_decl:
-    implicit_variable_decl
-    | explicit_variable_decl
-    ;
-
-explicit_variable_decl:
-    KW_LET variable_mod? ident COLON type (ASSIGN expr)? semi?
-    ;
-
-implicit_variable_decl:
-    KW_LET variable_mod? ident ASSIGN expr semi?
-    ;
-
-variable_mod:
-    KW_STATIC
-    | KW_CONST
-    | KW_MUT
-    ;
-
-// References
-variable_ref:
-    asserted_ref
-    | indexed_ref
-    | (ident (variable_ref_op variable_ref)*) // LHS recursive parsing
-    ;
-
-variable_ref_op:
-    (QMK? DOT)
-    | ARROW // De-referencing pointers
-    ;
-
-indexed_ref:
-    ident indexed_ref_group
-    ;
-
-indexed_ref_group:
-    L_SQR_PAREN
-    expr (COMMA indexed_ref_group)? R_SQR_PAREN
-    ;
-
-asserted_ref:
-    ident OP_NASRT
-    ;
-
-// -------------------- Fields
-field_decl:
-    init_field_decl
-    | late_field_decl
-    ;
-
-init_field_decl:
-    visibility_mod? field_mod* ident COLON type ASSIGN expr semi?
-    ;
-
-late_field_decl:
-    visibility_mod? field_mod* KW_LATE ident COLON type semi?
-    ;
-
-field_mod:
-    KW_STATIC
-    | KW_CONST
-    | KW_MUT
-    ;
-
-// -------------------- Loops
-// While
-while_decl:
-    while_bodied_decl
-    | while_inline_decl
-    | do_while_decl
-    ;
-
-while_bodied_decl:
-    KW_WHILE expr L_CRL_PAREN
-        fn_body_decl*
+    COMMA?)*
     R_CRL_PAREN
     ;
 
-while_inline_decl:
-    KW_WHILE L_PAREN expr R_PAREN fn_body_decl semi?
-    ;
-
-do_while_decl:
-    do_decl KW_WHILE L_PAREN expr R_PAREN
-    ;
-
-do_decl:
-    do_bodied_decl
-    | do_inline_decl
-    ;
-
-do_bodied_decl:
-    KW_DO L_CRL_PAREN
-        fn_body_decl*
-    R_CRL_PAREN
-    ;
-
-do_inline_decl:
-    KW_DO fn_body_decl semi?
-    ;
-
-// For
-for_decl:
-    bodied_for_decl
-    | inline_for_decl
-    ;
-
-bodied_for_decl:
-    KW_FOR for_head L_CRL_PAREN
-        decl*
-    R_CRL_PAREN
-    ;
-
-inline_for_decl:
-    KW_FOR L_PAREN for_head R_PAREN (decl | expr) semi?
-    ;
-
-for_head:
-    ranged_for_head
-    | simple_for_head
-    ;
-
-ranged_for_head:
-    ident KW_IN (range_expr | ident)
-    ;
-
-simple_for_head:
-    ident (COLON type)? ASSIGN expr SEMICOLON
-    expr SEMICOLON
-    expr
-    ;
-
-// -------------------- Generics
-// Constraints
-generic_constraints_decl:
-    KW_WHERE ((ident COLON generic_constraint_list) COMMA?)+
-    ;
-
-generic_constraint_list:
-    (generic_constraint COMMA?)+
-    ;
-
-generic_constraint:
+seq_obj_init_expr:
     type
-    | generic_constraint_group
+    L_CRL_PAREN
+    ((expr
+    | pc_decl)
+    COMMA?)*
+    R_CRL_PAREN
     ;
 
-generic_constraint_group:
-    L_PAREN ((generic_constraint_group | type)(OP_AMP | OP_OR)?)+ R_PAREN
-    ;
-
-// Parameters
-
-generic_params_decl:
-    L_ANGLE (generic_param_decl COMMA?)+ R_ANGLE
-    ;
-
-generic_param_decl:
-    simple_generic_param_decl
-    | const_generic_param_decl
-    ;
-
-simple_generic_param_decl:
-    ident (COLON generic_constraint_list)?
-    ;
-
-const_generic_param_decl:
-    KW_CONST ident COLON type (ASSIGN expr)?
-    ;
-
-generic_usage:
-    L_ANGLE (type COMMA?)+ R_ANGLE
-    ;
-
-// -------------------- Expressions
-// Arrays
-array_expr:
-    L_SQR_PAREN ((expr | pc_decl) COMMA?)* R_SQR_PAREN
-    ;
-
-// Object initializer
-obj_init_expr:
-    type L_CRL_PAREN ((expr | pc_decl) COMMA?)* R_CRL_PAREN
-    ;
-
-// Ranges
 range_expr:
     incl_range_expr
     | excl_range_expr
     ;
 
 incl_range_expr:
-    expr_type DOUBLE_DOT expr_type
+    expr_type
+    DOUBLE_DOT
+    expr_type
     ;
 
 excl_range_expr:
-    expr_type DOUBLE_DOT ASSIGN expr_type
+    expr_type
+    DOUBLE_DOT
+    ASSIGN
+    expr_type
     ;
 
-// General expressions
 expr:
-    raw_expr
-    | grouped_expr
-    | cast_expr
+    cast_expr
     | if_null_expr
+    | grouped_expr
+    | raw_expr
     ;
 
 grouped_expr:
-    L_PAREN expr R_PAREN
+    L_PAREN
+    expr
+    R_PAREN
     ;
 
 raw_expr:
-    simple_expr
-    | unary_expr
-    | binary_expr
-    | mem_expr
-    | when_expr
+    mem_expr
     | if_expr
-    | range_expr
-    | array_expr
+    | when_expr
     | constructor_call_expr
     | destructor_call_expr
     | expl_type_pattern_expr
+    | array_expr
+    | unary_expr
+    | range_expr
+    | assign_expr
+    | lambda_expr
+    | tuple_expr
+    | binary_expr
+    | simple_expr
     ;
 
-// Casting
+tuple_expr:
+    L_PAREN
+    expr
+    COMMA
+    (expr
+    COMMA?)+
+    R_PAREN
+    ;
+
+lambda_expr:
+    L_CRL_PAREN
+    (((ident
+    (COLON
+    type))
+    COMMA?)*
+    ARROW)?
+    fn_body_decl*
+    R_CRL_PAREN
+    ;
+
 cast_expr:
     unsafe_cast_expr
     | safe_cast_expr
     ;
 
 unsafe_cast_expr:
-    raw_expr KW_AS type
+    raw_expr
+    KW_AS
+    type
     ;
 
 safe_cast_expr:
-    raw_expr KW_AS_SAFE type
+    raw_expr
+    KW_AS_SAFE
+    type
     ;
 
-// Memory management expressions (new, delete, alloc, free, stackalloc)
 mem_expr:
     mem_stackalloc_expr
     | mem_new_expr
     | mem_delete_expr
     ;
 
-// new
 mem_new_expr:
     mem_simple_new_expr
     | mem_array_new_expr
     ;
 
 mem_simple_new_expr:
-    KW_NEW constructor_call_expr semi?
+    KW_NEW
+    constructor_call_expr
+    semi?
     ;
 
 mem_array_new_expr:
-    KW_NEW type array_alloc_bounds semi?
+    KW_NEW
+    type
+    array_alloc_bounds
+    semi?
     ;
 
-// delete
 mem_delete_expr:
     mem_simple_delete_expr
     | mem_array_delete_expr
     ;
 
 mem_simple_delete_expr:
-    KW_DELETE expr semi?
+    KW_DELETE
+    expr
+    semi?
     ;
 
 mem_array_delete_expr:
-    KW_DELETE L_SQR_PAREN R_SQR_PAREN expr semi?
+    KW_DELETE
+    L_SQR_PAREN
+    R_SQR_PAREN
+    expr
+    semi?
     ;
 
-// stackalloc
 mem_stackalloc_expr:
-    mem_simple_stackalloc_expr
-    | mem_array_stackalloc_expr
-    ;
-
-mem_simple_stackalloc_expr:
-    KW_STACKALLOC constructor_call_expr semi?
-    ;
-
-mem_array_stackalloc_expr:
-    KW_STACKALLOC type array_alloc_bounds semi?
+    KW_STACKALLOC
+    ((type
+    array_alloc_bounds)
+    | obj_init_expr)
+    semi?
     ;
 
 array_alloc_bounds:
-    L_SQR_PAREN expr (COMMA array_alloc_bounds)? R_SQR_PAREN
+    L_SQR_PAREN
+    expr
+    (COMMA
+    expr)*
+    R_SQR_PAREN
     ;
 
-// Constructors & destructors
 constructor_call_expr:
-    type L_PAREN (expr COMMA?)* R_PAREN
+    var_ref
+    var_ref_op
+    type
+    L_PAREN
+    (expr
+    COMMA?)*
+    R_PAREN
     ;
 
 destructor_call_expr:
-    variable_ref variable_ref_op OP_INV L_PAREN R_PAREN
+    var_ref
+    var_ref_op
+    OP_INV
+    L_PAREN
+    R_PAREN
     ;
 
-// Pattern matching - these are not included with the default set of raw expressions!
 pattern_expr:
     expl_pattern_expr
     | impl_pattern_expr
@@ -1064,40 +1248,50 @@ expl_pattern_expr:
     ;
 
 expl_type_pattern_expr:
-    ident impl_type_pattern_expr // Allow inline declaration
+    ident
+    impl_type_pattern_expr // Allow inline declaration
     ;
 
 impl_type_pattern_expr:
-    KW_IS generic_constraint ident?
+    KW_IS
+    generic_constraint ident?
     ;
 
 expl_contains_pattern_expr:
-    ident impl_contains_pattern_expr
+    ident
+    impl_contains_pattern_expr
     ;
 
 impl_contains_pattern_expr:
-    KW_IN (ident | range_expr)
+    KW_IN
+    (ident
+    | range_expr)
     ;
 
-// When expressions
 when_expr:
-    KW_WHEN when_head? L_CRL_PAREN
-        when_branch*
-        default_when_branch?
+    KW_WHEN
+    when_head?
+    L_CRL_PAREN
+    when_branch*
+    default_when_branch?
     R_CRL_PAREN
     ;
 
 when_head:
     expr
-    | variable_decl
+    | var_decl
     ;
 
 when_branch:
-    when_conditional_expr ARROW when_scope_expr
+    when_conditional_expr
+    ARROW
+    when_scope_expr
     ;
 
 default_when_branch:
-    KW_ELSE ARROW when_scope_expr
+    KW_ELSE
+    ARROW
+    when_scope_expr
     ;
 
 when_scope_expr:
@@ -1106,15 +1300,19 @@ when_scope_expr:
     ;
 
 when_bodied_scope_expr:
-    L_CRL_PAREN fn_body_decl R_CRL_PAREN
+    L_CRL_PAREN
+    fn_body_decl
+    R_CRL_PAREN
     ;
 
 when_inline_scope_expr:
-    fn_body_decl semi? // This just delegates for now..
+    fn_body_decl
+    semi? // This just delegates for now..
     ;
 
 when_conditional_expr:
-    expr | pattern_expr
+    expr
+    | pattern_expr
     ;
 
 // If expressions
@@ -1219,7 +1417,7 @@ if_null_expr:
     if_null_lhs_expr
     OP_IFN
     (expr
-    | fn_return)
+    | return_statement)
     ;
 
 if_null_lhs_expr:
@@ -1227,6 +1425,16 @@ if_null_lhs_expr:
     | unary_expr
     | grouped_expr
     | cast_expr
+    ;
+
+assign_expr:
+    assign_lhs_expr
+    ASSIGN
+    expr
+    ;
+
+assign_lhs_expr:
+    var_ref
     ;
 
 binary_op:
@@ -1256,6 +1464,7 @@ binary_op:
     | DOUBLE_EQ
     | OP_NEQ
     | OP_SPACESHIP
+    | OP_SWAP
     | OP_PLUS_ASSIGN
     | OP_PLUS
     | OP_MINUS_ASSIGN
@@ -1274,11 +1483,11 @@ incr_expr:
 
 pre_incr_expr:
     OP_INCREMENT
-    variable_ref
+    var_ref
     ;
 
 post_incr_expr:
-    variable_ref
+    var_ref
     OP_INCREMENT
     ;
 
@@ -1289,22 +1498,25 @@ decr_expr:
 
 pre_decr_expr:
     OP_DECREMENT
-    variable_ref
+    var_ref
     ;
 
 post_decr_expr:
-    variable_ref
+    var_ref
     OP_DECREMENT
     ;
 
 // Misc
 simple_expr:
     pc_macro_call
-    | obj_init_expr
-    | variable_ref
-    | fn_call
     | incr_expr
     | decr_expr
+    | (var_ref?
+    scoped_fn_call)
+    | (var_ref?
+    fn_call)
+    | var_ref
+    | obj_init_expr
     | literal
     ;
 
@@ -1419,9 +1631,41 @@ s_int_literal:
 // -------------------- Types
 
 type:
-    pointer_type
+    functional_type
+    | tuple_type
+    | pointer_type
     | nonnull_type
     | nullable_type
+    | ref_type
+    ;
+
+ref_type:
+    (functional_type
+    | tuple_type
+    | pointer_type
+    | nonnull_type
+    | nullable_type)
+    OP_AMP
+    ;
+
+functional_type:
+    L_PAREN
+    ((ident
+    COLON)?
+    type
+    COMMA?)*
+    R_PAREN
+    ARROW
+    type
+    ;
+
+tuple_type:
+    L_PAREN
+    type
+    COMMA
+    (type
+    COMMA?)+
+    R_PAREN
     ;
 
 pointer_type:
@@ -1451,8 +1695,8 @@ simple_type:
     | native_size_type
     | KW_TYPE_STR
     | KW_SELF
-    | ident
-    generic_usage?
+    | (ident
+    generic_usage?)
     ;
 
 s_int_type:
