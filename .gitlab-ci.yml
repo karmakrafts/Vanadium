@@ -17,3 +17,6 @@ build:
     expire_in: 1 days
   only:
     - master
+  tags:
+    - linux
+
