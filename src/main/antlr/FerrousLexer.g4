@@ -13,7 +13,9 @@ lexer grammar FerrousLexer;
 LINE_COMMENT:   '//' ~[\r\n]*                       -> channel(HIDDEN);
 BLOCK_COMMENT:  '/*' (BLOCK_COMMENT | .)*? '*/'     -> channel(HIDDEN);
 WS:             [\u0020\u0009\u000C]                -> channel(HIDDEN);
-NL:             ('\n' | ('\r' '\n'?))               -> channel(HIDDEN);
+NL:             ('\n' | ('\r' '\n'?));
+
+fragment F_HIDDEN: LINE_COMMENT | BLOCK_COMMENT | WS;
 
 // ------------------------------ String stuff
 EMPTY_RAW_STRING:   '#""#';
@@ -49,18 +51,18 @@ PC_KW_IF:       '!if';
 PC_KW_DO:       '!do';
 
 // ------------------------------ Primitive literals
-LITERAL_I8:     IMPL_INT_LITERAL KW_TYPE_I8;
-LITERAL_I16:    IMPL_INT_LITERAL KW_TYPE_I16;
-LITERAL_I32:    IMPL_INT_LITERAL KW_TYPE_I32?;
-LITERAL_I64:    IMPL_INT_LITERAL KW_TYPE_I64;
+LITERAL_I8:     F_IMPL_INT_LITERAL KW_TYPE_I8;
+LITERAL_I16:    F_IMPL_INT_LITERAL KW_TYPE_I16;
+LITERAL_I32:    F_IMPL_INT_LITERAL KW_TYPE_I32?;
+LITERAL_I64:    F_IMPL_INT_LITERAL KW_TYPE_I64;
 
-LITERAL_U8:     IMPL_INT_LITERAL KW_TYPE_U8;
-LITERAL_U16:    IMPL_INT_LITERAL KW_TYPE_U16;
-LITERAL_U32:    IMPL_INT_LITERAL KW_TYPE_U32;
-LITERAL_U64:    IMPL_INT_LITERAL KW_TYPE_U64;
+LITERAL_U8:     F_IMPL_INT_LITERAL KW_TYPE_U8;
+LITERAL_U16:    F_IMPL_INT_LITERAL KW_TYPE_U16;
+LITERAL_U32:    F_IMPL_INT_LITERAL KW_TYPE_U32;
+LITERAL_U64:    F_IMPL_INT_LITERAL KW_TYPE_U64;
 
-LITERAL_F32:    IMPL_REAL_LITERAL KW_TYPE_F32?;
-LITERAL_F64:    IMPL_REAL_LITERAL KW_TYPE_F64;
+LITERAL_F32:    F_IMPL_REAL_LITERAL KW_TYPE_F32?;
+LITERAL_F64:    F_IMPL_REAL_LITERAL KW_TYPE_F64;
 
 // ------------------------------ Built-in type keywords
 KW_TYPE_USIZE:  'usize';    // Unsigned platform-dependent size type (size_t in C/C++), only usable in conjunction with unsafe
@@ -237,45 +239,45 @@ AT:                 '@';
 
 // ------------------------------ More Literals
 
-LITERAL_CHAR:       SINGLE_QUOTE (ESCAPED_CHAR | .) SINGLE_QUOTE;
-IDENTIFIER:         (LETTER | '_')(LETTER | '_' | DEC_DIGIT)*
+LITERAL_CHAR:       SINGLE_QUOTE (F_ESCAPED_CHAR | .) SINGLE_QUOTE;
+IDENTIFIER:         (F_LETTER | '_')(F_LETTER | '_' | F_DEC_DIGIT)*
                     | '`' ~('`')+ '`'
                     ;
 
 // ------------------------------ Shared fragments
 
-fragment OCT_DIGIT:     [0-7];
-fragment DEC_DIGIT:     [0-9];
-fragment DEC_DIGIT_NZ:  [1-9];
-fragment HEX_DIGIT:     [0-9a-fA-F];
-fragment BIN_DIGIT:     [0-1];
-fragment LETTER:        [a-zA-Z];
-fragment ALPHA_NUM:     LETTER | DEC_DIGIT;
-fragment ESCAPED_CHAR:  '\\' [tbrn'"\\$];
+fragment F_OCT_DIGIT:     [0-7];
+fragment F_DEC_DIGIT:     [0-9];
+fragment F_DEC_DIGIT_NZ:  [1-9];
+fragment F_HEX_DIGIT:     [0-9a-fA-F];
+fragment F_BIN_DIGIT:     [0-1];
+fragment F_LETTER:        [a-zA-Z];
+fragment F_ALPHA_NUM:     F_LETTER | F_DEC_DIGIT;
+fragment F_ESCAPED_CHAR:  '\\' [tbrn'"\\$];
 
-fragment IMPL_HEX_LITERAL:  '0' [xX] HEX_DIGIT (HEX_DIGIT | '_')*;
-fragment IMPL_BIN_LITERAL:  '0' [bB] BIN_DIGIT (BIN_DIGIT | '_')*;
-fragment IMPL_OCT_LITERAL:  '0' [oO] OCT_DIGIT (OCT_DIGIT | '_')*;
+fragment F_IMPL_HEX_LITERAL:  '0' [xX] F_HEX_DIGIT (F_HEX_DIGIT | '_')*;
+fragment F_IMPL_BIN_LITERAL:  '0' [bB] F_BIN_DIGIT (F_BIN_DIGIT | '_')*;
+fragment F_IMPL_OCT_LITERAL:  '0' [oO] F_OCT_DIGIT (F_OCT_DIGIT | '_')*;
 
-fragment IMPL_REAL_LITERAL:  ((DEC_DIGIT_NZ DEC_DIGIT* | '0')? '.'
-                    | (DEC_DIGIT_NZ (DEC_DIGIT | '_')* DEC_DIGIT)? '.')(DEC_DIGIT+
-                    | DEC_DIGIT (DEC_DIGIT | '_')+ DEC_DIGIT
-                    | DEC_DIGIT+ [eE] ('+' | '-')? DEC_DIGIT+
-                    | DEC_DIGIT+ [eE] ('+' | '-')? DEC_DIGIT (DEC_DIGIT | '_')+ DEC_DIGIT
-                    | DEC_DIGIT (DEC_DIGIT | '_')+ DEC_DIGIT [eE] ('+' | '-')? DEC_DIGIT+
-                    | DEC_DIGIT (DEC_DIGIT | '_')+ DEC_DIGIT [eE] ('+' | '-')? DEC_DIGIT (DEC_DIGIT | '_')+ DEC_DIGIT)
+fragment F_IMPL_REAL_LITERAL:  ((F_DEC_DIGIT_NZ F_DEC_DIGIT* | '0')? '.'
+                    | (F_DEC_DIGIT_NZ (F_DEC_DIGIT | '_')* F_DEC_DIGIT)? '.')(F_DEC_DIGIT+
+                    | F_DEC_DIGIT (F_DEC_DIGIT | '_')+ F_DEC_DIGIT
+                    | F_DEC_DIGIT+ [eE] ('+' | '-')? F_DEC_DIGIT+
+                    | F_DEC_DIGIT+ [eE] ('+' | '-')? F_DEC_DIGIT (F_DEC_DIGIT | '_')+ F_DEC_DIGIT
+                    | F_DEC_DIGIT (F_DEC_DIGIT | '_')+ F_DEC_DIGIT [eE] ('+' | '-')? F_DEC_DIGIT+
+                    | F_DEC_DIGIT (F_DEC_DIGIT | '_')+ F_DEC_DIGIT [eE] ('+' | '-')? F_DEC_DIGIT (F_DEC_DIGIT | '_')+ F_DEC_DIGIT)
                     ;
 
-fragment IMPL_INT_LITERAL:   ('0'
-                    | DEC_DIGIT_NZ DEC_DIGIT*
-                    | DEC_DIGIT_NZ (DEC_DIGIT | '_')+ DEC_DIGIT
-                    | DEC_DIGIT_NZ DEC_DIGIT* [eE] ('+' | '-')? DEC_DIGIT+
-                    | DEC_DIGIT_NZ DEC_DIGIT* [eE] ('+' | '-')? DEC_DIGIT (DEC_DIGIT | '_')+ DEC_DIGIT
-                    | DEC_DIGIT_NZ (DEC_DIGIT | '_')+ DEC_DIGIT [eE] ('+' | '-')? DEC_DIGIT+
-                    | DEC_DIGIT_NZ (DEC_DIGIT | '_')+ DEC_DIGIT [eE] ('+' | '-')? DEC_DIGIT (DEC_DIGIT | '_')+ DEC_DIGIT)
-                    | IMPL_HEX_LITERAL
-                    | IMPL_BIN_LITERAL
-                    | IMPL_OCT_LITERAL
+fragment F_IMPL_INT_LITERAL:   ('0'
+                    | F_DEC_DIGIT_NZ F_DEC_DIGIT*
+                    | F_DEC_DIGIT_NZ (F_DEC_DIGIT | '_')+ F_DEC_DIGIT
+                    | F_DEC_DIGIT_NZ F_DEC_DIGIT* [eE] ('+' | '-')? F_DEC_DIGIT+
+                    | F_DEC_DIGIT_NZ F_DEC_DIGIT* [eE] ('+' | '-')? F_DEC_DIGIT (F_DEC_DIGIT | '_')+ F_DEC_DIGIT
+                    | F_DEC_DIGIT_NZ (F_DEC_DIGIT | '_')+ F_DEC_DIGIT [eE] ('+' | '-')? F_DEC_DIGIT+
+                    | F_DEC_DIGIT_NZ (F_DEC_DIGIT | '_')+ F_DEC_DIGIT [eE] ('+' | '-')? F_DEC_DIGIT (F_DEC_DIGIT | '_')+ F_DEC_DIGIT)
+                    | F_IMPL_HEX_LITERAL
+                    | F_IMPL_BIN_LITERAL
+                    | F_IMPL_OCT_LITERAL
                     ;
 
 // ------------------------------ Inside lexing mode
