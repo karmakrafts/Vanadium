@@ -13,6 +13,11 @@ options {
     tokenVocab = FerrousLexer;
 }
 
+eval:
+    file
+    | script_file
+    ;
+
 // -------------------------------------------------------------------------------- Files
 
 /*
