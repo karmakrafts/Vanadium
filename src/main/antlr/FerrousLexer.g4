@@ -3,10 +3,6 @@ lexer grammar FerrousLexer;
 /*
  * Reference implementation of a lexer for the Ferrous
  * programming language.
- *
- * Version: 1.0
- * Author(s):
- *	- Alexander 'KitsuneAlex' Hinze
  */
 
 // ------------------------------ Whitespace and comments (getting rid of them)

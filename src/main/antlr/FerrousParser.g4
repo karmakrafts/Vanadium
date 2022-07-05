@@ -3,10 +3,6 @@ parser grammar FerrousParser;
 /*
  * Reference implementation of a parser for the Ferrous
  * programming language.
- *
- * Version: 1.0
- * Author(s):
- *	- Alexander 'KitsuneAlex' Hinze
  */
 
 options {
@@ -25,9 +21,13 @@ eval:
  * thus being able to return a result value from the root-scope of the source file.
  */
 script_file:                    // ---------- Root-rule for parsing .fes files.
+    (WS
+    | NL)*                      // Optional whitespace(s) before declarations.
     package_decl?               // Optional package declaration
     (decl                       // Allow zero or more declarations..
     | fn_body_decl)*            // ..or function-body declarations.
+    (WS
+    | NL)*                      // Optional whitespace(s) after declarations.
     EOF                         // End of file.
     ;
 
@@ -36,8 +36,12 @@ script_file:                    // ---------- Root-rule for parsing .fes files.
  * It only allows regular declarations in it's root-scope.
  */
 file:                           // ---------- Root-rule for parsing .fe files.
+    (WS
+    | NL)*                      // Optional whitespace(s) before declarations.
     package_decl?               // Optional package declaration.
     decl*                       // Zero or more declarations.
+    (WS
+    | NL)*                      // Optional whitespace(s) after declarations.
     EOF                         // End of file.
     ;
 
