@@ -11,7 +11,7 @@ options {
 
 eval:
     file
-    | script_file
+    //| script_file - Disable this for now, since it costs us time.
     ;
 
 // -------------------------------------------------------------------------------- Files
@@ -20,16 +20,16 @@ eval:
  * This is used when evaluating the entire source file as one big expression,
  * thus being able to return a result value from the root-scope of the source file.
  */
-script_file:                    // ---------- Root-rule for parsing .fes files.
-    (WS
-    | NL)*                      // Optional whitespace(s) before declarations.
-    package_decl?               // Optional package declaration
-    (decl                       // Allow zero or more declarations..
-    | fn_body_decl)*            // ..or function-body declarations.
-    (WS
-    | NL)*                      // Optional whitespace(s) after declarations.
-    EOF                         // End of file.
-    ;
+//script_file:                    // ---------- Root-rule for parsing .fes files.
+//    (WS
+//    | NL)*                      // Optional whitespace(s) before declarations.
+//    package_decl?               // Optional package declaration
+//    (decl                       // Allow zero or more declarations..
+//    | fn_body_decl)*            // ..or function-body declarations.
+//    (WS
+//    | NL)*                      // Optional whitespace(s) after declarations.
+//    EOF                         // End of file.
+//    ;
 
 /*
  * This is used when parsing a normal .fe source file for compilation.
