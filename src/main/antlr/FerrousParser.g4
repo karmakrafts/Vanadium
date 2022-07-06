@@ -752,8 +752,8 @@ fn_call:                        // ---------- Function calls
     ;
 
 fn_call_param:                  // ---------- Function call parameter
-    literal                     // Some type of literal.
-    | expr                      // Some type of expression.
+    (literal                    // Some type of literal.
+    | expr)                     // Some type of expression.
     | var_ref                   // Some type of variable reference.
     ;
 
@@ -1098,10 +1098,10 @@ excl_range_expr:
     ;
 
 expr:
-    cast_expr
-    | if_null_expr
-    | grouped_expr
-    | raw_expr
+    (grouped_expr
+    | raw_expr)
+    | (cast_expr
+    | if_null_expr)
     ;
 
 grouped_expr:
@@ -1417,9 +1417,9 @@ binary_expr:
     ;
 
 binary_lhs_expr:
-    simple_expr
+    (simple_expr
+    | grouped_expr)
     | unary_expr
-    | grouped_expr
     ;
 
 if_null_expr:
@@ -1517,15 +1517,15 @@ post_decr_expr:
 
 // Misc
 simple_expr:
-    pc_macro_call
-    | incr_expr
-    | decr_expr
-    | (var_ref?
+    (incr_expr
+    | decr_expr)
+    | ((var_ref?
     scoped_fn_call)
     | (var_ref?
     fn_call)
-    | var_ref
+    | var_ref)
     | obj_init_expr
+    | pc_macro_call
     | literal
     ;
 
@@ -1640,12 +1640,12 @@ s_int_literal:
 // -------------------- Types
 
 type:
-    functional_type
-    | tuple_type
-    | pointer_type
-    | nonnull_type
-    | nullable_type
-    | ref_type
+    (functional_type
+    | tuple_type)
+    | (pointer_type
+    | ref_type)
+    | (nonnull_type
+    | nullable_type)
     ;
 
 ref_type:
@@ -1683,14 +1683,14 @@ pointer_type:
     ;
 
 nonnull_type:
-    array_type
-    | simple_type
+    simple_type
+    | array_type
     ;
 
 nullable_type:
-    (array_type
-    | simple_type)
-    QMK?
+    (simple_type
+    | array_type)
+    QMK
     ;
 
 array_type:
