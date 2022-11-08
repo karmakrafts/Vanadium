@@ -1,17 +1,6 @@
 %! Author = Alexander Hinze
 %! Date = 08.11.22
 
-\begin{document}
-
-\protected \NewDocumentCommand \wordingbox{mm}{
-    \begin{framed}
-        \parbox{\dimexpr \linewidth-2 \fboxsep-14 \fboxrule}{
-            \textbf{#1}\\
-            #2
-        }
-    \end{framed}
-}
-
 \wordingbox{AST}{
     An abstract syntax tree is a tree representation of
     the abstract syntactic structure of text (often source code)
@@ -42,5 +31,3 @@
     The text is split into a list of categorized symbols called
     tokens, which can be modified during the compilation process.
 }
-
-\end{document}

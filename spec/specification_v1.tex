@@ -6,74 +6,79 @@
 
 % Packages
 \usepackage[a4paper, total={6.5in, 9in}]{geometry}
-\usepackage{amsmath}
-\usepackage{xcolor}
-\usepackage{color}
+\usepackage{amsmath,graphicx,xparse}
+\usepackage{color,xcolor,pagecolor}
+\usepackage{framed,tcolorbox}
 \usepackage{lmodern}
-\usepackage{xparse}
-\usepackage{framed}
 
-% Colors
-\definecolor{primary_color}{RGB}{0,148,255}
+\input{colors_dark}
 
 % Document
 \begin{document}
-\fontfamily{lmss} \selectfont
+    \pagecolor{primary_bg}
+    \fontfamily{lmss} \color{secondary_fg} \selectfont
 
-% Title page
-\begin{titlepage}
-    \colorbox{black}{
-        \colorbox{primary_color}{
-            \parbox[t]{0.93 \textwidth}{ % Outer full width box
-                \parbox[t]{0.91 \textwidth}{ % Inner box for inner right text margin
-                    \raggedleft % Right align the text
-                    \fontsize{50pt}{80pt} \selectfont % Title font size, the first argument is the font size and the second is the line spacing, adjust depending on title length
-                    \vspace{0.7cm} % Space between the start of the title and the top of the grey box
+    \input{macros} % Include all macros
 
-                    The \textbf{Ferrous}\\
-                    programming\\
-                    language\\
+    % Title page
+    \begin{titlepage}
+        \colorbox{secondary_bg}{
+            \colorbox{primary_fg}{
+                \parbox[t]{0.93 \textwidth}{ % Outer full width box
+                    \parbox[t]{0.91 \textwidth}{ % Inner box for inner right text margin
+                        \raggedleft % Right align the text
+                        \fontsize{50pt}{80pt} \selectfont % Title font size, the first argument is the font size and the second is the line spacing, adjust depending on title length
+                        \vspace{0.7cm} % Space between the start of the title and the top of the grey box
 
-                    \vspace{0.7cm} % Space between the end of the title and the bottom of the grey box
+                        The \textbf{Ferrous}\\
+                        programming\\
+                        language\\
+
+                        \vspace{0.7cm} % Space between the end of the title and the bottom of the grey box
+                    }
                 }
             }
         }
-    }
 
-    \begin{center}
-        \fontsize{16}{0} \selectfont
-        A full guide to the Ferrous general purpose\\
-        programming language by the developer of Ferrous.
-        \normalfont \selectfont
-    \end{center}
+        \begin{center}
+            \fontsize{16}{0} \selectfont
+            A full guide to the Ferrous general purpose\\
+            programming language by the developers of Ferrous.
+            \normalfont \selectfont
+        \end{center}
 
-    \vfill % Space between the title box and author information
+        \vfill % Space between the title box and author information
 
-    \parbox[t]{0.93 \textwidth}{ % Box to inset this section slightly
-        \raggedleft % Right align the text
-        \large % Increase the font size
-        {\Large Alexander R. Hinze}\\[4pt] % Extra space after name
-        Karma Krafts
+        \parbox[t]{0.93 \textwidth}{ % Box to inset this section slightly
+            \raggedleft % Right align the text
+            \large % Increase the font size
+            {\Large Alexander R. Hinze}\\[4pt] % Extra space after name
+            {\Large Lorenz Klaus}\\[4pt] % Extra space after name
+            The Ferrous language association\\
+            Karma Krafts
 
-        \hfill \rule {0.2 \linewidth}{1pt} % Horizontal line, first argument width, second thickness
-    }
-\end{titlepage}
+            \hfill \rule {0.2 \linewidth}{1pt} % Horizontal line, first argument width, second thickness
+        }
+    \end{titlepage}
 
-% Table of contents
-\tableofcontents \newpage
+    % Table of contents
+    \tableofcontents \newpage
 
-% Wording
-\section{Wording} \label{sec:wording}
-\input{v1/wording}
-\newpage
+    % Wording
 
-% Builtin Types
-\section{Builtin Types} \label{sec:builtin_types}
-\input{v1/builtin_types}
-\newpage
+    \section{Wording} \label{sec:wording}
+    \input{v1/wording}
+    \newpage
 
-% Appendix
-\section{Appendix} \label{sec:appendix}
-\input{v1/appendix}
+    % Builtin Types
+
+    \section{Builtin Types} \label{sec:builtin_types}
+    \input{v1/builtin_types}
+    \newpage
+
+    % Appendix
+
+    \section{Appendix} \label{sec:appendix}
+    \input{v1/appendix}
 
 \end{document}

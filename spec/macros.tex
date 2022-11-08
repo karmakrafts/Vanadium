@@ -1,0 +1,13 @@
+%! Author = Alexander Hinze
+%! Date = 08.11.22
+
+\NewDocumentCommand \wordingbox{mm}{
+    \color{primary_fg}
+    \begin{framed}
+        \parbox{\dimexpr \linewidth-8 \fboxsep-8 \fboxrule}{
+            \color{secondary_fg}
+            \textbf{#1}\\
+            #2
+        }
+    \end{framed}
+}
