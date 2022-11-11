@@ -6,9 +6,16 @@
 
 % Packages
 \usepackage[a4paper, total={6.5in, 9in}]{geometry}
-\usepackage{amsmath,graphicx,xparse}
-\usepackage{color,xcolor,pagecolor}
-\usepackage{framed,tcolorbox}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{boldline}
+\usepackage{listings}
+\usepackage{graphics,graphicx}
+\usepackage{color,xcolor}
+\usepackage{xparse,framed,tcolorbox,pagecolor}
+\usepackage{wasysym}
+\usepackage{tocloft}
+
 \usepackage{lmodern}
 
 \input{colors_dark}
@@ -22,10 +29,15 @@
 
     % Title page
     \begin{titlepage}
-        \colorbox{secondary_bg}{
+        \setlength{\fboxrule}{4pt}
+        \fcolorbox{secondary_fg}{primary_fg}{
             \colorbox{primary_fg}{
                 \parbox[t]{0.93 \textwidth}{ % Outer full width box
                     \parbox[t]{0.91 \textwidth}{ % Inner box for inner right text margin
+                        \hspace*{1cm}
+                        \vspace*{-4cm}
+                        \includegraphics[scale=0.25]{logo}
+
                         \raggedleft % Right align the text
                         \fontsize{50pt}{80pt} \selectfont % Title font size, the first argument is the font size and the second is the line spacing, adjust depending on title length
                         \vspace{0.7cm} % Space between the start of the title and the top of the grey box
@@ -39,10 +51,11 @@
                 }
             }
         }
+        \setlength{\fboxrule}{1pt}
 
         \begin{center}
             \fontsize{16}{0} \selectfont
-            A full guide to the Ferrous general purpose\\
+            A full guide to the Ferrous multi target\\
             programming language by the developers of Ferrous.
             \normalfont \selectfont
         \end{center}
@@ -64,16 +77,16 @@
     % Table of contents
     \tableofcontents \newpage
 
+    % Builtin Types
+
+    \section{Builtin Types} \label{sec:builtin-types}
+    \input{v1/builtin_types}
+    \newpage
+
     % Wording
 
     \section{Wording} \label{sec:wording}
     \input{v1/wording}
-    \newpage
-
-    % Builtin Types
-
-    \section{Builtin Types} \label{sec:builtin_types}
-    \input{v1/builtin_types}
     \newpage
 
     % Appendix

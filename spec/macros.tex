@@ -2,7 +2,7 @@
 %! Date = 08.11.22
 
 \NewDocumentCommand \wordingbox{mm}{
-    \color{primary_fg}
+    \color{secondary_bg}
     \begin{framed}
         \parbox{\dimexpr \linewidth-8 \fboxsep-8 \fboxrule}{
             \color{secondary_fg}
@@ -10,4 +10,5 @@
             #2
         }
     \end{framed}
+    \color{secondary_fg}
 }
