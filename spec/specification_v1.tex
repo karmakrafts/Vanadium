@@ -13,7 +13,6 @@
 \usepackage{graphics,graphicx}
 \usepackage{color,xcolor}
 \usepackage{xparse,framed,tcolorbox,pagecolor}
-\usepackage{wasysym}
 \usepackage{tocloft}
 
 \usepackage{lmodern}
@@ -77,10 +76,22 @@
     % Table of contents
     \tableofcontents \newpage
 
+    % Introduction
+
+    \section{Introduction} \label{sec:introduction}
+    \input{v1/introduction}
+    \newpage
+
     % Builtin Types
 
     \section{Builtin Types} \label{sec:builtin-types}
     \input{v1/builtin_types}
+    \newpage
+
+    % User Defined Types
+
+    \section{User Defined Types} \label{sec:user-defined-types}
+    \input{v1/user_defined_types}
     \newpage
 
     % Wording

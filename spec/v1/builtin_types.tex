@@ -2,7 +2,7 @@
 %! Date = 08.11.22
 
 Builtin types are types which can not be expressed as a UDT and which
-are provided by the language (and this compiler) itself.
+are provided by the language (and the compiler) itself.
 The below table illustrates all types supported by the Ferrous programming language.
 
 \begin{center}
@@ -24,7 +24,7 @@ The below table illustrates all types supported by the Ferrous programming langu
         f64 & \color{type_class_ieee} " \normalcolor & 8 & -1.7E+308 to +1.7E+308\\
         \hline
         isize & \color{type_class_size} Native Size \normalcolor & 4 on 32-bit, 8 on 64-bit & Same as i32 on 32-bit, i64 on 64-bit\\
-        usize & \color{type_class_size} " \normalcolor & 4 on 32-bit, 8 on 64-bit & Same as i32 on 32-bit, i64 on 64-bit\\
+        usize & \color{type_class_size} " \normalcolor & 4 on 32-bit, 8 on 64-bit & Same as u32 on 32-bit, u64 on 64-bit\\
         \hline
         void & \color{type_class_misc} Miscellaneous \normalcolor & 0 & Size-less\\
         bool & \color{type_class_misc} " \normalcolor & 1 & 0 if \textbf{false}, 1 if \textbf{true}\\
@@ -54,9 +54,16 @@ It is based on the simple principle of exponentiation.
 \begin{center}
     Bit 0
     \fcolorbox{secondary_fg}{primary_bg}{
-        \fcolorbox{secondary_fg}{ieee_sign_color}{S}
-        \fcolorbox{secondary_fg}{ieee_exponent_color}{EEEEEEEE}
-        \fcolorbox{secondary_fg}{ieee_mantissa_color}{MMMMMMMMMMMMMMMMMMMMMMM}
+        \begin{tabular}{c@{\hspace{-0.28cm}}c@{\hspace{-0.25cm}}c}
+            0 & 1 to 7 & 8 to 31\\
+            {
+                \fcolorbox{secondary_fg}{ieee_sign_color}{S}
+            } & {
+                \fcolorbox{secondary_fg}{ieee_exponent_color}{EEEEEEEE}
+            } & {
+                \fcolorbox{secondary_fg}{ieee_mantissa_color}{MMMMMMMMMMMMMMMMMMMMMMM}
+            }
+        \end{tabular}
     }
     Bit 31
 \end{center}
@@ -76,7 +83,8 @@ following formula to the components of the value:
 
 \noindent
 Where \textbf{b} is the base of the representation which in the case of
-a normalized IEEE754 floating point value is always 2.
+a normalized IEEE754 floating point value is always 2, \textbf{s} is the
+sign bit, \textbf{m} is the mantissa value and \textbf{e} is the exponent.
 
 \color{type_class_size}
 \subsection{Size Types} \label{subsec:size-types}
@@ -93,7 +101,7 @@ This means the value range of this type changes as follows based on the hardware
 \begin{center}
     \begin{tabular}{ |c|c|c| }
         \hline
-        \textbf{CPU ALU Width (Bits)} & \textbf{Memory Size (Bytes)} & \textbf{Range}\\
+        \textbf{Main ALU Width (Bits)} & \textbf{Memory Size (Bytes)} & \textbf{Range}\\
         \hlineB{2.5}
         32 & 4 & -2147483648 to 2147483647\\
         64 & 8 & -9223372036854775808 to 9223372036854775807\\
@@ -109,7 +117,7 @@ This means the value range of this type changes as follows based on the hardware
 \begin{center}
     \begin{tabular}{ |c|c|c| }
         \hline
-        \textbf{CPU ALU Width (Bits)} & \textbf{Memory Size (Bytes)} & \textbf{Range}\\
+        \textbf{Main ALU Width (Bits)} & \textbf{Memory Size (Bytes)} & \textbf{Range}\\
         \hlineB{2.5}
         32 & 4 & 0 to 4294967295\\
         64 & 8 & 0 to 18446744073709551615\\

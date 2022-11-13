@@ -16,10 +16,10 @@ file:
     ;
 
 moduleFile:
-    NL*
+    NL*?
     moduleDecl
     (moduleUsageDecl
-    | NL)*
+    | NL)*?
     EOF
     ;
 
@@ -37,33 +37,330 @@ moduleUsageDecl:
     ;
 
 sourceFile:
-    (expr
-    | NL)+
+    (decl
+    | NL)*?
     EOF
+    ;
+
+decl:
+    moduleUsageDecl
+    | usageDecl
+    | expr
+    | udtDecl
+    | functionDecl
+    | fieldDecl
+    ;
+
+usageDecl:
+    KW_USE
+    (qualifiedIdent
+    | ident)
+    ;
+
+// User defined types
+udtDecl:
+    enumClassDecl
+    | classDecl
+    | enumDecl
+    | structDecl
+    | interfaceDecl
+    | attribDecl
+    | traitDecl
+    ;
+
+enumClassDecl:
+    accessMod?
+    KW_ENUM
+    KW_CLASS
+    ident
+    genericParamList? // Optional because of chevrons
+    (COLON
+    typeList)?
+    L_BRACE
+    enumConstantList
+    SEMICOLON
+    (decl
+    | NL)*?
+    R_BRACE
+    ;
+
+classDecl:
+    accessMod?
+    KW_CLASS
+    ident
+    genericParamList? // Optional because of chevrons
+    (COLON
+    typeList)?
+    (classBody
+    | inlineClassBody)
+    ;
+
+classBody:
+    L_BRACE
+    (decl
+    | NL)*?
+    R_BRACE
+    ;
+
+inlineClassBody:
+    L_PAREN
+    functionParamList
+    R_PAREN
+    end
+    ;
+
+enumDecl:
+    accessMod?
+    KW_ENUM
+    ident
+    L_BRACE
+    enumConstantList
+    R_BRACE
+    ;
+
+enumConstantList:
+    (enumConstant
+    | (enumConstant
+    COMMA)
+    | NL)*?
+    ;
+
+enumConstant:
+    (ident
+    | (ident
+    COMMA))
+    ;
+
+structDecl:
+    accessMod?
+    KW_STRUCT
+    ident
+    genericParamList? // Optional because of chevrons
+    (classBody
+    | inlineClassBody)
+    ;
+
+interfaceDecl:
+    accessMod?
+    KW_INTERFACE
+    ident
+    genericParamList? // Optional because of chevrons
+    (COLON
+    typeList)?
+    L_BRACE
+    (attribDecl
+    | interfaceDecl
+    | functionDecl
+    | protoFunctionDecl
+    | NL)*?
+    R_BRACE
+    ;
+
+attribDecl:
+    accessMod?
+    KW_ATTRIB
+    ident
+    genericParamList? // Optional because of chevrons
+    (COLON
+    typeList)?
+    inlineClassBody
+    ;
+
+traitDecl:
+    accessMod?
+    KW_TRAIT
+    ident
+    genericParamList? // Optional because of chevrons
+    (COLON
+    typeList)?
+    (classBody
+    | inlineClassBody)
+    ;
+
+// Fields
+fieldDecl:
+    accessMod?
+    storageMod*?
+    ident
+    COLON
+    type
+    (OP_ASSIGN
+    expr)?
+    end
+    ;
+
+// Functions
+functionDecl:
+    protoFunctionDecl
+    (functionBody
+    | inlineFunctionBody)
+    ;
+
+functionBody:
+    L_BRACE
+    (returnStatement
+    | variableDecl
+    | expr
+    | NL)*?
+    R_BRACE
+    ;
+
+returnStatement:
+    KW_RETURN
+    expr
+    end
+    ;
+
+variableDecl:
+    KW_LET
+    storageMod*?
+    ident
+    (COLON
+    type)?
+    (OP_ASSIGN
+    expr)?
+    end
+    ;
+
+inlineFunctionBody:
+    ARROW
+    expr
+    end
+    ;
+
+protoFunctionDecl:
+    accessMod?
+    functionMod*?
+    KW_FN
+    ident
+    genericParamList? // Optional because of chevrons
+    L_PAREN
+    functionParamList
+    R_PAREN
+    (COLON
+    type)?
+    (KW_THROWS
+    typeList)?
+    ;
+
+functionParamList:
+    (functionParam
+    | (functionParam
+    COMMA))*?
+    ;
+
+functionParam:
+    ident
+    COLON
+    type
+    (OP_ASSIGN
+    expr)?
     ;
 
 // Expressions
 expr:
-    literal
+    binaryExprLhs
+    | binaryExpr
+    | tryExpr
+    ;
+
+groupedExpr:
+    L_PAREN
+    expr
+    R_PAREN
+    ;
+
+// Try expressions
+tryExpr:
+    KW_TRY
+    expr
+    ;
+
+// Call expressions
+callExpr:
+    (ref
+    binaryRefOp)?
+    ident
+    genericList?
+    L_PAREN
+    callParamList
+    R_PAREN
+    ;
+
+callParamList:
+    (expr
+    | (expr
+    COMMA))*?
+    ;
+
+// Binary expressions
+binaryExprLhs:
+    callExpr
+    | groupedExpr
+    | unaryExpr
+    | literal
     | ref // Refs should have low precedence, like idents
+    ;
+
+binaryExpr:
+    binaryExprLhs
+    binaryOp
+    expr
+    ;
+
+binaryOp:
+    OP_SWAP
+
+    | OP_PLUS
+    | OP_MINUS
+    | ASTERISK
+    | OP_DIV
+    | OP_MOD
+
+    | OP_SAT_PLUS
+    | OP_SAT_MINUS
+    | OP_SAT_TIMES
+    | OP_SAT_DIV
+    | OP_SAT_MOD
+
+    | OP_PLUS_ASSIGN
+    | OP_MINUS_ASSIGN
+    | OP_TIMES_ASSIGN
+    | OP_MOD_ASSIGN
+
+    | OP_SAT_PLUS_ASSIGN
+    | OP_SAT_MINUS_ASSIGN
+    | OP_SAT_TIMES_ASSIGN
+    | OP_SAT_DIV_ASSIGN
+    | OP_SAT_MOD_ASSIGN
+
+    | OP_INV_ASSIGN
+    ;
+
+// Unary expressions
+unaryExpr:
+    unaryOp
+    expr
+    ;
+
+unaryOp:
+    OP_PLUS
+    | OP_MINUS
+    | OP_INV
     ;
 
 // References
 ref:
     specialRef
     | simpleRef
+    | methodRef
     ;
 
 simpleRef:
     (qualifiedIdent
     | ident)
     (binaryRefOp
-    ident)*
-    ;
-
-specialRef:
-    unaryRefOp
-    ref
+    ident)*?
     ;
 
 binaryRefOp:
@@ -72,17 +369,80 @@ binaryRefOp:
     | DOT
     ;
 
+specialRef:
+    unaryRefOp
+    ref
+    ;
+
 unaryRefOp:
     OP_SAFE_DEREF
     | ASTERISK
     | AMP
     ;
 
+methodRef:
+    (qualifiedIdent
+    | ident)?
+    DOUBLE_COLON
+    ident
+    ;
+
+// Generics
+genericParamList:
+    L_CHEVRON
+    (genericParam
+    | (genericParam
+    COMMA))*?
+    R_CHEVRON
+    ;
+
+genericParam:
+    ident
+    (COLON
+    genericExpr)?
+    (OP_ASSIGN
+    type)?
+    ;
+
+genericExpr:
+    genericBinaryExpr
+    | genericBinaryExprLhs
+    ;
+
+genericGroupedExpr:
+    L_PAREN
+    genericExpr
+    R_PAREN
+    ;
+
+genericBinaryExpr:
+    genericBinaryExprLhs
+    genericTypeOp
+    genericExpr
+    ;
+
+genericBinaryExprLhs:
+    genericGroupedExpr
+    | type
+    ;
+
+genericTypeOp:
+    AMP
+    | PIPE
+    ;
+
+genericList:
+    L_CHEVRON
+    (type
+    | (type
+    COMMA))*?
+    R_CHEVRON
+    ;
+
 // Literals
 literal:
     boolLiteral
     | intLiteral
-    | uintLiteral
     | floatLiteral
     | stringLiteral
     | LITERAL_CHAR
@@ -94,6 +454,11 @@ boolLiteral:
     | KW_FALSE;
 
 intLiteral:
+    sintLiteral
+    | uintLiteral
+    ;
+
+sintLiteral:
     LITERAL_I8
     | LITERAL_I16
     | LITERAL_I32
@@ -139,6 +504,88 @@ multilineStringLiteral:
     | EMPTY_ML_STRING
     ;
 
+// Modifiers
+accessMod:
+    (KW_PUB
+    L_PAREN
+    (KW_MOD
+    | (COLON
+    KW_THIS)
+    | type)
+    R_PAREN)
+    | KW_PUB
+    ;
+
+functionMod:
+    storageMod
+    | KW_INL
+    | KW_OVERRIDE
+    | KW_VIRTUAL
+    | KW_OP
+    ;
+
+storageMod:
+    KW_STATIC
+    | KW_CONST
+    | KW_TLS
+    ;
+
+typeMod:
+    KW_ATOMIC
+    ;
+
+// Types
+typeList:
+    (type
+    | (type
+    COMMA))*?
+    ;
+
+type:
+    arrayType
+    | builtinType
+    | ident
+    ;
+
+arrayType:
+    L_BRACKET
+    type
+    R_BRACKET
+    ;
+
+builtinType:
+    intType
+    | floatType
+    | KW_VOID
+    | KW_BOOL
+    | KW_CHAR
+    | KW_STRING
+    ;
+
+intType:
+    sintType
+    | uintType
+    ;
+
+sintType:
+    KW_I8
+    | KW_I16
+    | KW_I32
+    | KW_I64
+    ;
+
+uintType:
+    KW_U8
+    | KW_U16
+    | KW_U32
+    | KW_U64
+    ;
+
+floatType:
+    KW_F32
+    | KW_F64
+    ;
+
 // Identifiers
 qualifiedIdent:
     ident
@@ -162,4 +609,9 @@ specialToken:
     | TRIPLE_DOT
     | DOUBLE_DOT
     | DOT
+    ;
+
+end:
+    SEMICOLON
+    | NL
     ;

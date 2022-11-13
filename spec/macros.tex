@@ -12,3 +12,18 @@
     \end{framed}
     \color{secondary_fg}
 }
+
+\NewDocumentCommand \quotebox{mm}{
+    \color{secondary_bg}
+    \begin{framed}
+        \parbox{\dimexpr \linewidth-8 \fboxsep-8 \fboxrule}{
+            \color{secondary_fg}
+            "#2"
+
+            \color{secondary_bg}
+            \raggedleft
+            Quote by #1
+        }
+    \end{framed}
+    \color{secondary_fg}
+}
