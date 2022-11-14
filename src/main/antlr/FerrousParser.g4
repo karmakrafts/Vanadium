@@ -49,6 +49,8 @@ decl:
     | udtDecl
     | functionDecl
     | fieldDecl
+    | variableDecl
+    | statement
     ;
 
 usageDecl:
@@ -148,9 +150,7 @@ interfaceDecl:
     (COLON
     typeList)?
     L_BRACE
-    (attribDecl
-    | interfaceDecl
-    | functionDecl
+    (decl
     | protoFunctionDecl
     | NL)*?
     R_BRACE
@@ -189,6 +189,91 @@ fieldDecl:
     end
     ;
 
+// Statements
+statement:
+    returnStatement
+    | ifStatement
+    | whenStatement
+    ;
+
+// Return statements
+returnStatement:
+    KW_RETURN
+    expr
+    ;
+
+// When statements
+whenStatement:
+    KW_WHEN
+    expr
+    L_BRACE
+    (whenBranch
+    | NL)*?
+    defaultWhenBranch?
+    NL*?
+    R_BRACE
+    ;
+
+whenBranch:
+    exprList
+    ARROW
+    ((expr
+    end)
+    | whenBranchBody)
+    ;
+
+defaultWhenBranch:
+    UNDERSCORE
+    ARROW
+    ((expr
+    end)
+    | whenBranchBody)
+    ;
+
+whenBranchBody:
+    L_BRACE
+
+    R_BRACE
+    ;
+
+// If statements
+ifStatement:
+    KW_IF
+    L_PAREN
+    expr
+    R_PAREN
+    ((decl
+    end)
+    | ifBody)
+    elseIfStatement*?
+    elseStatement?
+    ;
+
+elseIfStatement:
+    KW_ELSE
+    KW_IF
+    L_PAREN
+    expr
+    R_PAREN
+    ((decl
+    end)
+    | ifBody)
+    ;
+
+elseStatement:
+    KW_ELSE
+    ((decl
+    end)
+    | ifBody)
+    ;
+
+ifBody:
+    L_BRACE
+    (decl
+    | NL)*?
+    R_BRACE
+    ;
+
 // Functions
 functionDecl:
     protoFunctionDecl
@@ -198,17 +283,9 @@ functionDecl:
 
 functionBody:
     L_BRACE
-    (returnStatement
-    | variableDecl
-    | expr
+    (decl
     | NL)*?
     R_BRACE
-    ;
-
-returnStatement:
-    KW_RETURN
-    expr
-    end
     ;
 
 variableDecl:
@@ -258,16 +335,70 @@ functionParam:
     ;
 
 // Expressions
+exprList:
+    (expr
+    | (expr
+    COMMA))*?
+    ;
+
 expr:
-    binaryExprLhs
+    simpleExpr
     | binaryExpr
     | tryExpr
+    | heapInitExpr
+    | stackInitExpr
+    | stackAllocExpr
+    | arrayExpr
+    | ifStatement
+    | whenStatement
     ;
 
 groupedExpr:
     L_PAREN
     expr
     R_PAREN
+    ;
+
+// If expressions
+ifExpr:
+    // TODO: implement this
+    ;
+
+// Array expressions
+arrayExpr:
+    L_BRACKET
+    (type
+    | arrayExpr)
+    COMMA
+    intLiteral
+    R_BRACKET
+    ;
+
+// stackalloc expressions
+stackAllocExpr:
+    KW_STACKALLOC
+    L_BRACKET
+    (type
+    | arrayExpr)
+    COMMA
+    intLiteral
+    R_BRACKET
+    ;
+
+// Initialization expressions
+heapInitExpr:
+    KW_NEW
+    type?
+    L_PAREN
+    callParamList
+    R_PAREN
+    ;
+
+stackInitExpr:
+    type?
+    L_BRACE
+    callParamList
+    R_BRACE
     ;
 
 // Try expressions
@@ -294,7 +425,7 @@ callParamList:
     ;
 
 // Binary expressions
-binaryExprLhs:
+simpleExpr:
     callExpr
     | groupedExpr
     | unaryExpr
@@ -303,13 +434,20 @@ binaryExprLhs:
     ;
 
 binaryExpr:
-    binaryExprLhs
+    simpleExpr
     binaryOp
     expr
     ;
 
 binaryOp:
     OP_SWAP
+
+    | OP_COMPARE
+    | OP_EQUAL
+    | OP_LEQUAL
+    | OP_GEQUAL
+    | L_CHEVRON
+    | R_CHEVRON
 
     | OP_PLUS
     | OP_MINUS
@@ -392,7 +530,7 @@ genericParamList:
     L_CHEVRON
     (genericParam
     | (genericParam
-    COMMA))*?
+    COMMA))+
     R_CHEVRON
     ;
 
@@ -417,7 +555,7 @@ genericGroupedExpr:
 
 genericBinaryExpr:
     genericBinaryExprLhs
-    genericTypeOp
+    genericOp
     genericExpr
     ;
 
@@ -426,7 +564,7 @@ genericBinaryExprLhs:
     | type
     ;
 
-genericTypeOp:
+genericOp:
     AMP
     | PIPE
     ;
@@ -435,7 +573,7 @@ genericList:
     L_CHEVRON
     (type
     | (type
-    COMMA))*?
+    COMMA))+
     R_CHEVRON
     ;
 
@@ -543,8 +681,36 @@ typeList:
 
 type:
     arrayType
+    | genericType
+    | simpleType
+    ;
+
+simpleType:
+    refType
+    | pointerType
     | builtinType
+    | nullableType
     | ident
+    ;
+
+nullableType:
+    QMK
+    type
+    ;
+
+refType:
+    AMP
+    type
+    ;
+
+pointerType:
+    ASTERISK
+    type
+    ;
+
+genericType:
+    simpleType
+    genericList
     ;
 
 arrayType:
@@ -594,11 +760,12 @@ qualifiedIdent:
     ;
 
 ident:
-    ((TOKEN_LERP_BEGIN
+    (((TOKEN_LERP_BEGIN
         (MACRO_IDENT
         | specialToken)
     R_BRACE)
-    | IDENT)+
+    | IDENT)+)
+    | UNDERSCORE
     ;
 
 specialToken:
@@ -613,5 +780,5 @@ specialToken:
 
 end:
     SEMICOLON
-    | NL
+    | NL+
     ;

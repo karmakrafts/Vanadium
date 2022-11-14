@@ -58,6 +58,8 @@ KW_CONST: 'const';
 KW_CLASS: 'class';
 KW_TRAIT: 'trait';
 KW_IDENT: 'ident';
+KW_WHEN: 'when';
+KW_ELSE: 'else';
 KW_CASE: 'case';
 KW_LOOP: 'loop';
 KW_TYPE: 'type';
@@ -84,6 +86,7 @@ KW_IN_NOT: '!in';
 KW_IN: 'in';
 KW_FN: 'fn';
 KW_OP: 'op';
+KW_IF: 'if';
 
 KW_TRUE: 'true';
 KW_FALSE: 'false';
@@ -108,6 +111,7 @@ OP_INCL_RANGE: '..=';
 
 OP_COMPARE: '<=>';
 OP_SWAP: '<->';
+OP_EQUAL: '==';
 
 OP_SAFE_PTR_REF: '?->';
 OP_SAFE_REF: '?.';
@@ -159,6 +163,8 @@ COLON: ':';
 SEMICOLON: ';';
 ASTERISK: '*';
 PIPE: '|';
+QMK: '?';
+UNDERSCORE: '_';
 
 // Literals
 fragment F_BIN_DIGIT: [01'];
