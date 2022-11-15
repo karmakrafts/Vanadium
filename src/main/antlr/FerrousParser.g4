@@ -18,7 +18,7 @@ file:
 moduleFile:
     NL*?
     moduleDecl
-    (moduleUsageDecl
+    (modUseDecl
     | NL)*?
     EOF
     ;
@@ -29,7 +29,7 @@ moduleDecl:
     | ident)
     ;
 
-moduleUsageDecl:
+modUseDecl:
     KW_USE
     KW_MOD
     (qualifiedIdent
@@ -43,20 +43,28 @@ sourceFile:
     ;
 
 decl:
-    moduleUsageDecl
-    | usageDecl
+    modUseDecl
+    | statement
+    | useDecl
     | expr
     | udtDecl
     | functionDecl
     | fieldDecl
     | variableDecl
-    | statement
     ;
 
-usageDecl:
+useDecl:
     KW_USE
     (qualifiedIdent
     | ident)
+    (DOUBLE_COLON
+    useList)?
+    ;
+
+useList:
+    L_BRACE
+    typeList
+    R_BRACE
     ;
 
 // User defined types
@@ -138,6 +146,8 @@ structDecl:
     KW_STRUCT
     ident
     genericParamList? // Optional because of chevrons
+    (COLON
+    typeList)?
     (classBody
     | inlineClassBody)
     ;
@@ -232,16 +242,15 @@ defaultWhenBranch:
 
 whenBranchBody:
     L_BRACE
-
+    (decl
+    | NL)*?
     R_BRACE
     ;
 
 // If statements
 ifStatement:
     KW_IF
-    L_PAREN
     expr
-    R_PAREN
     ((decl
     end)
     | ifBody)
@@ -309,7 +318,10 @@ protoFunctionDecl:
     accessMod?
     functionMod*?
     KW_FN
-    ident
+    (binaryOp
+    | unaryOp
+    | OP_ASSIGN
+    | ident)
     genericParamList? // Optional because of chevrons
     L_PAREN
     functionParamList
@@ -349,8 +361,9 @@ expr:
     | stackInitExpr
     | stackAllocExpr
     | arrayExpr
-    | ifStatement
-    | whenStatement
+    | arrayInitExpr
+    | exhaustiveIfExpr
+    | exhaustiveWhenExpr
     ;
 
 groupedExpr:
@@ -359,9 +372,26 @@ groupedExpr:
     R_PAREN
     ;
 
-// If expressions
-ifExpr:
-    // TODO: implement this
+// Control flow expressions
+exhaustiveIfExpr:
+    KW_IF
+    expr
+    ((decl
+    end)
+    | ifBody)
+    elseIfStatement*?
+    elseStatement
+    ;
+
+exhaustiveWhenExpr:
+    KW_WHEN
+    expr
+    L_BRACE
+    (whenBranch
+    | NL)*?
+    defaultWhenBranch
+    NL*?
+    R_BRACE
     ;
 
 // Array expressions
@@ -371,6 +401,12 @@ arrayExpr:
     | arrayExpr)
     COMMA
     intLiteral
+    R_BRACKET
+    ;
+
+arrayInitExpr:
+    L_BRACKET
+    exprList
     R_BRACKET
     ;
 
@@ -390,14 +426,14 @@ heapInitExpr:
     KW_NEW
     type?
     L_PAREN
-    callParamList
+    exprList
     R_PAREN
     ;
 
 stackInitExpr:
     type?
     L_BRACE
-    callParamList
+    exprList
     R_BRACE
     ;
 
@@ -414,20 +450,14 @@ callExpr:
     ident
     genericList?
     L_PAREN
-    callParamList
+    exprList
     R_PAREN
-    ;
-
-callParamList:
-    (expr
-    | (expr
-    COMMA))*?
     ;
 
 // Binary expressions
 simpleExpr:
-    callExpr
-    | groupedExpr
+    groupedExpr
+    | callExpr
     | unaryExpr
     | literal
     | ref // Refs should have low precedence, like idents
@@ -625,8 +655,9 @@ simpleStringLiteral:
         (STRING_MODE_TEXT
         | STRING_MODE_ESCAPED_STRING_END
         | STRING_MODE_ESCAPED_CHAR
-        | STRING_MODE_LERP_BEGIN
-        | R_BRACE)+
+        | (STRING_MODE_LERP_BEGIN
+        expr*?
+        R_BRACE))+
     DOUBLE_QUOTE)
     | EMPTY_STRING
     ;
@@ -636,8 +667,9 @@ multilineStringLiteral:
         (ML_STRING_MODE_TEXT
         | ML_STRING_MODE_ESCAPED_ML_STRING_END
         | ML_STRING_MODE_ESCAPED_CHAR
-        | ML_STRING_MODE_LERP_BEGIN
-        | R_BRACE)+
+        | (ML_STRING_MODE_LERP_BEGIN
+        expr*?
+        R_BRACE))+
     ML_STRING_END)
     | EMPTY_ML_STRING
     ;
@@ -655,7 +687,8 @@ accessMod:
     ;
 
 functionMod:
-    storageMod
+    KW_STATIC
+    | KW_CONST
     | KW_INL
     | KW_OVERRIDE
     | KW_VIRTUAL
@@ -676,7 +709,7 @@ typeMod:
 typeList:
     (type
     | (type
-    COMMA))*?
+    COMMA))+?
     ;
 
 type:
@@ -704,6 +737,7 @@ refType:
     ;
 
 pointerType:
+    typeMod*?
     ASTERISK
     type
     ;
@@ -720,12 +754,13 @@ arrayType:
     ;
 
 builtinType:
-    intType
+    typeMod*?
+    (intType
     | floatType
     | KW_VOID
     | KW_BOOL
     | KW_CHAR
-    | KW_STRING
+    | KW_STRING)
     ;
 
 intType:
@@ -757,6 +792,8 @@ qualifiedIdent:
     ident
     (DOUBLE_COLON
     ident)+
+    (DOUBLE_COLON
+    ASTERISK)?
     ;
 
 ident:
@@ -780,5 +817,5 @@ specialToken:
 
 end:
     SEMICOLON
-    | NL+
+    | NL
     ;
