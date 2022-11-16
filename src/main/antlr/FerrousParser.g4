@@ -17,19 +17,19 @@ file:
 
 moduleFile:
     NL*?
-    moduleDecl
-    (modUseDecl
+    module
+    (modUseStatement
     | NL)*?
     EOF
     ;
 
-moduleDecl:
+module:
     KW_MOD
     (qualifiedIdent
     | ident)
     ;
 
-modUseDecl:
+modUseStatement:
     KW_USE
     KW_MOD
     (qualifiedIdent
@@ -43,17 +43,17 @@ sourceFile:
     ;
 
 decl:
-    modUseDecl
+    modUseStatement
     | statement
-    | useDecl
+    | useStatement
     | expr
     | udtDecl
-    | functionDecl
-    | fieldDecl
-    | variableDecl
+    | function
+    | field
+    | variable
     ;
 
-useDecl:
+useStatement:
     KW_USE
     (qualifiedIdent
     | ident)
@@ -69,16 +69,17 @@ useList:
 
 // User defined types
 udtDecl:
-    enumClassDecl
-    | classDecl
-    | enumDecl
-    | structDecl
-    | interfaceDecl
-    | attribDecl
-    | traitDecl
+    enumClass
+    | class
+    | enum
+    | struct
+    | interface
+    | attrib
+    | trait
     ;
 
-enumClassDecl:
+enumClass:
+    attributeList
     accessMod?
     KW_ENUM
     KW_CLASS
@@ -94,7 +95,8 @@ enumClassDecl:
     R_BRACE
     ;
 
-classDecl:
+class:
+    attributeList
     accessMod?
     KW_CLASS
     ident
@@ -119,7 +121,8 @@ inlineClassBody:
     end
     ;
 
-enumDecl:
+enum:
+    attributeList
     accessMod?
     KW_ENUM
     ident
@@ -141,7 +144,8 @@ enumConstant:
     COMMA))
     ;
 
-structDecl:
+struct:
+    attributeList
     accessMod?
     KW_STRUCT
     ident
@@ -152,7 +156,8 @@ structDecl:
     | inlineClassBody)
     ;
 
-interfaceDecl:
+interface:
+    attributeList
     accessMod?
     KW_INTERFACE
     ident
@@ -161,12 +166,13 @@ interfaceDecl:
     typeList)?
     L_BRACE
     (decl
-    | protoFunctionDecl
+    | protoFunction
     | NL)*?
     R_BRACE
     ;
 
-attribDecl:
+attrib:
+    attributeList
     accessMod?
     KW_ATTRIB
     ident
@@ -176,7 +182,8 @@ attribDecl:
     inlineClassBody
     ;
 
-traitDecl:
+trait:
+    attributeList
     accessMod?
     KW_TRAIT
     ident
@@ -187,8 +194,23 @@ traitDecl:
     | inlineClassBody)
     ;
 
+// Attributes
+attributeList:
+    (attribUsage
+    end)*?
+    ;
+
+attribUsage:
+    AT
+    (qualifiedIdent
+    | ident)
+    (L_PAREN
+    exprList
+    R_PAREN)?
+    ;
+
 // Fields
-fieldDecl:
+field:
     accessMod?
     storageMod*?
     ident
@@ -204,12 +226,19 @@ statement:
     returnStatement
     | ifStatement
     | whenStatement
+    | forLoop
+    | whileLoop
+    | loop
     ;
 
 // Return statements
 returnStatement:
     KW_RETURN
-    expr
+    expr?
+    ;
+
+// Try-catch statements
+tryCatchStatement:
     ;
 
 // When statements
@@ -245,6 +274,102 @@ whenBranchBody:
     (decl
     | NL)*?
     R_BRACE
+    ;
+
+// Loops
+loop:
+    KW_LOOP
+    ((expr
+    end)
+    | (L_BRACE
+    (decl
+    | NL)*?
+    R_BRACE))
+    ;
+
+// While loops
+whileLoop:
+    whileDoLoop
+    | simpleWhileLoop
+    | doWhileLoop
+    ;
+
+simpleWhileLoop:
+    whileHead
+    ((expr
+    end)
+    | (L_BRACE
+    (decl
+    | NL)*?
+    R_BRACE))
+    ;
+
+doWhileLoop:
+    doBlock
+    end?
+    whileHead
+    ;
+
+whileDoLoop:
+    whileHead
+    end?
+    doBlock
+    ;
+
+whileHead:
+    KW_WHILE
+    (L_PAREN
+    expr
+    R_PAREN)
+    ;
+
+doBlock:
+    KW_DO
+    ((expr
+    end)
+    | (L_BRACE
+    (decl
+    | NL)*?
+    R_BRACE))
+    ;
+
+// For loops
+forLoop:
+    KW_FOR
+    (indexedLoopHead
+    | rangedLoopHead)
+    ((expr
+    end)
+    | (L_BRACE
+    (decl
+    | NL)*?
+    R_BRACE))
+    ;
+
+rangedLoopHead:
+    (ident
+    KW_IN
+    expr)
+    | (L_PAREN
+    ident
+    KW_IN
+    expr
+    R_PAREN)
+    ;
+
+indexedLoopHead:
+    (variable?
+    expr?
+    SEMICOLON
+    expr?
+    SEMICOLON?)
+    | (L_PAREN
+    variable?
+    expr?
+    SEMICOLON
+    expr?
+    SEMICOLON?
+    R_PAREN)
     ;
 
 // If statements
@@ -284,8 +409,8 @@ ifBody:
     ;
 
 // Functions
-functionDecl:
-    protoFunctionDecl
+function:
+    protoFunction
     (functionBody
     | inlineFunctionBody)
     ;
@@ -297,8 +422,9 @@ functionBody:
     R_BRACE
     ;
 
-variableDecl:
+variable:
     KW_LET
+    KW_MUT?
     storageMod*?
     ident
     (COLON
@@ -314,7 +440,8 @@ inlineFunctionBody:
     end
     ;
 
-protoFunctionDecl:
+protoFunction:
+    attributeList
     accessMod?
     functionMod*?
     KW_FN
@@ -356,11 +483,13 @@ exprList:
 expr:
     simpleExpr
     | binaryExpr
+    | incrementExpr
+    | decrementExpr
     | tryExpr
     | heapInitExpr
     | stackInitExpr
     | stackAllocExpr
-    | arrayExpr
+    | sizedArrayExpr
     | arrayInitExpr
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
@@ -395,10 +524,10 @@ exhaustiveWhenExpr:
     ;
 
 // Array expressions
-arrayExpr:
+sizedArrayExpr:
     L_BRACKET
     (type
-    | arrayExpr)
+    | sizedArrayExpr)
     COMMA
     intLiteral
     R_BRACKET
@@ -415,7 +544,7 @@ stackAllocExpr:
     KW_STACKALLOC
     L_BRACKET
     (type
-    | arrayExpr)
+    | sizedArrayExpr)
     COMMA
     intLiteral
     R_BRACKET
@@ -424,10 +553,11 @@ stackAllocExpr:
 // Initialization expressions
 heapInitExpr:
     KW_NEW
-    type?
+    (sizedArrayExpr
+    | (type?
     L_PAREN
     exprList
-    R_PAREN
+    R_PAREN))
     ;
 
 stackInitExpr:
@@ -452,6 +582,21 @@ callExpr:
     L_PAREN
     exprList
     R_PAREN
+    ;
+
+// Increment/decrement expressions
+incrementExpr:
+    (ref
+    OP_INCREMENT)
+    | (OP_INCREMENT
+    ref)
+    ;
+
+decrementExpr:
+    (ref
+    OP_DECREMENT)
+    | (OP_DECREMENT
+    ref)
     ;
 
 // Binary expressions

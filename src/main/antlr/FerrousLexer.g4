@@ -88,6 +88,7 @@ KW_IN: 'in';
 KW_FN: 'fn';
 KW_OP: 'op';
 KW_IF: 'if';
+KW_DO: 'do';
 
 KW_TRUE: 'true';
 KW_FALSE: 'false';
@@ -166,6 +167,7 @@ ASTERISK: '*';
 PIPE: '|';
 QMK: '?';
 UNDERSCORE: '_';
+AT: '@';
 
 // Literals
 fragment F_BIN_DIGIT: [01'];
