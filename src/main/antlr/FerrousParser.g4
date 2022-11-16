@@ -18,27 +18,23 @@ file:
 moduleFile:
     NL*?
     module
-    (modUseStatement
-    | NL)*?
+    (modUseStatement | NL)*?
     EOF
     ;
 
 module:
     KW_MOD
-    (qualifiedIdent
-    | ident)
+    (qualifiedIdent | ident)
     ;
 
 modUseStatement:
     KW_USE
     KW_MOD
-    (qualifiedIdent
-    | ident)
+    (qualifiedIdent | ident)
     ;
 
 sourceFile:
-    (decl
-    | NL)*?
+    (decl | NL)*?
     EOF
     ;
 
@@ -49,16 +45,14 @@ decl:
     | expr
     | udtDecl
     | function
-    | field
-    | variable
+    | (field end)
+    | (variable end)
     ;
 
 useStatement:
     KW_USE
-    (qualifiedIdent
-    | ident)
-    (DOUBLE_COLON
-    useList)?
+    (qualifiedIdent | ident)
+    (DOUBLE_COLON useList)?
     ;
 
 useList:
@@ -85,13 +79,11 @@ enumClass:
     KW_CLASS
     ident
     genericParamList? // Optional because of chevrons
-    (COLON
-    typeList)?
+    (COLON typeList)?
     L_BRACE
     enumConstantList
     SEMICOLON
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE
     ;
 
@@ -101,16 +93,13 @@ class:
     KW_CLASS
     ident
     genericParamList? // Optional because of chevrons
-    (COLON
-    typeList)?
-    (classBody
-    | inlineClassBody)
+    (COLON typeList)?
+    (classBody | inlineClassBody)
     ;
 
 classBody:
     L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE
     ;
 
@@ -133,15 +122,13 @@ enum:
 
 enumConstantList:
     (enumConstant
-    | (enumConstant
-    COMMA)
+    | (enumConstant COMMA)
     | NL)*?
     ;
 
 enumConstant:
     (ident
-    | (ident
-    COMMA))
+    | (ident COMMA))
     ;
 
 struct:
@@ -152,8 +139,7 @@ struct:
     genericParamList? // Optional because of chevrons
     (COLON
     typeList)?
-    (classBody
-    | inlineClassBody)
+    (classBody | inlineClassBody)
     ;
 
 interface:
@@ -162,8 +148,7 @@ interface:
     KW_INTERFACE
     ident
     genericParamList? // Optional because of chevrons
-    (COLON
-    typeList)?
+    (COLON typeList)?
     L_BRACE
     (decl
     | protoFunction
@@ -177,8 +162,7 @@ attrib:
     KW_ATTRIB
     ident
     genericParamList? // Optional because of chevrons
-    (COLON
-    typeList)?
+    (COLON typeList)?
     inlineClassBody
     ;
 
@@ -188,22 +172,18 @@ trait:
     KW_TRAIT
     ident
     genericParamList? // Optional because of chevrons
-    (COLON
-    typeList)?
-    (classBody
-    | inlineClassBody)
+    (COLON typeList)?
+    (classBody | inlineClassBody)
     ;
 
 // Attributes
 attributeList:
-    (attribUsage
-    end)*?
+    (attribUsage end)*?
     ;
 
 attribUsage:
     AT
-    (qualifiedIdent
-    | ident)
+    (qualifiedIdent | ident)
     (L_PAREN
     exprList
     R_PAREN)?
@@ -216,9 +196,7 @@ field:
     ident
     COLON
     type
-    (OP_ASSIGN
-    expr)?
-    end
+    (OP_ASSIGN expr)?
     ;
 
 // Statements
@@ -226,6 +204,7 @@ statement:
     returnStatement
     | ifStatement
     | whenStatement
+    | tryStatement
     | forLoop
     | whileLoop
     | loop
@@ -238,7 +217,41 @@ returnStatement:
     ;
 
 // Try-catch statements
+tryStatement:
+    tryWithStatement
+    | tryCatchStatement
+    ;
+
 tryCatchStatement:
+    KW_TRY
+    ((expr end)
+    | (L_BRACE
+    (decl | NL)*?
+    R_BRACE))
+    catchBlock
+    ;
+
+tryWithStatement:
+    KW_TRY
+    (variable
+    | (L_PAREN
+    variable
+    R_PAREN))
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
+    catchBlock?
+    ;
+
+catchBlock:
+    KW_CATCH
+    (L_PAREN
+    functionParam
+    R_PAREN)?
+    ((expr end)
+    | (L_BRACE
+    (decl | NL)*?
+    R_BRACE))
     ;
 
 // When statements
@@ -246,8 +259,7 @@ whenStatement:
     KW_WHEN
     expr
     L_BRACE
-    (whenBranch
-    | NL)*?
+    (whenBranch | NL)*?
     defaultWhenBranch?
     NL*?
     R_BRACE
@@ -256,34 +268,29 @@ whenStatement:
 whenBranch:
     exprList
     ARROW
-    ((expr
-    end)
+    ((expr end)
     | whenBranchBody)
     ;
 
 defaultWhenBranch:
     UNDERSCORE
     ARROW
-    ((expr
-    end)
+    ((expr end)
     | whenBranchBody)
     ;
 
 whenBranchBody:
     L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE
     ;
 
 // Loops
 loop:
     KW_LOOP
-    ((expr
-    end)
+    ((expr end)
     | (L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE))
     ;
 
@@ -296,11 +303,9 @@ whileLoop:
 
 simpleWhileLoop:
     whileHead
-    ((expr
-    end)
+    ((expr end)
     | (L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE))
     ;
 
@@ -325,11 +330,9 @@ whileHead:
 
 doBlock:
     KW_DO
-    ((expr
-    end)
+    ((expr end)
     | (L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE))
     ;
 
@@ -338,11 +341,9 @@ forLoop:
     KW_FOR
     (indexedLoopHead
     | rangedLoopHead)
-    ((expr
-    end)
+    ((expr end)
     | (L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE))
     ;
 
@@ -376,8 +377,7 @@ indexedLoopHead:
 ifStatement:
     KW_IF
     expr
-    ((decl
-    end)
+    ((decl end)
     | ifBody)
     elseIfStatement*?
     elseStatement?
@@ -389,36 +389,31 @@ elseIfStatement:
     L_PAREN
     expr
     R_PAREN
-    ((decl
-    end)
+    ((decl end)
     | ifBody)
     ;
 
 elseStatement:
     KW_ELSE
-    ((decl
-    end)
+    ((decl end)
     | ifBody)
     ;
 
 ifBody:
     L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE
     ;
 
 // Functions
 function:
     protoFunction
-    (functionBody
-    | inlineFunctionBody)
+    (functionBody | inlineFunctionBody)
     ;
 
 functionBody:
     L_BRACE
-    (decl
-    | NL)*?
+    (decl | NL)*?
     R_BRACE
     ;
 
@@ -427,11 +422,8 @@ variable:
     KW_MUT?
     storageMod*?
     ident
-    (COLON
-    type)?
-    (OP_ASSIGN
-    expr)?
-    end
+    (COLON type)?
+    (OP_ASSIGN expr)?
     ;
 
 inlineFunctionBody:
@@ -453,31 +445,26 @@ protoFunction:
     L_PAREN
     functionParamList
     R_PAREN
-    (COLON
-    type)?
-    (KW_THROWS
-    typeList)?
+    (COLON type)?
+    (KW_THROWS typeList)?
     ;
 
 functionParamList:
     (functionParam
-    | (functionParam
-    COMMA))*?
+    | (functionParam COMMA))*?
     ;
 
 functionParam:
     ident
     COLON
     type
-    (OP_ASSIGN
-    expr)?
+    (OP_ASSIGN expr)?
     ;
 
 // Expressions
 exprList:
     (expr
-    | (expr
-    COMMA))*?
+    | (expr COMMA))*?
     ;
 
 expr:
@@ -505,8 +492,7 @@ groupedExpr:
 exhaustiveIfExpr:
     KW_IF
     expr
-    ((decl
-    end)
+    ((decl end)
     | ifBody)
     elseIfStatement*?
     elseStatement
@@ -516,8 +502,7 @@ exhaustiveWhenExpr:
     KW_WHEN
     expr
     L_BRACE
-    (whenBranch
-    | NL)*?
+    (whenBranch | NL)*?
     defaultWhenBranch
     NL*?
     R_BRACE
@@ -526,8 +511,7 @@ exhaustiveWhenExpr:
 // Array expressions
 sizedArrayExpr:
     L_BRACKET
-    (type
-    | sizedArrayExpr)
+    (type | sizedArrayExpr)
     COMMA
     intLiteral
     R_BRACKET
@@ -543,8 +527,7 @@ arrayInitExpr:
 stackAllocExpr:
     KW_STACKALLOC
     L_BRACKET
-    (type
-    | sizedArrayExpr)
+    (type | sizedArrayExpr)
     COMMA
     intLiteral
     R_BRACKET
@@ -575,8 +558,7 @@ tryExpr:
 
 // Call expressions
 callExpr:
-    (ref
-    binaryRefOp)?
+    (ref binaryRefOp)?
     ident
     genericList?
     L_PAREN
@@ -586,17 +568,13 @@ callExpr:
 
 // Increment/decrement expressions
 incrementExpr:
-    (ref
-    OP_INCREMENT)
-    | (OP_INCREMENT
-    ref)
+    (ref OP_INCREMENT)
+    | (OP_INCREMENT ref)
     ;
 
 decrementExpr:
-    (ref
-    OP_DECREMENT)
-    | (OP_DECREMENT
-    ref)
+    (ref OP_DECREMENT)
+    | (OP_DECREMENT ref)
     ;
 
 // Binary expressions
@@ -670,10 +648,8 @@ ref:
     ;
 
 simpleRef:
-    (qualifiedIdent
-    | ident)
-    (binaryRefOp
-    ident)*?
+    (qualifiedIdent | ident)
+    (binaryRefOp ident)*?
     ;
 
 binaryRefOp:
@@ -694,8 +670,7 @@ unaryRefOp:
     ;
 
 methodRef:
-    (qualifiedIdent
-    | ident)?
+    (qualifiedIdent | ident)?
     DOUBLE_COLON
     ident
     ;
@@ -704,17 +679,14 @@ methodRef:
 genericParamList:
     L_CHEVRON
     (genericParam
-    | (genericParam
-    COMMA))+
+    | (genericParam COMMA))+
     R_CHEVRON
     ;
 
 genericParam:
     ident
-    (COLON
-    genericExpr)?
-    (OP_ASSIGN
-    type)?
+    (COLON genericExpr)?
+    (OP_ASSIGN type)?
     ;
 
 genericExpr:
@@ -747,8 +719,7 @@ genericOp:
 genericList:
     L_CHEVRON
     (type
-    | (type
-    COMMA))+
+    | (type COMMA))+
     R_CHEVRON
     ;
 
@@ -797,24 +768,24 @@ stringLiteral:
 
 simpleStringLiteral:
     (DOUBLE_QUOTE
-        (STRING_MODE_TEXT
-        | STRING_MODE_ESCAPED_STRING_END
-        | STRING_MODE_ESCAPED_CHAR
-        | (STRING_MODE_LERP_BEGIN
-        expr*?
-        R_BRACE))+
+    (STRING_MODE_TEXT
+    | STRING_MODE_ESCAPED_STRING_END
+    | STRING_MODE_ESCAPED_CHAR
+    | (STRING_MODE_LERP_BEGIN
+    expr*?
+    R_BRACE))+
     DOUBLE_QUOTE)
     | EMPTY_STRING
     ;
 
 multilineStringLiteral:
     (ML_STRING_BEGIN
-        (ML_STRING_MODE_TEXT
-        | ML_STRING_MODE_ESCAPED_ML_STRING_END
-        | ML_STRING_MODE_ESCAPED_CHAR
-        | (ML_STRING_MODE_LERP_BEGIN
-        expr*?
-        R_BRACE))+
+    (ML_STRING_MODE_TEXT
+    | ML_STRING_MODE_ESCAPED_ML_STRING_END
+    | ML_STRING_MODE_ESCAPED_CHAR
+    | (ML_STRING_MODE_LERP_BEGIN
+    expr*?
+    R_BRACE))+
     ML_STRING_END)
     | EMPTY_ML_STRING
     ;
@@ -824,8 +795,7 @@ accessMod:
     (KW_PUB
     L_PAREN
     (KW_MOD
-    | (COLON
-    KW_THIS)
+    | (COLON KW_THIS)
     | type)
     R_PAREN)
     | KW_PUB
@@ -853,8 +823,7 @@ typeMod:
 // Types
 typeList:
     (type
-    | (type
-    COMMA))+?
+    | (type COMMA))+?
     ;
 
 type:
@@ -935,16 +904,14 @@ floatType:
 // Identifiers
 qualifiedIdent:
     ident
-    (DOUBLE_COLON
-    ident)+
-    (DOUBLE_COLON
-    ASTERISK)?
+    (DOUBLE_COLON ident)+
+    (DOUBLE_COLON ASTERISK)?
     ;
 
 ident:
     (((TOKEN_LERP_BEGIN
-        (MACRO_IDENT
-        | specialToken)
+    (MACRO_IDENT
+    | specialToken)
     R_BRACE)
     | IDENT)+)
     | UNDERSCORE
