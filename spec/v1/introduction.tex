@@ -1,0 +1,26 @@
+%! Author = Alexander Hinze
+%! Date = 12.11.22
+
+Once one decides to create a new programming language, there is always
+this one question that gets asked instantly: why?\\
+And that is a very good question indeed, the market is over-saturated
+with newcomer languages like Kotlin, Zig, Julia, Rust, Carbon and more.\\
+
+\quotebox{Alexander R. Hinze}{
+    The main reason why i initially created Ferrous is quite simple:\\
+    i wanted a programming language with the metaprogramming capabilities
+    of a language like C++ or Rust, which is able to compile to JVM bytecode.
+}
+
+\noindent
+Which makes sense if you look at it.\\
+Kotlin comes very close to what I wanted in a language, but it's still not
+quite there.\\
+It has the right ideas implemented for its type system, however a big puzzle
+piece is still missing: proper zero-cost-abstraction.\\
+\\
+At some point down the line however, the JVM as a single target wasn't enough
+anymore, and we decided to turn Ferrous into a multi-target language.\\
+This decision was made very early on during the PoC phase of project to ensure the
+language being designed for that exact purpose from the ground up.\\
+\\
