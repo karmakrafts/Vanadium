@@ -214,6 +214,7 @@ statement:
 returnStatement:
     KW_RETURN
     expr?
+    end?
     ;
 
 // Try-catch statements
@@ -436,7 +437,7 @@ protoFunction:
     attributeList
     accessMod?
     functionMod*?
-    KW_FN
+    KW_FUN
     (binaryOp
     | unaryOp
     | OP_ASSIGN
@@ -472,7 +473,6 @@ expr:
     | binaryExpr
     | incrementExpr
     | decrementExpr
-    | tryExpr
     | heapInitExpr
     | stackInitExpr
     | stackAllocExpr
@@ -480,6 +480,7 @@ expr:
     | arrayInitExpr
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
+    | groupedExpr
     ;
 
 groupedExpr:
@@ -550,12 +551,6 @@ stackInitExpr:
     R_BRACE
     ;
 
-// Try expressions
-tryExpr:
-    KW_TRY
-    expr
-    ;
-
 // Call expressions
 callExpr:
     (ref binaryRefOp)?
@@ -564,6 +559,7 @@ callExpr:
     L_PAREN
     exprList
     R_PAREN
+    end?
     ;
 
 // Increment/decrement expressions
@@ -604,23 +600,27 @@ binaryOp:
 
     | OP_PLUS
     | OP_MINUS
+    | OP_POW
     | ASTERISK
     | OP_DIV
     | OP_MOD
 
     | OP_SAT_PLUS
     | OP_SAT_MINUS
+    | OP_SAT_POW
     | OP_SAT_TIMES
     | OP_SAT_DIV
     | OP_SAT_MOD
 
     | OP_PLUS_ASSIGN
     | OP_MINUS_ASSIGN
+    | OP_POW_ASSIGN
     | OP_TIMES_ASSIGN
     | OP_MOD_ASSIGN
 
     | OP_SAT_PLUS_ASSIGN
     | OP_SAT_MINUS_ASSIGN
+    | OP_SAT_POW_ASSIGN
     | OP_SAT_TIMES_ASSIGN
     | OP_SAT_DIV_ASSIGN
     | OP_SAT_MOD_ASSIGN
@@ -909,12 +909,12 @@ qualifiedIdent:
     ;
 
 ident:
-    (((TOKEN_LERP_BEGIN
+    ((TOKEN_LERP_BEGIN
     (MACRO_IDENT
     | specialToken)
-    R_BRACE)
-    | IDENT)+)
+    R_BRACE)+)
     | UNDERSCORE
+    | IDENT
     ;
 
 specialToken:

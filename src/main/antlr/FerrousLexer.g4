@@ -48,9 +48,6 @@ KW_STATIC: 'static';
 KW_DELETE: 'delete';
 KW_ATOMIC: 'atomic';
 KW_SWITCH: 'switch';
-KW_THROWS: 'throws';
-KW_CATCH: 'catch';
-KW_THROW: 'throw';
 KW_TOKEN: 'token';
 KW_WHILE: 'while';
 KW_MACRO: 'macro';
@@ -69,7 +66,6 @@ KW_ENUM: 'enum';
 KW_GOTO: 'goto';
 KW_NULL: 'null';
 KW_THIS: 'this';
-KW_TRY: 'try';
 KW_NEW: 'new';
 KW_FOR: 'for';
 KW_PUB: 'pub';
@@ -79,13 +75,13 @@ KW_INL: 'inl';
 KW_TLS: 'tls';
 KW_LET: 'let';
 KW_MUT: 'mut';
+KW_FUN: 'fun';
 KW_AS_QMK: 'as?';
 KW_AS: 'as';
 KW_IS_NOT: '!is';
 KW_IS: 'is';
 KW_IN_NOT: '!in';
 KW_IN: 'in';
-KW_FN: 'fn';
 KW_OP: 'op';
 KW_IF: 'if';
 KW_DO: 'do';
@@ -127,12 +123,14 @@ OP_DECREMENT: '--';
 
 OP_SAT_PLUS_ASSIGN: '+|=';
 OP_SAT_MINUS_ASSIGN: '-|=';
+OP_SAT_POW_ASSIGN: '**|=';
 OP_SAT_TIMES_ASSIGN: '*|=';
 OP_SAT_DIV_ASSIGN: '/|=';
 OP_SAT_MOD_ASSIGN: '%|=';
 
 OP_PLUS_ASSIGN: '+=';
 OP_MINUS_ASSIGN: '-=';
+OP_POW_ASSIGN: '**=';
 OP_TIMES_ASSIGN: '*=';
 OP_DIV_ASSIGN: '/=';
 OP_MOD_ASSIGN: '%=';
@@ -141,12 +139,14 @@ OP_ASSIGN: '=';
 
 OP_SAT_PLUS: '+|';
 OP_SAT_MINUS: '-|';
+OP_SAT_POW: '**|';
 OP_SAT_TIMES: '*|';
 OP_SAT_DIV: '/|';
 OP_SAT_MOD: '%|';
 
 OP_PLUS: '+';
 OP_MINUS: '-';
+OP_POW: '**';
 OP_DIV: '/';
 OP_MOD: '%';
 OP_INV: '~';
@@ -206,7 +206,7 @@ LITERAL_CHAR: '\'' (F_ESCAPED_CHAR | .) '\'';
 TOKEN_LERP_BEGIN: '${' -> pushMode(DEFAULT_MODE);
 
 // Identifier(s)
-fragment F_IDENT: [a-zA-Z_]+[a-zA-Z0-9_]*;
+fragment F_IDENT: [a-zA-Z_]+[a-zA-Z0-9_]*?;
 MACRO_IDENT: '$' F_IDENT;
 IDENT: F_IDENT;
 
