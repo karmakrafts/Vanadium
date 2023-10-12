@@ -564,16 +564,22 @@ reAssignmentExpr:
 
 alignofExpr:
     KW_ALIGNOF
+    NL*?
     L_PAREN
+    NL*?
     ident
+    NL*?
     R_PAREN
     ;
 
 sizeofExpr:
     KW_SIZEOF
-    TRIPLE_DOT?
+    NL*?
+    (TRIPLE_DOT NL*)?
     L_PAREN
+    NL*?
     ident
+    NL*?
     R_PAREN
     ;
 
@@ -691,6 +697,9 @@ binaryExpr:
 
 binaryOp:
     OP_SWAP
+
+    | OP_SHORTC_AND
+    | OP_SHORTC_OR
 
     | OP_COMPARE
     | OP_EQUAL

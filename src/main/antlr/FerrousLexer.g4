@@ -130,6 +130,9 @@ OP_SAFE_DEREF: '*?';
 OP_LEQUAL: '<=';
 OP_GEQUAL: '>=';
 
+OP_SHORTC_AND: '&&';
+OP_SHORTC_OR: '||';
+
 OP_INCREMENT: '++';
 OP_DECREMENT: '--';
 
