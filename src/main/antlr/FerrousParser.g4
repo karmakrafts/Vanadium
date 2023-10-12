@@ -19,7 +19,7 @@ moduleFile:
     NL*?
     module
     (modUseStatement | NL)*?
-    EOF
+    EOF?
     ;
 
 module:
@@ -35,7 +35,7 @@ modUseStatement:
 
 sourceFile:
     (decl | NL)*?
-    EOF
+    EOF?
     ;
 
 decl:
@@ -46,6 +46,8 @@ decl:
     | udtDecl
     | externFunction
     | function
+    | constructor
+    | destructor
     | (protoFunction end)
     | (field end)
     | (variable end)
@@ -193,7 +195,7 @@ trait:
 
 // Attributes
 attributeList:
-    (attribUsage end)*?
+    (attribUsage end?)*?
     ;
 
 attribUsage:
@@ -207,11 +209,50 @@ attribUsage:
 // Fields
 field:
     accessMod?
+    NL*?
     storageMod*?
+    NL*?
     ident
+    NL*?
     COLON
+    NL*?
     type
-    (OP_ASSIGN expr)?
+    NL*?
+    (OP_ASSIGN NL*? expr)?
+    ;
+
+// Constructors
+constructor:
+    ident
+    L_PAREN
+    functionParamList
+    R_PAREN
+    (COLON (thisCall | superCall))?
+    (functionBody | inlineFunctionBody)?
+    ;
+
+thisCall:
+    KW_THIS
+    L_PAREN
+    exprList
+    R_PAREN
+    ;
+
+superCall:
+    KW_SUPER
+    L_PAREN
+    exprList
+    R_PAREN
+    ;
+
+// Destructors
+destructor:
+    OP_INV
+    ident
+    L_PAREN
+    functionParamList
+    R_PAREN
+    (functionBody | inlineFunctionBody)?
     ;
 
 // Statements
@@ -310,13 +351,17 @@ whileDoLoop:
 
 whileHead:
     KW_WHILE
+    NL*?
     (L_PAREN
+    NL*?
     expr
+    NL*?
     R_PAREN)
     ;
 
 doBlock:
     KW_DO
+    NL*?
     ((expr end)
     | (L_BRACE
     (decl | NL)*?
@@ -326,6 +371,7 @@ doBlock:
 // For loops
 forLoop:
     KW_FOR
+    NL*?
     (indexedLoopHead
     | rangedLoopHead)
     ((expr end)
@@ -336,47 +382,69 @@ forLoop:
 
 rangedLoopHead:
     L_PAREN
+    NL*?
     ident
+    NL*?
     KW_IN
+    NL*?
     expr
+    NL*?
     R_PAREN
     ;
 
 indexedLoopHead:
     L_PAREN
+    NL*?
     variable?
+    NL*?
     SEMICOLON
+    NL*?
     expr?
+    NL*?
     SEMICOLON
+    NL*?
     expr?
+    NL*?
     R_PAREN
     ;
 
 // If statements
 ifStatement:
     KW_CONST?
+    NL*?
     KW_IF
+    NL*?
     L_PAREN
+    NL*?
     expr
+    NL*?
     R_PAREN
+    NL*?
     ((decl end)
     | ifBody)
-    elseIfStatement*?
+    NL*?
+    (elseIfStatement | NL)*?
     elseStatement?
     ;
 
 elseIfStatement:
     KW_ELSE
+    NL*?
     KW_IF
+    NL*?
     L_PAREN
+    NL*?
     expr
+    NL*?
     R_PAREN
+    NL*?
     ((decl end)
     | ifBody)
     ;
 
 elseStatement:
     KW_ELSE
+    NL*?
     ((decl end)
     | ifBody)
     ;
@@ -396,6 +464,7 @@ function:
 
 externFunction:
     KW_EXTERN
+    NL*?
     protoFunction
     end?
     ;
@@ -408,9 +477,12 @@ functionBody:
 
 variable:
     KW_LET
-    KW_MUT?
+    NL*?
+    (KW_MUT NL*)?
     storageMod*?
+    NL*?
     ident
+    NL*?
     (COLON type)?
     (OP_ASSIGN expr)?
     ;
@@ -423,23 +495,31 @@ inlineFunctionBody:
 
 protoFunction:
     attributeList
+    NL*?
     accessMod?
+    NL*?
     functionMod*?
+    NL*?
+    callConvMod?
+    NL*?
     KW_FUN
+    NL*?
     (binaryOp
     | unaryOp
     | OP_ASSIGN
     | ident)
+    NL*?
     genericParamList? // Optional because of chevrons
+    NL*?
     L_PAREN
     functionParamList
     R_PAREN
-    (COLON type)?
+    (COLON NL*? type)?
     ;
 
 functionParamList:
     (functionParam
-    | (functionParam COMMA))*?
+    | (functionParam COMMA) NL*?)*?
     ;
 
 functionParam:
@@ -468,8 +548,18 @@ expr:
     | arrayInitExpr
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
+    | reAssignmentExpr
     | alignofExpr
     | sizeofExpr
+    ;
+
+reAssignmentExpr:
+    ref
+    NL*?
+    OP_ASSIGN
+    NL*?
+    expr
+    end?
     ;
 
 alignofExpr:
@@ -668,6 +758,13 @@ ref:
     specialRef
     | simpleRef
     | methodRef
+    | thisRef
+    ;
+
+thisRef:
+    KW_THIS
+    DOT
+    ref
     ;
 
 simpleRef:
@@ -689,6 +786,7 @@ specialRef:
 unaryRefOp:
     OP_SAFE_DEREF
     | ASTERISK
+    | OP_POW
     | AMP
     ;
 
@@ -825,6 +923,13 @@ accessMod:
     | KW_PUB
     ;
 
+callConvMod:
+    KW_CALLCONV
+    L_PAREN
+    ident
+    R_PAREN
+    ;
+
 functionMod:
     KW_STATIC
     | KW_CONST
@@ -858,10 +963,11 @@ type:
     ;
 
 simpleType:
-    refType
-    | pointerType
+    pointerType
+    | refType
     | builtinType
     | nullableType
+    | qualifiedIdent
     | ident
     ;
 
@@ -877,7 +983,7 @@ refType:
 
 pointerType:
     typeMod*?
-    ASTERISK
+    (ASTERISK | OP_POW)+
     type
     ;
 
@@ -955,5 +1061,6 @@ specialToken:
 
 end:
     SEMICOLON
-    | NL
+    | NL+
+    | EOF
     ;

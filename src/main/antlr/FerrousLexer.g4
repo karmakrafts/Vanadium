@@ -36,6 +36,7 @@ KW_STACKALLOC: 'stackalloc';
 KW_INTERFACE: 'interface';
 KW_BITFIELD: 'bitfield';
 KW_OVERRIDE: 'override';
+KW_CALLCONV: 'callconv';
 KW_ALIGNOF: 'alignof';
 KW_VIRTUAL: 'virtual';
 KW_LITERAL: 'literal';
