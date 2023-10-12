@@ -75,7 +75,7 @@ useTypeList:
 useType:
     type
     (KW_AS
-    ident)
+    ident)?
     ;
 
 // User defined types
