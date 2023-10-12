@@ -59,8 +59,21 @@ useStatement:
 
 useList:
     L_BRACE
-    typeList
+    NL*?
+    useTypeList
+    NL*?
     R_BRACE
+    ;
+
+useTypeList:
+    (useType
+    | (useType COMMA NL*?))+?
+    ;
+
+useType:
+    type
+    (KW_AS
+    ident)
     ;
 
 // User defined types
