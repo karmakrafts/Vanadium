@@ -493,6 +493,13 @@ inlineFunctionBody:
     end
     ;
 
+functionIdent:
+    binaryOp
+    | unaryOp
+    | OP_ASSIGN
+    | ident
+    ;
+
 protoFunction:
     attributeList
     NL*?
@@ -504,10 +511,7 @@ protoFunction:
     NL*?
     KW_FUN
     NL*?
-    (binaryOp
-    | unaryOp
-    | OP_ASSIGN
-    | ident)
+    functionIdent
     NL*?
     genericParamList? // Optional because of chevrons
     NL*?
