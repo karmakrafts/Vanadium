@@ -44,7 +44,9 @@ decl:
     | useStatement
     | expr
     | udtDecl
+    | externFunction
     | function
+    | (protoFunction end)
     | (field end)
     | (variable end)
     ;
@@ -82,8 +84,8 @@ enumClass:
     (COLON typeList)?
     L_BRACE
     enumConstantList
-    SEMICOLON
-    (decl | NL)*?
+    (SEMICOLON
+    (decl | NL)*?)?
     R_BRACE
     ;
 
@@ -204,10 +206,19 @@ statement:
     returnStatement
     | ifStatement
     | whenStatement
-    | tryStatement
     | forLoop
     | whileLoop
     | loop
+    | panicStatement
+    ;
+
+// Panic statements
+panicStatement:
+    KW_CONST?
+    KW_PANIC
+    L_PAREN
+    stringLiteral
+    R_PAREN
     ;
 
 // Return statements
@@ -215,44 +226,6 @@ returnStatement:
     KW_RETURN
     expr?
     end?
-    ;
-
-// Try-catch statements
-tryStatement:
-    tryWithStatement
-    | tryCatchStatement
-    ;
-
-tryCatchStatement:
-    KW_TRY
-    ((expr end)
-    | (L_BRACE
-    (decl | NL)*?
-    R_BRACE))
-    catchBlock
-    ;
-
-tryWithStatement:
-    KW_TRY
-    (variable
-    | (L_PAREN
-    variable
-    R_PAREN))
-    L_BRACE
-    (decl | NL)*?
-    R_BRACE
-    catchBlock?
-    ;
-
-catchBlock:
-    KW_CATCH
-    (L_PAREN
-    functionParam
-    R_PAREN)?
-    ((expr end)
-    | (L_BRACE
-    (decl | NL)*?
-    R_BRACE))
     ;
 
 // When statements
@@ -349,35 +322,30 @@ forLoop:
     ;
 
 rangedLoopHead:
-    (ident
-    KW_IN
-    expr)
-    | (L_PAREN
+    L_PAREN
     ident
     KW_IN
     expr
-    R_PAREN)
+    R_PAREN
     ;
 
 indexedLoopHead:
-    (variable?
-    expr?
-    SEMICOLON
-    expr?
-    SEMICOLON?)
-    | (L_PAREN
+    L_PAREN
     variable?
+    SEMICOLON
     expr?
     SEMICOLON
     expr?
-    SEMICOLON?
-    R_PAREN)
+    R_PAREN
     ;
 
 // If statements
 ifStatement:
+    KW_CONST?
     KW_IF
+    L_PAREN
     expr
+    R_PAREN
     ((decl end)
     | ifBody)
     elseIfStatement*?
@@ -410,6 +378,13 @@ ifBody:
 function:
     protoFunction
     (functionBody | inlineFunctionBody)
+    end?
+    ;
+
+externFunction:
+    KW_EXTERN
+    protoFunction
+    end?
     ;
 
 functionBody:
@@ -447,7 +422,6 @@ protoFunction:
     functionParamList
     R_PAREN
     (COLON type)?
-    (KW_THROWS typeList)?
     ;
 
 functionParamList:
@@ -469,7 +443,8 @@ exprList:
     ;
 
 expr:
-    simpleExpr
+    spreadExpr
+    | simpleExpr
     | binaryExpr
     | incrementExpr
     | decrementExpr
@@ -480,7 +455,28 @@ expr:
     | arrayInitExpr
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
-    | groupedExpr
+    | alignofExpr
+    | sizeofExpr
+    ;
+
+alignofExpr:
+    KW_ALIGNOF
+    L_PAREN
+    ident
+    R_PAREN
+    ;
+
+sizeofExpr:
+    KW_SIZEOF
+    TRIPLE_DOT?
+    L_PAREN
+    ident
+    R_PAREN
+    ;
+
+spreadExpr:
+    TRIPLE_DOT
+    expr
     ;
 
 groupedExpr:
@@ -576,6 +572,8 @@ decrementExpr:
 // Binary expressions
 simpleExpr:
     groupedExpr
+    | alignofExpr
+    | sizeofExpr
     | callExpr
     | unaryExpr
     | literal
@@ -598,19 +596,31 @@ binaryOp:
     | L_CHEVRON
     | R_CHEVRON
 
-    | OP_PLUS
-    | OP_MINUS
     | OP_POW
     | ASTERISK
     | OP_DIV
     | OP_MOD
+    | OP_PLUS
+    | OP_MINUS
 
-    | OP_SAT_PLUS
-    | OP_SAT_MINUS
+    | AMP
+    | PIPE
+    | OP_XOR
+    | OP_LSH
+    | OP_RSH
+
     | OP_SAT_POW
     | OP_SAT_TIMES
     | OP_SAT_DIV
     | OP_SAT_MOD
+    | OP_SAT_PLUS
+    | OP_SAT_MINUS
+
+    | OP_AND_ASSIGN
+    | OP_OR_ASSIGN
+    | OP_XOR_ASSIGN
+    | OP_LSH_ASSIGN
+    | OP_RSH_ASSIGN
 
     | OP_PLUS_ASSIGN
     | OP_MINUS_ASSIGN
@@ -685,6 +695,7 @@ genericParamList:
 
 genericParam:
     ident
+    TRIPLE_DOT?
     (COLON genericExpr)?
     (OP_ASSIGN type)?
     ;
@@ -818,6 +829,7 @@ storageMod:
 
 typeMod:
     KW_ATOMIC
+    | KW_MUT
     ;
 
 // Types
@@ -874,7 +886,8 @@ builtinType:
     | KW_VOID
     | KW_BOOL
     | KW_CHAR
-    | KW_STRING)
+    | KW_STRING
+    | KW_VAARGS)
     ;
 
 intType:

@@ -36,9 +36,12 @@ KW_STACKALLOC: 'stackalloc';
 KW_INTERFACE: 'interface';
 KW_BITFIELD: 'bitfield';
 KW_OVERRIDE: 'override';
+KW_ALIGNOF: 'alignof';
 KW_VIRTUAL: 'virtual';
 KW_LITERAL: 'literal';
 KW_DEFAULT: 'default';
+KW_SIZEOF: 'sizeof';
+KW_VAARGS: 'vaargs';
 KW_RETURN: 'return';
 KW_EXTERN: 'extern';
 KW_STRUCT: 'struct';
@@ -48,6 +51,7 @@ KW_STATIC: 'static';
 KW_DELETE: 'delete';
 KW_ATOMIC: 'atomic';
 KW_SWITCH: 'switch';
+KW_PANIC: 'panic';
 KW_TOKEN: 'token';
 KW_WHILE: 'while';
 KW_MACRO: 'macro';
@@ -106,8 +110,15 @@ KW_F64: 'f64';
 
 // Operators
 OP_INCL_RANGE: '..=';
+OP_LSH_ASSIGN: '<<=';
+OP_RSH_ASSIGN: '>>=';
+OP_AND_ASSIGN: '&=';
+OP_OR_ASSIGN: '|=';
+OP_XOR_ASSIGN: '^=';
 
 OP_COMPARE: '<=>';
+OP_LSH: '<<';
+OP_RSH: '>>';
 OP_SWAP: '<->';
 OP_EQUAL: '==';
 
@@ -149,7 +160,9 @@ OP_MINUS: '-';
 OP_POW: '**';
 OP_DIV: '/';
 OP_MOD: '%';
+
 OP_INV: '~';
+OP_XOR: '^';
 
 // Multi-purpose tokens
 // We don't explicitly call these operators, since they can also be used for multiple things
@@ -206,7 +219,7 @@ LITERAL_CHAR: '\'' (F_ESCAPED_CHAR | .) '\'';
 TOKEN_LERP_BEGIN: '${' -> pushMode(DEFAULT_MODE);
 
 // Identifier(s)
-fragment F_IDENT: [a-zA-Z_]+[a-zA-Z0-9_]*?;
+fragment F_IDENT: [a-zA-Z_]+[a-zA-Z0-9_]*;
 MACRO_IDENT: '$' F_IDENT;
 IDENT: F_IDENT;
 
