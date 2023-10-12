@@ -939,7 +939,7 @@ accessMod:
 callConvMod:
     KW_CALLCONV
     L_PAREN
-    ident
+    IDENT
     R_PAREN
     ;
 
