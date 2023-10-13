@@ -887,6 +887,7 @@ sintLiteral:
     | LITERAL_I16
     | LITERAL_I32
     | LITERAL_I64
+    | LITERAL_ISIZE
     ;
 
 uintLiteral:
@@ -894,6 +895,7 @@ uintLiteral:
     | LITERAL_U16
     | LITERAL_U32
     | LITERAL_U64
+    | LITERAL_USIZE
     ;
 
 floatLiteral:
@@ -1034,6 +1036,7 @@ sintType:
     | KW_I16
     | KW_I32
     | KW_I64
+    | KW_ISIZE
     ;
 
 uintType:
@@ -1041,6 +1044,7 @@ uintType:
     | KW_U16
     | KW_U32
     | KW_U64
+    | KW_USIZE
     ;
 
 floatType:
