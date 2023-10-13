@@ -529,7 +529,7 @@ functionParamList:
 functionParam:
     ident
     COLON
-    type
+    (type | KW_VAARGS)
     (OP_ASSIGN expr)?
     ;
 
@@ -1018,8 +1018,7 @@ builtinType:
     | KW_VOID
     | KW_BOOL
     | KW_CHAR
-    | KW_STRING
-    | KW_VAARGS)
+    | KW_STRING)
     ;
 
 intType:
