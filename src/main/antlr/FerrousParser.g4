@@ -529,8 +529,13 @@ functionParamList:
 functionParam:
     ident
     COLON
-    (type | KW_VAARGS)
+    functionParamType
     (OP_ASSIGN expr)?
+    ;
+
+functionParamType:
+    type
+    | KW_VAARGS
     ;
 
 // Expressions
