@@ -124,7 +124,6 @@ OP_SWAP: '<->';
 OP_EQUAL: '==';
 
 OP_SAFE_PTR_REF: '?->';
-OP_SAFE_REF: '?.';
 OP_SAFE_DEREF: '*?';
 
 OP_LEQUAL: '<=';

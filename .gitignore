@@ -27,4 +27,4 @@ forge*changelog.txt
 .flooignore
 logs/
 
-src/main/gen/
+gen/

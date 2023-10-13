@@ -979,14 +979,8 @@ simpleType:
     pointerType
     | refType
     | builtinType
-    | nullableType
     | qualifiedIdent
     | ident
-    ;
-
-nullableType:
-    QMK
-    type
     ;
 
 refType:
