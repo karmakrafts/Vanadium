@@ -1009,10 +1009,14 @@ builtinType:
     typeMod*?
     (intType
     | floatType
-    | KW_VOID
+    | miscType)
+    ;
+
+miscType:
+    KW_VOID
     | KW_BOOL
     | KW_CHAR
-    | KW_STRING)
+    | KW_STRING
     ;
 
 intType:
