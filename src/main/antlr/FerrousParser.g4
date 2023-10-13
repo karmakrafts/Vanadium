@@ -43,7 +43,7 @@ decl:
     | statement
     | useStatement
     | expr
-    | udtDecl
+    | udt
     | externFunction
     | function
     | constructor
@@ -79,7 +79,7 @@ useType:
     ;
 
 // User defined types
-udtDecl:
+udt:
     enumClass
     | class
     | enum
@@ -548,8 +548,8 @@ expr:
     | heapInitExpr
     | stackInitExpr
     | stackAllocExpr
-    | sizedArrayExpr
-    | arrayInitExpr
+    | sizedSliceExpr
+    | sliceInitExpr
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
     | reAssignmentExpr
@@ -619,15 +619,15 @@ exhaustiveWhenExpr:
     ;
 
 // Array expressions
-sizedArrayExpr:
+sizedSliceExpr:
     L_BRACKET
-    (type | sizedArrayExpr)
+    (type | sizedSliceExpr)
     COMMA
     intLiteral
     R_BRACKET
     ;
 
-arrayInitExpr:
+sliceInitExpr:
     L_BRACKET
     exprList
     R_BRACKET
@@ -637,7 +637,7 @@ arrayInitExpr:
 stackAllocExpr:
     KW_STACKALLOC
     L_BRACKET
-    (type | sizedArrayExpr)
+    (type | sizedSliceExpr)
     COMMA
     intLiteral
     R_BRACKET
@@ -646,7 +646,7 @@ stackAllocExpr:
 // Initialization expressions
 heapInitExpr:
     KW_NEW
-    (sizedArrayExpr
+    (sizedSliceExpr
     | (type?
     L_PAREN
     exprList
@@ -970,7 +970,7 @@ typeList:
     ;
 
 type:
-    arrayType
+    sliceType
     | genericType
     | simpleType
     ;
@@ -999,7 +999,7 @@ genericType:
     genericList
     ;
 
-arrayType:
+sliceType:
     L_BRACKET
     type
     R_BRACKET
