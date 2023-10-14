@@ -1069,11 +1069,15 @@ qualifiedIdent:
     (DOUBLE_COLON ASTERISK)?
     ;
 
-ident:
-    ((TOKEN_LERP_BEGIN
+lerpIdent:
+    (TOKEN_LERP_BEGIN
     (MACRO_IDENT
     | specialToken)
-    R_BRACE)+)
+    R_BRACE)+
+    ;
+
+ident:
+    lerpIdent
     | UNDERSCORE
     | IDENT
     ;
