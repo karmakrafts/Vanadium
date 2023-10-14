@@ -467,23 +467,22 @@ ifBody:
     ;
 
 // Functions
+functionBody:
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
+    ;
+
 function:
     protoFunction
     (functionBody | inlineFunctionBody)
-    end?
     ;
 
 externFunction:
     KW_EXTERN
     NL*?
     protoFunction
-    end?
-    ;
-
-functionBody:
-    L_BRACE
-    (decl | NL)*?
-    R_BRACE
+    end
     ;
 
 variable:
