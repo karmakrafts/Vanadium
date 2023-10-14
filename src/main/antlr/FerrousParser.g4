@@ -42,7 +42,6 @@ decl:
     modUseStatement
     | statement
     | useStatement
-    | expr
     | udt
     | externFunction
     | function
