@@ -88,6 +88,14 @@ udt:
     | trait
     ;
 
+enumClassBody:
+    L_BRACE
+    enumConstantList
+    (SEMICOLON
+    (decl | NL)*?)?
+    R_BRACE
+    ;
+
 enumClass:
     attributeList
     accessMod?
@@ -96,11 +104,7 @@ enumClass:
     ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
-    L_BRACE
-    enumConstantList
-    (SEMICOLON
-    (decl | NL)*?)?
-    R_BRACE
+    enumClassBody
     ;
 
 class:
@@ -110,7 +114,7 @@ class:
     ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
-    (classBody | inlineClassBody)
+    classBody
     ;
 
 classBody:
@@ -119,11 +123,10 @@ classBody:
     R_BRACE
     ;
 
-inlineClassBody:
-    L_PAREN
-    functionParamList
-    R_PAREN
-    end
+enumBody:
+    L_BRACE
+    enumConstantList
+    R_BRACE
     ;
 
 enum:
@@ -131,9 +134,7 @@ enum:
     accessMod?
     KW_ENUM
     ident
-    L_BRACE
-    enumConstantList
-    R_BRACE
+    enumBody
     ;
 
 enumConstantList:
@@ -155,7 +156,15 @@ struct:
     genericParamList? // Optional because of chevrons
     (COLON
     typeList)?
-    (classBody | inlineClassBody)
+    classBody
+    ;
+
+interfaceBody:
+    L_BRACE
+    (decl
+    | protoFunction
+    | NL)*?
+    R_BRACE
     ;
 
 interface:
@@ -165,11 +174,14 @@ interface:
     ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
-    L_BRACE
-    (decl
-    | protoFunction
-    | NL)*?
-    R_BRACE
+    interfaceBody
+    ;
+
+attribBody:
+    L_PAREN
+    functionParamList
+    R_PAREN
+    end
     ;
 
 attrib:
@@ -179,7 +191,7 @@ attrib:
     ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
-    inlineClassBody
+    attribBody
     ;
 
 trait:
@@ -189,7 +201,7 @@ trait:
     ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
-    (classBody | inlineClassBody)
+    classBody
     ;
 
 // Attributes
