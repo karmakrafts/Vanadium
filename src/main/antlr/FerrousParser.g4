@@ -39,7 +39,8 @@ sourceFile:
     ;
 
 decl:
-    modUseStatement
+    modBlock
+    | modUseStatement
     | statement
     | useStatement
     | udt
@@ -50,6 +51,14 @@ decl:
     | (protoFunction end)
     | (field end)
     | (variable end)
+    ;
+
+modBlock:
+    KW_MOD
+    (qualifiedIdent | ident)
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
     ;
 
 useStatement:
