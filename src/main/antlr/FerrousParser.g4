@@ -39,7 +39,8 @@ sourceFile:
     ;
 
 decl:
-    modBlock
+    typeAlias
+    | modBlock
     | modUseStatement
     | statement
     | useStatement
@@ -51,6 +52,14 @@ decl:
     | (protoFunction end)
     | (field end)
     | (variable end)
+    | expr
+    ;
+
+typeAlias:
+    KW_TYPE
+    ident
+    OP_ASSIGN
+    type
     ;
 
 modBlock:
@@ -564,7 +573,8 @@ exprList:
     ;
 
 expr:
-    spreadExpr
+    lambdaExpr
+    | spreadExpr
     | simpleExpr
     | binaryExpr
     | incrementExpr
@@ -579,6 +589,15 @@ expr:
     | reAssignmentExpr
     | alignofExpr
     | sizeofExpr
+    ;
+
+lambdaExpr:
+    L_PAREN
+    functionParamList
+    R_PAREN
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
     ;
 
 reAssignmentExpr:
@@ -713,8 +732,8 @@ simpleExpr:
     | sizeofExpr
     | callExpr
     | unaryExpr
+    | ref
     | literal
-    | ref // Refs should have low precedence, like idents
     ;
 
 binaryExpr:
@@ -806,7 +825,12 @@ thisRef:
 
 simpleRef:
     (qualifiedIdent | ident)
-    (binaryRefOp ident)*?
+    (binaryRefOp refIdent)*?
+    ;
+
+refIdent:
+    LITERAL_I32
+    | ident
     ;
 
 binaryRefOp:
@@ -996,9 +1020,26 @@ typeList:
     ;
 
 type:
-    sliceType
+    tupleType
+    | functionType
+    | sliceType
     | genericType
     | simpleType
+    ;
+
+tupleType:
+    L_PAREN
+    typeList
+    R_PAREN
+    ;
+
+functionType:
+    callConvMod?
+    (L_PAREN
+    typeList?
+    R_PAREN)
+    ARROW
+    type
     ;
 
 simpleType:
