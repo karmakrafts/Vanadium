@@ -552,18 +552,21 @@ protoFunction:
 functionParamList:
     (functionParam
     | (functionParam COMMA) NL*?)*?
+    vaFunctionParam?
     ;
 
 functionParam:
     ident
     COLON
-    functionParamType
+    type
     (OP_ASSIGN expr)?
     ;
 
-functionParamType:
-    type
-    | KW_VAARGS
+vaFunctionParam:
+    ident
+    COLON
+    KW_VAARGS
+    (OP_ASSIGN (expr (COMMA expr)*?))?
     ;
 
 // Expressions
@@ -592,6 +595,7 @@ expr:
     ;
 
 lambdaExpr:
+    callConvMod?
     L_PAREN
     functionParamList
     R_PAREN
@@ -1037,6 +1041,8 @@ functionType:
     callConvMod?
     (L_PAREN
     typeList?
+    (COMMA
+    KW_VAARGS)?
     R_PAREN)
     ARROW
     type
