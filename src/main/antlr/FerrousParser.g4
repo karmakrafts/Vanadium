@@ -999,8 +999,7 @@ callConvMod:
     ;
 
 functionMod:
-    KW_STATIC
-    | KW_CONST
+    KW_CONST
     | KW_INL
     | KW_OVERRIDE
     | KW_VIRTUAL
@@ -1008,8 +1007,7 @@ functionMod:
     ;
 
 storageMod:
-    KW_STATIC
-    | KW_CONST
+    KW_CONST
     | KW_TLS
     ;
 
