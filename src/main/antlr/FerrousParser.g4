@@ -50,7 +50,7 @@ decl:
     | constructor
     | destructor
     | (protoFunction end)
-    | (field end)
+    | (field end?)
     | (variable end)
     | expr
     ;
@@ -237,6 +237,7 @@ attribUsage:
 
 // Fields
 field:
+    attributeList
     accessMod?
     NL*?
     storageMod*?
