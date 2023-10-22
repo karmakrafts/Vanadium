@@ -196,10 +196,10 @@ interface:
     ;
 
 attribBody:
-    L_PAREN
-    functionParamList
-    R_PAREN
-    end
+    L_BRACE
+    (decl
+    | NL)*?
+    R_BRACE
     ;
 
 attrib:
