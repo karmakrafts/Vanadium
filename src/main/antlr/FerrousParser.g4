@@ -50,6 +50,7 @@ decl:
     | constructor
     | destructor
     | (protoFunction end)
+    | (property end?)
     | (field end?)
     | (variable end)
     | expr
@@ -230,9 +231,59 @@ attributeList:
 attribUsage:
     AT
     (qualifiedIdent | ident)
+    NL*?
     (L_PAREN
-    exprList
+    NL*?
+    (namedExprList | exprList)
+    NL*?
     R_PAREN)?
+    ;
+
+// Properties
+propertyGetter:
+    KW_GET
+    NL*?
+    (inlineFunctionBody | functionBody)
+    ;
+
+propertySetter:
+    KW_SET
+    NL*?
+    L_PAREN
+    NL*?
+    ident
+    NL*?
+    R_PAREN
+    NL*?
+    (inlineFunctionBody | functionBody)
+    ;
+
+property:
+    attributeList
+    accessMod?
+    NL*?
+    (KW_INL NL*?)?
+    ident
+    NL*?
+    COLON
+    NL*?
+    type
+    NL*?
+    (inlinePropertyBody | propertyBody)
+    ;
+
+inlinePropertyBody:
+    ARROW
+    expr
+    ;
+
+propertyBody:
+    L_BRACE
+    NL*?
+    propertyGetter
+    (NL*? propertySetter)?
+    NL*?
+    R_BRACE
     ;
 
 // Fields
@@ -544,9 +595,9 @@ protoFunction:
     NL*?
     genericParamList? // Optional because of chevrons
     NL*?
-    L_PAREN
+    (L_PAREN
     functionParamList
-    R_PAREN
+    R_PAREN)?
     (COLON NL*? type)?
     ;
 
@@ -571,6 +622,17 @@ vaFunctionParam:
     ;
 
 // Expressions
+namedExpr:
+    ident
+    OP_ASSIGN
+    expr
+    ;
+
+namedExprList:
+    (namedExpr
+    | (namedExpr COMMA))*?
+    ;
+
 exprList:
     (expr
     | (expr COMMA))*?
@@ -593,6 +655,7 @@ expr:
     | reAssignmentExpr
     | alignofExpr
     | sizeofExpr
+    | KW_THIS
     ;
 
 lambdaExpr:
@@ -697,24 +760,24 @@ heapInitExpr:
     (sizedSliceExpr
     | (type?
     L_PAREN
-    exprList
+    (namedExprList | exprList)
     R_PAREN))
     ;
 
 stackInitExpr:
     type?
     L_BRACE
-    exprList
+    (namedExprList | exprList)
     R_BRACE
     ;
 
 // Call expressions
 callExpr:
     (ref binaryRefOp)?
-    ident
+    (qualifiedIdent | ident)
     genericList?
     L_PAREN
-    exprList
+    (namedExprList | exprList)
     R_PAREN
     end?
     ;
@@ -1056,6 +1119,7 @@ simpleType:
     ;
 
 refType:
+    KW_MUT?
     AMP
     type
     ;

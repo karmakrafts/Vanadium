@@ -77,6 +77,8 @@ KW_TLS: 'tls';
 KW_LET: 'let';
 KW_MUT: 'mut';
 KW_FUN: 'fun';
+KW_GET: 'get';
+KW_SET: 'set';
 KW_AS_QMK: 'as?';
 KW_IS_NOT: '!is';
 KW_IN_NOT: '!in';
