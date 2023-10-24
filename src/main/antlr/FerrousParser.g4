@@ -593,11 +593,11 @@ protoFunction:
     NL*?
     (genericParamList
     NL*)?
-    L_PAREN
-    NL*?
+    (L_PAREN
+    NL*
     functionParamList
-    NL*?
-    R_PAREN
+    NL*
+    R_PAREN)?
     (COLON NL*? type)?
     ;
 
@@ -1049,7 +1049,7 @@ accessMod:
     (KW_PUB
     L_PAREN
     (KW_MOD
-    | (COLON KW_THIS)
+    | (COLON)
     | type)
     R_PAREN)
     | KW_PUB
