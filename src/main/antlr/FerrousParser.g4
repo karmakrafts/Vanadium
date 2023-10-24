@@ -16,7 +16,7 @@ file:
     ;
 
 moduleFile:
-    NL*?
+    NL*
     module
     (modUseStatement | NL)*?
     EOF?
@@ -39,19 +39,19 @@ sourceFile:
     ;
 
 decl:
-    typeAlias
-    | modBlock
+    modBlock
     | modUseStatement
     | statement
     | useStatement
     | udt
+    | (typeAlias end)
     | externFunction
     | function
     | constructor
     | destructor
     | (protoFunction end)
-    | (property end?)
-    | (field end?)
+    | (property end)
+    | (field end)
     | (variable end)
     | expr
     ;
@@ -231,11 +231,11 @@ attributeList:
 attribUsage:
     AT
     (qualifiedIdent | ident)
-    NL*?
-    (L_PAREN
-    NL*?
+    (NL*
+    L_PAREN
+    NL*
     (namedExprList | exprList)
-    NL*?
+    NL*
     R_PAREN)?
     ;
 
@@ -262,7 +262,7 @@ property:
     attributeList
     accessMod?
     NL*?
-    (KW_INL NL*?)?
+    (KW_INL NL*)?
     ident
     NL*?
     COLON
@@ -281,7 +281,7 @@ propertyBody:
     L_BRACE
     NL*?
     propertyGetter
-    (NL*? propertySetter)?
+    (NL* propertySetter)?
     NL*?
     R_BRACE
     ;
@@ -289,17 +289,16 @@ propertyBody:
 // Fields
 field:
     attributeList
-    accessMod?
-    NL*?
-    storageMod*?
-    NL*?
+    (accessMod
+    NL*)?
+    (storageMod
+    NL*)*?
     ident
     NL*?
     COLON
     NL*?
     type
-    NL*?
-    (OP_ASSIGN NL*? expr)?
+    (NL* OP_ASSIGN NL* expr)?
     ;
 
 // Constructors
@@ -359,8 +358,8 @@ panicStatement:
 // Return statements
 returnStatement:
     KW_RETURN
-    expr?
-    end?
+    ((expr end)
+    | end)
     ;
 
 // When statements
@@ -582,22 +581,23 @@ functionIdent:
 
 protoFunction:
     attributeList
-    NL*?
-    accessMod?
-    NL*?
-    functionMod*?
-    NL*?
-    callConvMod?
-    NL*?
+    (accessMod
+    NL*)?
+    (functionMod
+    NL*)*?
+    (callConvMod
+    NL*)?
     KW_FUN
     NL*?
     functionIdent
     NL*?
-    genericParamList? // Optional because of chevrons
+    (genericParamList
+    NL*)?
+    L_PAREN
     NL*?
-    (L_PAREN
     functionParamList
-    R_PAREN)?
+    NL*?
+    R_PAREN
     (COLON NL*? type)?
     ;
 
@@ -1087,8 +1087,8 @@ typeList:
     ;
 
 type:
-    tupleType
-    | functionType
+    functionType
+    | tupleType
     | sliceType
     | genericType
     | simpleType
@@ -1186,7 +1186,6 @@ floatType:
 qualifiedIdent:
     ident
     (DOUBLE_COLON ident)+
-    (DOUBLE_COLON ASTERISK)?
     ;
 
 lerpIdent:
@@ -1214,6 +1213,6 @@ specialToken:
 
 end:
     SEMICOLON
-    | NL+
+    | NL
     | EOF
     ;
