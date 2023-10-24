@@ -121,7 +121,8 @@ OP_COMPARE: '<=>';
 OP_LSH: '<<';
 OP_RSH: '>>';
 OP_SWAP: '<->';
-OP_EQUAL: '==';
+OP_EQ: '==';
+OP_NEQ: '!=';
 
 OP_SAFE_PTR_REF: '?->';
 OP_SAFE_DEREF: '*?';

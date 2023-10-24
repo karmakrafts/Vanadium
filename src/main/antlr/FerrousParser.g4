@@ -817,7 +817,8 @@ binaryOp:
     | OP_SHORTC_OR
 
     | OP_COMPARE
-    | OP_EQUAL
+    | OP_EQ
+    | OP_NEQ
     | OP_LEQUAL
     | OP_GEQUAL
     | L_CHEVRON
