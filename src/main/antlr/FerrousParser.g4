@@ -1050,7 +1050,7 @@ accessMod:
     L_PAREN
     (KW_MOD
     | (COLON)
-    | type)
+    | typeList)
     R_PAREN)
     | KW_PUB
     ;
