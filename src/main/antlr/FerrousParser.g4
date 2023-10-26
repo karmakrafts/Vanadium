@@ -41,7 +41,6 @@ sourceFile:
 decl:
     modBlock
     | modUseStatement
-    | statement
     | useStatement
     | udt
     | (typeAlias end)
@@ -53,7 +52,7 @@ decl:
     | (property end)
     | (field end)
     | (variable end)
-    | expr
+    | statement
     ;
 
 typeAlias:
@@ -337,14 +336,15 @@ destructor:
 
 // Statements
 statement:
-    returnStatement
-    | ifStatement
+    ifStatement
     | whenStatement
     | forLoop
     | whileLoop
     | loop
     | panicStatement
     | destructureStatement
+    | returnStatement
+    | expr
     ;
 
 // Destrucuring statements
@@ -360,13 +360,8 @@ destructureStatement:
     ;
 
 inferredParamList:
-    (inferredParam
-    (COMMA inferredParam)*)?
-    ;
-
-inferredParam:
-    ident
-    | UNDERSCORE
+    (ident
+    (COMMA ident)*)?
     ;
 
 // Panic statements
@@ -381,8 +376,7 @@ panicStatement:
 // Return statements
 returnStatement:
     KW_RETURN
-    ((expr end)
-    | end)
+    expr?
     ;
 
 // When statements
@@ -514,41 +508,40 @@ indexedLoopHead:
 // If statements
 ifStatement:
     KW_CONST?
-    NL*?
+    NL*
     KW_IF
-    NL*?
+    NL*
     L_PAREN
-    NL*?
+    NL*
     expr
-    NL*?
+    NL*
     R_PAREN
-    NL*?
+    NL*
     ((decl end)
     | ifBody)
-    NL*?
-    (elseIfStatement | NL)*?
+    elseIfStatement*?
     elseStatement?
     ;
 
 elseIfStatement:
     KW_ELSE
-    NL*?
+    NL*
     KW_IF
-    NL*?
+    NL*
     L_PAREN
-    NL*?
+    NL*
     expr
-    NL*?
+    NL*
     R_PAREN
-    NL*?
-    ((decl end)
+    NL*
+    ((statement end)
     | ifBody)
     ;
 
 elseStatement:
     KW_ELSE
-    NL*?
-    ((decl end)
+    NL*
+    ((statement end)
     | ifBody)
     ;
 
@@ -664,7 +657,6 @@ exprList:
 expr:
     lambdaExpr
     | spreadExpr
-    | simpleExpr
     | binaryExpr
     | incrementExpr
     | decrementExpr
@@ -676,9 +668,9 @@ expr:
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
     | reAssignmentExpr
+    | simpleExpr
     | alignofExpr
     | sizeofExpr
-    | KW_THIS
     ;
 
 lambdaExpr:
@@ -1006,6 +998,7 @@ literal:
     | stringLiteral
     | LITERAL_CHAR
     | KW_NULL
+    | KW_THIS
     ;
 
 boolLiteral:
@@ -1149,7 +1142,7 @@ refType:
     ;
 
 pointerType:
-    typeMod*?
+    typeMod*
     (ASTERISK | OP_POW)+
     type
     ;
