@@ -344,6 +344,29 @@ statement:
     | whileLoop
     | loop
     | panicStatement
+    | destructureStatement
+    ;
+
+// Destrucuring statements
+destructureStatement:
+    KW_LET
+    KW_MUT?
+    AMP?
+    L_BRACKET
+    inferredParamList
+    R_BRACKET
+    OP_ASSIGN
+    expr
+    ;
+
+inferredParamList:
+    (inferredParam
+    (COMMA inferredParam)*)?
+    ;
+
+inferredParam:
+    ident
+    | UNDERSCORE
     ;
 
 // Panic statements
