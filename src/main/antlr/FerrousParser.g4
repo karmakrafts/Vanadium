@@ -123,7 +123,6 @@ enumClass:
     KW_ENUM
     KW_CLASS
     ident
-    genericParamList? // Optional because of chevrons
     (COLON typeList)?
     enumClassBody
     ;
