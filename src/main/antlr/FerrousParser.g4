@@ -293,6 +293,8 @@ field:
     attributeList
     (accessMod
     NL*)?
+    (KW_STATIC
+    NL*)?
     (storageMod
     NL*)*?
     ident
@@ -602,6 +604,8 @@ functionIdent:
 protoFunction:
     attributeList
     (accessMod
+    NL*)?
+    (KW_STATIC
     NL*)?
     (functionMod
     NL*)*?
@@ -1085,8 +1089,8 @@ callConvMod:
 functionMod:
     KW_CONST
     | KW_INL
-    | KW_OVERRIDE
     | KW_VIRTUAL
+    | KW_OVERRIDE
     | KW_OP
     ;
 
