@@ -65,6 +65,7 @@ typeAlias:
 
 modBlock:
     attributeList
+    accessMod?
     KW_MOD
     (qualifiedIdent | ident)
     L_BRACE
