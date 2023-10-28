@@ -43,7 +43,7 @@ decl:
     | modUseStatement
     | useStatement
     | udt
-    | (typeAlias end)
+    | typeAlias
     | externFunction
     | function
     | constructor
@@ -58,6 +58,7 @@ decl:
 typeAlias:
     KW_TYPE
     ident
+    genericParamList?
     OP_ASSIGN
     type
     ;
@@ -303,6 +304,7 @@ field:
 
 // Constructors
 constructor:
+    accessMod?
     ident
     L_PAREN
     functionParamList
