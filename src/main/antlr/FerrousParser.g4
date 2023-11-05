@@ -53,6 +53,13 @@ decl:
     | (field end)
     | (variable end)
     | statement
+    | anonScope
+    ;
+
+anonScope:
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
     ;
 
 typeAlias:
@@ -341,9 +348,7 @@ destructor:
 
 // Statements
 statement:
-    ifStatement
-    | whenStatement
-    | forLoop
+    forLoop
     | whileLoop
     | loop
     | panicStatement
@@ -384,8 +389,8 @@ returnStatement:
     expr?
     ;
 
-// When statements
-whenStatement:
+// When expressions
+whenExpr:
     KW_WHEN
     expr
     L_BRACE
@@ -510,8 +515,8 @@ indexedLoopHead:
     R_PAREN
     ;
 
-// If statements
-ifStatement:
+// If expressions
+ifExpr:
     KW_CONST?
     NL*
     KW_IF
@@ -524,11 +529,11 @@ ifStatement:
     NL*
     ((decl end)
     | ifBody)
-    elseIfStatement*?
-    elseStatement?
+    elseIfExpr*?
+    elseExpr?
     ;
 
-elseIfStatement:
+elseIfExpr:
     KW_ELSE
     NL*
     KW_IF
@@ -543,7 +548,7 @@ elseIfStatement:
     | ifBody)
     ;
 
-elseStatement:
+elseExpr:
     KW_ELSE
     NL*
     ((statement end)
@@ -662,7 +667,9 @@ exprList:
     ;
 
 expr:
-    lambdaExpr
+    ifExpr
+    | whenExpr
+    | lambdaExpr
     | spreadExpr
     | binaryExpr
     | incrementExpr
@@ -737,8 +744,8 @@ exhaustiveIfExpr:
     expr
     ((decl end)
     | ifBody)
-    elseIfStatement*?
-    elseStatement
+    elseIfExpr*?
+    elseExpr
     ;
 
 exhaustiveWhenExpr:
