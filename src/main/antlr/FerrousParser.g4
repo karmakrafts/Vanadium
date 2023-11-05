@@ -439,13 +439,17 @@ whileLoop:
 simpleWhileLoop:
     whileHead
     ((expr end)
-    | (L_BRACE
+    | whileBody)
+    ;
+
+whileBody:
+    (L_BRACE
     (decl | NL)*?
-    R_BRACE))
+    R_BRACE)
     ;
 
 doWhileLoop:
-    doBlock
+    doStatement
     end?
     whileHead
     ;
@@ -453,7 +457,7 @@ doWhileLoop:
 whileDoLoop:
     whileHead
     end?
-    doBlock
+    doStatement
     ;
 
 whileHead:
@@ -466,13 +470,17 @@ whileHead:
     R_PAREN)
     ;
 
-doBlock:
+doStatement:
     KW_DO
     NL*?
     ((expr end)
-    | (L_BRACE
+    | doBody)
+    ;
+
+doBody:
+    (L_BRACE
     (decl | NL)*?
-    R_BRACE))
+    R_BRACE)
     ;
 
 // For loops
