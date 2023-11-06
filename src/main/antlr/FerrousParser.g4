@@ -853,7 +853,6 @@ binaryOp:
     | L_CHEVRON
     | R_CHEVRON
 
-    | OP_POW
     | ASTERISK
     | OP_DIV
     | OP_MOD
@@ -881,7 +880,6 @@ binaryOp:
 
     | OP_PLUS_ASSIGN
     | OP_MINUS_ASSIGN
-    | OP_POW_ASSIGN
     | OP_TIMES_ASSIGN
     | OP_MOD_ASSIGN
 
@@ -945,7 +943,6 @@ specialRef:
 unaryRefOp:
     OP_SAFE_DEREF
     | ASTERISK
-    | OP_POW
     | AMP
     ;
 
@@ -1157,7 +1154,7 @@ refType:
 
 pointerType:
     typeMod*
-    (ASTERISK | OP_POW)+
+    ASTERISK+
     type
     ;
 

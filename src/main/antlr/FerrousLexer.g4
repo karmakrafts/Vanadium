@@ -162,7 +162,6 @@ OP_SAT_MOD: '%|';
 
 OP_PLUS: '+';
 OP_MINUS: '-';
-OP_POW: '**';
 OP_DIV: '/';
 OP_MOD: '%';
 
