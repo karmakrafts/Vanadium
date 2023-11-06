@@ -667,12 +667,14 @@ exprList:
     ;
 
 expr:
-    letExpr
+    unaryOp expr
+    | expr binaryOp expr
+    | groupedExpr
+    | letExpr
     | ifExpr
     | whenExpr
     | lambdaExpr
     | spreadExpr
-    | binaryExpr
     | incrementExpr
     | decrementExpr
     | heapInitExpr
@@ -683,9 +685,11 @@ expr:
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
     | assignmentExpr
-    | simpleExpr
     | alignofExpr
     | sizeofExpr
+    | callExpr
+    | ref
+    | literal
     ;
 
 lambdaExpr:
@@ -822,23 +826,10 @@ decrementExpr:
     | (OP_DECREMENT ref)
     ;
 
-// Binary expressions
-simpleExpr:
-    groupedExpr
-    | alignofExpr
-    | sizeofExpr
-    | callExpr
-    | unaryExpr
-    | ref
-    | literal
-    ;
-
-binaryExpr:
-    simpleExpr
-    binaryOp
-    expr
-    ;
-
+//binaryExpr:
+//    expr binaryOp expr
+//    ;
+//
 binaryOp:
     OP_SWAP
 
@@ -853,11 +844,11 @@ binaryOp:
     | L_CHEVRON
     | R_CHEVRON
 
+    | OP_PLUS
+    | OP_MINUS
     | ASTERISK
     | OP_DIV
     | OP_MOD
-    | OP_PLUS
-    | OP_MINUS
 
     | AMP
     | PIPE
@@ -894,11 +885,11 @@ binaryOp:
     ;
 
 // Unary expressions
-unaryExpr:
-    unaryOp
-    expr
-    ;
-
+//unaryExpr:
+//    unaryOp
+//    expr
+//    ;
+//
 unaryOp:
     OP_PLUS
     | OP_MINUS
