@@ -139,14 +139,12 @@ OP_DECREMENT: '--';
 
 OP_SAT_PLUS_ASSIGN: '+|=';
 OP_SAT_MINUS_ASSIGN: '-|=';
-OP_SAT_POW_ASSIGN: '**|=';
 OP_SAT_TIMES_ASSIGN: '*|=';
 OP_SAT_DIV_ASSIGN: '/|=';
 OP_SAT_MOD_ASSIGN: '%|=';
 
 OP_PLUS_ASSIGN: '+=';
 OP_MINUS_ASSIGN: '-=';
-OP_POW_ASSIGN: '**=';
 OP_TIMES_ASSIGN: '*=';
 OP_DIV_ASSIGN: '/=';
 OP_MOD_ASSIGN: '%=';
@@ -155,7 +153,6 @@ OP_ASSIGN: '=';
 
 OP_SAT_PLUS: '+|';
 OP_SAT_MINUS: '-|';
-OP_SAT_POW: '**|';
 OP_SAT_TIMES: '*|';
 OP_SAT_DIV: '/|';
 OP_SAT_MOD: '%|';

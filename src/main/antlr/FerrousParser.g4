@@ -827,9 +827,6 @@ decrementExpr:
     ;
 
 //binaryExpr:
-//    expr binaryOp expr
-//    ;
-//
 binaryOp:
     OP_SWAP
 
@@ -844,19 +841,18 @@ binaryOp:
     | L_CHEVRON
     | R_CHEVRON
 
-    | OP_PLUS
-    | OP_MINUS
-    | ASTERISK
-    | OP_DIV
-    | OP_MOD
-
     | AMP
     | PIPE
     | OP_XOR
     | OP_LSH
     | OP_RSH
 
-    | OP_SAT_POW
+    | OP_MOD
+    | OP_DIV
+    | ASTERISK
+    | OP_PLUS
+    | OP_MINUS
+
     | OP_SAT_TIMES
     | OP_SAT_DIV
     | OP_SAT_MOD
@@ -869,14 +865,14 @@ binaryOp:
     | OP_LSH_ASSIGN
     | OP_RSH_ASSIGN
 
+    | OP_MOD_ASSIGN
+    | OP_DIV_ASSIGN
+    | OP_TIMES_ASSIGN
     | OP_PLUS_ASSIGN
     | OP_MINUS_ASSIGN
-    | OP_TIMES_ASSIGN
-    | OP_MOD_ASSIGN
 
     | OP_SAT_PLUS_ASSIGN
     | OP_SAT_MINUS_ASSIGN
-    | OP_SAT_POW_ASSIGN
     | OP_SAT_TIMES_ASSIGN
     | OP_SAT_DIV_ASSIGN
     | OP_SAT_MOD_ASSIGN
@@ -885,11 +881,6 @@ binaryOp:
     ;
 
 // Unary expressions
-//unaryExpr:
-//    unaryOp
-//    expr
-//    ;
-//
 unaryOp:
     OP_PLUS
     | OP_MINUS
@@ -959,25 +950,14 @@ genericParam:
     ;
 
 genericExpr:
-    genericBinaryExpr
-    | genericBinaryExprLhs
+    genericExpr genericOp genericExpr
+    | genericGroupedExpr
     ;
 
 genericGroupedExpr:
     L_PAREN
     genericExpr
     R_PAREN
-    ;
-
-genericBinaryExpr:
-    genericBinaryExprLhs
-    genericOp
-    genericExpr
-    ;
-
-genericBinaryExprLhs:
-    genericGroupedExpr
-    | type
     ;
 
 genericOp:
