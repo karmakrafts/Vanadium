@@ -666,10 +666,60 @@ exprList:
     | (expr COMMA))*?
     ;
 
+binaryExpr:
+    groupedExpr
+    | binaryExpr binaryOp binaryExpr
+    | letExpr
+    | ifExpr
+    | whenExpr
+    | lambdaExpr
+    | spreadExpr
+    | incrementExpr
+    | decrementExpr
+    | heapInitExpr
+    | stackInitExpr
+    | stackAllocExpr
+    | sizedSliceExpr
+    | sliceInitExpr
+    | exhaustiveIfExpr
+    | exhaustiveWhenExpr
+    | assignmentExpr
+    | alignofExpr
+    | sizeofExpr
+    | callExpr
+    | ref
+    | literal
+    ;
+
+unaryExpr:
+    groupedExpr
+    | unaryOp unaryExpr
+    | letExpr
+    | ifExpr
+    | whenExpr
+    | lambdaExpr
+    | spreadExpr
+    | incrementExpr
+    | decrementExpr
+    | heapInitExpr
+    | stackInitExpr
+    | stackAllocExpr
+    | sizedSliceExpr
+    | sliceInitExpr
+    | exhaustiveIfExpr
+    | exhaustiveWhenExpr
+    | assignmentExpr
+    | alignofExpr
+    | sizeofExpr
+    | callExpr
+    | ref
+    | literal
+    ;
+
 expr:
     groupedExpr
-    | unaryOp expr
-    | expr binaryOp expr
+    | binaryExpr
+    | unaryExpr
     | letExpr
     | ifExpr
     | whenExpr
