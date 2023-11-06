@@ -53,13 +53,6 @@ decl:
     | (field end)
     | (variable end)
     | statement
-    | anonScope
-    ;
-
-anonScope:
-    L_BRACE
-    (decl | NL)*?
-    R_BRACE
     ;
 
 typeAlias:
