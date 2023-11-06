@@ -51,7 +51,6 @@ decl:
     | (protoFunction end)
     | (property end)
     | (field end)
-    | (variable end)
     | (statement end)
     ;
 
@@ -503,7 +502,7 @@ rangedLoopHead:
 indexedLoopHead:
     L_PAREN
     NL*?
-    variable?
+    letExpr?
     NL*?
     SEMICOLON
     NL*?
@@ -581,7 +580,7 @@ externFunction:
     end
     ;
 
-variable:
+letExpr:
     KW_LET
     NL*?
     (KW_MUT NL*)?
@@ -668,7 +667,8 @@ exprList:
     ;
 
 expr:
-    ifExpr
+    letExpr
+    | ifExpr
     | whenExpr
     | lambdaExpr
     | spreadExpr
