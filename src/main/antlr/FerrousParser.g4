@@ -717,29 +717,8 @@ unaryExpr:
     ;
 
 expr:
-    groupedExpr
+    unaryExpr
     | binaryExpr
-    | unaryExpr
-    | letExpr
-    | ifExpr
-    | whenExpr
-    | lambdaExpr
-    | spreadExpr
-    | incrementExpr
-    | decrementExpr
-    | heapInitExpr
-    | stackInitExpr
-    | stackAllocExpr
-    | sizedSliceExpr
-    | sliceInitExpr
-    | exhaustiveIfExpr
-    | exhaustiveWhenExpr
-    | assignmentExpr
-    | alignofExpr
-    | sizeofExpr
-    | callExpr
-    | ref
-    | literal
     ;
 
 lambdaExpr:
