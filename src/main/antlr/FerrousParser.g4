@@ -52,7 +52,7 @@ decl:
     | (property end)
     | (field end)
     | (variable end)
-    | statement
+    | (statement end)
     ;
 
 typeAlias:
@@ -682,7 +682,7 @@ expr:
     | sliceInitExpr
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
-    | reAssignmentExpr
+    | assignmentExpr
     | simpleExpr
     | alignofExpr
     | sizeofExpr
@@ -698,13 +698,12 @@ lambdaExpr:
     R_BRACE
     ;
 
-reAssignmentExpr:
+assignmentExpr:
     ref
     NL*?
     OP_ASSIGN
     NL*?
     expr
-    end?
     ;
 
 alignofExpr:
