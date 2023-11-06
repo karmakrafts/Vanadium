@@ -667,9 +667,9 @@ exprList:
     ;
 
 expr:
-    unaryOp expr
+    groupedExpr
+    | unaryOp expr
     | expr binaryOp expr
-    | groupedExpr
     | letExpr
     | ifExpr
     | whenExpr
