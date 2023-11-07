@@ -668,7 +668,7 @@ exprList:
 
 binaryExpr:
     groupedExpr
-    | binaryExpr binaryOp binaryExpr
+    | <assoc=right> binaryExpr binaryOp binaryExpr
     | letExpr
     | ifExpr
     | whenExpr
