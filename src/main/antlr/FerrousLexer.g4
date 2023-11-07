@@ -164,6 +164,7 @@ OP_MOD: '%';
 
 OP_INV: '~';
 OP_XOR: '^';
+OP_NOT: '!';
 
 // Multi-purpose tokens
 // We don't explicitly call these operators, since they can also be used for multiple things

@@ -599,8 +599,11 @@ inlineFunctionBody:
     ;
 
 functionIdent:
-    binaryOp
-    | unaryOp
+    OP_PLUS
+    | OP_MINUS
+    | ASTERISK
+    | OP_DIV
+    | OP_MOD
     | OP_ASSIGN
     | ident
     ;
@@ -666,59 +669,66 @@ exprList:
     | (expr COMMA))+
     ;
 
-binaryExpr:
-    groupedExpr
-    | <assoc=right> binaryExpr binaryOp binaryExpr
-    | letExpr
-    | ifExpr
-    | whenExpr
-    | lambdaExpr
-    | spreadExpr
-    | incrementExpr
-    | decrementExpr
-    | heapInitExpr
-    | stackInitExpr
-    | stackAllocExpr
-    | sizedSliceExpr
-    | sliceInitExpr
-    | exhaustiveIfExpr
-    | exhaustiveWhenExpr
-    | assignmentExpr
-    | alignofExpr
-    | sizeofExpr
-    | callExpr
-    | ref
-    | literal
-    ;
-
-unaryExpr:
-    groupedExpr
-    | unaryOp unaryExpr
-    | letExpr
-    | ifExpr
-    | whenExpr
-    | lambdaExpr
-    | spreadExpr
-    | incrementExpr
-    | decrementExpr
-    | heapInitExpr
-    | stackInitExpr
-    | stackAllocExpr
-    | sizedSliceExpr
-    | sliceInitExpr
-    | exhaustiveIfExpr
-    | exhaustiveWhenExpr
-    | assignmentExpr
-    | alignofExpr
-    | sizeofExpr
-    | callExpr
-    | ref
-    | literal
-    ;
-
 expr:
-    unaryExpr
-    | binaryExpr
+    // Grouped expressions
+    groupedExpr
+    // Unary expressions
+    | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
+    | (OP_PLUS | OP_MINUS | OP_INCREMENT | OP_DECREMENT) expr
+    | (OP_INV_ASSIGN | OP_INV | OP_NOT) expr
+    // Binary expressions (left-associative)
+    | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) expr
+    | expr (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) expr
+    | expr (OP_LSH | OP_RSH) expr
+    | expr OP_COMPARE expr
+    | expr (OP_LEQUAL | OP_GEQUAL | L_CHEVRON | R_CHEVRON) expr
+    | expr (OP_EQ | OP_NEQ) expr
+    | expr AMP expr
+    | expr OP_XOR expr
+    | expr PIPE expr
+    | expr OP_SHORTC_AND expr
+    | expr OP_SHORTC_OR expr
+    // Binary expressions (right associative)
+    | <assoc=right> expr (
+        OP_ASSIGN
+        | OP_SAT_PLUS_ASSIGN
+        | OP_SAT_MINUS_ASSIGN
+        | OP_SAT_TIMES_ASSIGN
+        | OP_SAT_DIV_ASSIGN
+        | OP_SAT_MOD_ASSIGN
+        | OP_PLUS_ASSIGN
+        | OP_MINUS_ASSIGN
+        | OP_TIMES_ASSIGN
+        | OP_DIV_ASSIGN
+        | OP_AND_ASSIGN
+        | OP_OR_ASSIGN
+        | OP_XOR_ASSIGN
+        | OP_RSH_ASSIGN
+        | OP_LSH_ASSIGN
+        | OP_MOD_ASSIGN
+        | OP_SWAP
+    ) expr
+    // Regular expressions
+    | letExpr
+    | ifExpr
+    | whenExpr
+    | lambdaExpr
+    | spreadExpr
+    | incrementExpr
+    | decrementExpr
+    | heapInitExpr
+    | stackInitExpr
+    | stackAllocExpr
+    | sizedSliceExpr
+    | sliceInitExpr
+    | exhaustiveIfExpr
+    | exhaustiveWhenExpr
+    | assignmentExpr
+    | alignofExpr
+    | sizeofExpr
+    | callExpr
+    | ref
+    | literal
     ;
 
 lambdaExpr:
@@ -852,67 +862,6 @@ incrementExpr:
 decrementExpr:
     (ref OP_DECREMENT)
     | (OP_DECREMENT ref)
-    ;
-
-//binaryExpr:
-binaryOp:
-    OP_SWAP
-
-    | OP_SHORTC_AND
-    | OP_SHORTC_OR
-
-    | OP_COMPARE
-    | OP_EQ
-    | OP_NEQ
-    | OP_LEQUAL
-    | OP_GEQUAL
-    | L_CHEVRON
-    | R_CHEVRON
-
-    | AMP
-    | PIPE
-    | OP_XOR
-    | OP_LSH
-    | OP_RSH
-
-    | OP_MOD
-    | OP_DIV
-    | ASTERISK
-    | OP_PLUS
-    | OP_MINUS
-
-    | OP_SAT_TIMES
-    | OP_SAT_DIV
-    | OP_SAT_MOD
-    | OP_SAT_PLUS
-    | OP_SAT_MINUS
-
-    | OP_AND_ASSIGN
-    | OP_OR_ASSIGN
-    | OP_XOR_ASSIGN
-    | OP_LSH_ASSIGN
-    | OP_RSH_ASSIGN
-
-    | OP_MOD_ASSIGN
-    | OP_DIV_ASSIGN
-    | OP_TIMES_ASSIGN
-    | OP_PLUS_ASSIGN
-    | OP_MINUS_ASSIGN
-
-    | OP_SAT_PLUS_ASSIGN
-    | OP_SAT_MINUS_ASSIGN
-    | OP_SAT_TIMES_ASSIGN
-    | OP_SAT_DIV_ASSIGN
-    | OP_SAT_MOD_ASSIGN
-
-    | OP_INV_ASSIGN
-    ;
-
-// Unary expressions
-unaryOp:
-    OP_PLUS
-    | OP_MINUS
-    | OP_INV
     ;
 
 // References
