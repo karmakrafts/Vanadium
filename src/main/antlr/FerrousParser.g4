@@ -557,14 +557,14 @@ elseExpr:
 
 ifBody:
     L_BRACE
-    (decl | NL)*?
+    (statement | NL)*?
     R_BRACE
     ;
 
 // Functions
 functionBody:
     L_BRACE
-    (decl | NL)*?
+    (statement | NL)*?
     R_BRACE
     ;
 
@@ -658,12 +658,12 @@ namedExpr:
 
 namedExprList:
     (namedExpr
-    | (namedExpr COMMA))*?
+    | (namedExpr COMMA))+
     ;
 
 exprList:
     (expr
-    | (expr COMMA))*?
+    | (expr COMMA))+
     ;
 
 binaryExpr:
@@ -810,7 +810,7 @@ sliceInitExpr:
 stackAllocExpr:
     KW_STACKALLOC
     L_BRACKET
-    (type | sizedSliceExpr)
+    (type | sizedSliceExpr)?
     COMMA
     intLiteral
     R_BRACKET
@@ -822,14 +822,14 @@ heapInitExpr:
     (sizedSliceExpr
     | (type?
     L_PAREN
-    (namedExprList | exprList)
+    (namedExprList | exprList)?
     R_PAREN))
     ;
 
 stackInitExpr:
     type?
     L_BRACE
-    (namedExprList | exprList)
+    (namedExprList | exprList)?
     R_BRACE
     ;
 
@@ -839,9 +839,8 @@ callExpr:
     (qualifiedIdent | ident)
     genericList?
     L_PAREN
-    (namedExprList | exprList)
+    (namedExprList | exprList)?
     R_PAREN
-    end?
     ;
 
 // Increment/decrement expressions
@@ -1153,7 +1152,7 @@ refType:
     ;
 
 pointerType:
-    typeMod*
+    typeMod*?
     ASTERISK+
     type
     ;
