@@ -340,7 +340,8 @@ destructor:
 
 // Statements
 statement:
-    forLoop
+    letStatement
+    | forLoop
     | whileLoop
     | loop
     | panicStatement
@@ -502,7 +503,7 @@ rangedLoopHead:
 indexedLoopHead:
     L_PAREN
     NL*?
-    letExpr?
+    letStatement?
     NL*?
     SEMICOLON
     NL*?
@@ -580,7 +581,7 @@ externFunction:
     end
     ;
 
-letExpr:
+letStatement:
     KW_LET
     NL*?
     (KW_MUT NL*)?
@@ -670,8 +671,7 @@ exprList:
     ;
 
 primary:
-    letExpr
-    | ifExpr
+    ifExpr
     | whenExpr
     | lambdaExpr
     | spreadExpr
@@ -735,6 +735,8 @@ expr:
         | OP_MOD_ASSIGN
         | OP_SWAP
     ) expr
+    // Ranges
+    | expr (DOUBLE_DOT | OP_INCL_RANGE) expr
     ;
 
 lambdaExpr:
@@ -820,7 +822,7 @@ stackAllocExpr:
     L_BRACKET
     (type | sizedSliceExpr)?
     COMMA
-    intLiteral
+    expr
     R_BRACKET
     ;
 
