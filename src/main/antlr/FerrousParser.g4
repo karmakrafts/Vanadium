@@ -669,9 +669,36 @@ exprList:
     | (expr COMMA))+
     ;
 
+primary:
+    letExpr
+    | ifExpr
+    | whenExpr
+    | lambdaExpr
+    | spreadExpr
+    | heapInitExpr
+    | stackInitExpr
+    | stackAllocExpr
+    | sizedSliceExpr
+    | sliceInitExpr
+    | exhaustiveIfExpr
+    | exhaustiveWhenExpr
+    | alignofExpr
+    | sizeofExpr
+    | literal
+    | qualifiedIdent
+    | ident
+    ;
+
 expr:
+    primary
+    // (De)References
+    | (ASTERISK | OP_SAFE_DEREF) expr
+    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
+    // Calls & indexing
+    | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
+    | expr L_BRACKET exprList R_BRACKET
     // Grouped expressions
-    groupedExpr
+    | groupedExpr
     // Unary expressions
     | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
     | (OP_PLUS | OP_MINUS | OP_INCREMENT | OP_DECREMENT) expr
@@ -708,27 +735,6 @@ expr:
         | OP_MOD_ASSIGN
         | OP_SWAP
     ) expr
-    // Regular expressions
-    | letExpr
-    | ifExpr
-    | whenExpr
-    | lambdaExpr
-    | spreadExpr
-    | incrementExpr
-    | decrementExpr
-    | heapInitExpr
-    | stackInitExpr
-    | stackAllocExpr
-    | sizedSliceExpr
-    | sliceInitExpr
-    | exhaustiveIfExpr
-    | exhaustiveWhenExpr
-    | assignmentExpr
-    | alignofExpr
-    | sizeofExpr
-    | callExpr
-    | ref
-    | literal
     ;
 
 lambdaExpr:
@@ -739,14 +745,6 @@ lambdaExpr:
     L_BRACE
     (decl | NL)*?
     R_BRACE
-    ;
-
-assignmentExpr:
-    ref
-    NL*?
-    OP_ASSIGN
-    NL*?
-    expr
     ;
 
 alignofExpr:
@@ -841,74 +839,6 @@ stackInitExpr:
     L_BRACE
     (namedExprList | exprList)?
     R_BRACE
-    ;
-
-// Call expressions
-callExpr:
-    (ref binaryRefOp)?
-    (qualifiedIdent | ident)
-    genericList?
-    L_PAREN
-    (namedExprList | exprList)?
-    R_PAREN
-    ;
-
-// Increment/decrement expressions
-incrementExpr:
-    (ref OP_INCREMENT)
-    | (OP_INCREMENT ref)
-    ;
-
-decrementExpr:
-    (ref OP_DECREMENT)
-    | (OP_DECREMENT ref)
-    ;
-
-// References
-ref:
-    specialRef
-    | simpleRef
-    | methodRef
-    | thisRef
-    ;
-
-thisRef:
-    KW_THIS
-    DOT
-    ref
-    ;
-
-simpleRef:
-    (qualifiedIdent | ident)
-    (binaryRefOp refIdent)*?
-    ;
-
-refIdent:
-    LITERAL_I32
-    | ident
-    ;
-
-binaryRefOp:
-    OP_SAFE_PTR_REF
-    | ARROW
-    | DOT
-    ;
-
-specialRef:
-    unaryRefOp
-    ref
-    ;
-
-unaryRefOp:
-    OP_SAFE_DEREF
-    | ASTERISK
-    | AMP
-    ;
-
-methodRef:
-    (qualifiedIdent | ident)?
-    DOUBLE_COLON
-    ident
     ;
 
 // Generics
