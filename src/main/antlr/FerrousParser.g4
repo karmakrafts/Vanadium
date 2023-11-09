@@ -692,7 +692,7 @@ primary:
 expr:
     primary
     // (De)References
-    | (ASTERISK | OP_SAFE_DEREF) expr
+    | (DOUBLE_COLON | AMP | ASTERISK | OP_SAFE_DEREF) expr
     | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
     // Calls & indexing
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
