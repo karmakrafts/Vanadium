@@ -300,7 +300,7 @@ field:
     COLON
     NL*?
     type
-    (NL* OP_ASSIGN NL* expr)?
+    (NL* OP_ASSIGN NL* (expr | QMK))?
     ;
 
 // Constructors
@@ -590,7 +590,7 @@ letStatement:
     ident
     NL*?
     (COLON type)?
-    (OP_ASSIGN expr)?
+    (OP_ASSIGN (expr | QMK))?
     ;
 
 inlineFunctionBody:
