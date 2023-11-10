@@ -699,7 +699,7 @@ expr:
     | expr (KW_IN | KW_IN_NOT) expr
     // (De)References
     | (DOUBLE_COLON | AMP | ASTERISK | OP_SAFE_DEREF) expr
-    | expr (DOT | ARROW | OP_SAFE_PTR_REF) expr
+    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
     // Calls, indexing
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
     | expr L_BRACKET exprList R_BRACKET
