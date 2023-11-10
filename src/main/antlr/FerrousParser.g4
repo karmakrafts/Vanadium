@@ -293,6 +293,8 @@ field:
     NL*)?
     (KW_STATIC
     NL*)?
+    (KW_MUT
+    NL*)?
     (storageMod
     NL*)*?
     ident
