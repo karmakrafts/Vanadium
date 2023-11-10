@@ -691,10 +691,14 @@ primary:
 
 expr:
     primary
+    // Casts and pattern matching
+    | expr (KW_AS | KW_AS_QMK) type
+    | expr (KW_IS | KW_IS_NOT) type
+    | expr (KW_IN | KW_IN_NOT) expr
     // (De)References
     | (DOUBLE_COLON | AMP | ASTERISK | OP_SAFE_DEREF) expr
     | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
-    // Calls & indexing
+    // Calls, indexing
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
     | expr L_BRACKET exprList R_BRACKET
     // Grouped expressions
