@@ -949,7 +949,8 @@ floatLiteral:
     ;
 
 stringLiteral:
-    multilineStringLiteral
+    cmlStringLiteral
+    | mlStringLiteral
     | simpleStringLiteral
     ;
 
@@ -965,7 +966,7 @@ simpleStringLiteral:
     | EMPTY_STRING
     ;
 
-multilineStringLiteral:
+mlStringLiteral:
     (ML_STRING_BEGIN
     (ML_STRING_MODE_TEXT
     | ML_STRING_MODE_ESCAPED_ML_STRING_END
@@ -975,6 +976,18 @@ multilineStringLiteral:
     R_BRACE))+
     ML_STRING_END)
     | EMPTY_ML_STRING
+    ;
+
+cmlStringLiteral:
+    (CML_STRING_BEGIN
+    (CML_STRING_MODE_TEXT
+    | CML_STRING_MODE_ESCAPED_CML_STRING_END
+    | CML_STRING_MODE_ESCAPED_CHAR
+    | (CML_STRING_MODE_LERP_BEGIN
+    expr*?
+    R_BRACE))+
+    CML_STRING_END)
+    | EMPTY_CML_STRING
     ;
 
 // Modifiers
