@@ -35,6 +35,7 @@ CML_STRING_BEGIN: '/"' -> pushMode(CML_STRING_MODE);
 ML_STRING_BEGIN: '#"' -> pushMode(ML_STRING_MODE);
 
 // Keywords
+KW_UNREACHABLE: 'unreachable';
 KW_STACKALLOC: 'stackalloc';
 KW_INTERFACE: 'interface';
 KW_BITFIELD: 'bitfield';

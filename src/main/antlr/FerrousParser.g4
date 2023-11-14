@@ -99,7 +99,6 @@ useType:
 // User defined types
 udt:
     enumClass
-    | class
     | enum
     | struct
     | interface
@@ -123,22 +122,6 @@ enumClass:
     ident
     (COLON typeList)?
     enumClassBody
-    ;
-
-class:
-    attributeList
-    accessMod?
-    KW_CLASS
-    ident
-    genericParamList? // Optional because of chevrons
-    (COLON typeList)?
-    classBody
-    ;
-
-classBody:
-    L_BRACE
-    (decl | NL)*?
-    R_BRACE
     ;
 
 enumBody:
@@ -166,6 +149,12 @@ enumConstant:
     | (ident COMMA))
     ;
 
+structBody:
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
+    ;
+
 struct:
     attributeList
     accessMod?
@@ -174,7 +163,7 @@ struct:
     genericParamList? // Optional because of chevrons
     (COLON
     typeList)?
-    classBody
+    structBody
     ;
 
 interfaceBody:
@@ -219,7 +208,7 @@ trait:
     ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
-    classBody
+    structBody
     ;
 
 // Attributes
@@ -348,6 +337,7 @@ statement:
     | panicStatement
     | destructureStatement
     | returnStatement
+    | KW_UNREACHABLE
     | expr
     ;
 
