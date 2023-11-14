@@ -44,7 +44,6 @@ decl:
     | useStatement
     | udt
     | typeAlias
-    | externFunction
     | function
     | constructor
     | destructor
@@ -576,13 +575,6 @@ function:
     (functionBody | inlineFunctionBody)
     ;
 
-externFunction:
-    KW_EXTERN
-    NL*?
-    protoFunction
-    end
-    ;
-
 letStatement:
     KW_LET
     NL*?
@@ -645,6 +637,8 @@ functionIdent:
 protoFunction:
     attributeList
     (accessMod
+    NL*)?
+    (KW_EXTERN
     NL*)?
     (KW_STATIC
     NL*)?
