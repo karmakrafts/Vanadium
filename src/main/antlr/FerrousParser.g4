@@ -601,13 +601,44 @@ inlineFunctionBody:
     end
     ;
 
-functionIdent:
+operator:
     OP_PLUS
     | OP_MINUS
     | ASTERISK
     | OP_DIV
     | OP_MOD
+    | OP_SAT_PLUS
+    | OP_SAT_MINUS
+    | OP_SAT_TIMES
+    | OP_SAT_DIV
+    | OP_SAT_MOD
+    | OP_SHORTC_AND
+    | OP_SHORTC_OR
+    | AMP
+    | PIPE
+    | OP_XOR
+    | OP_LSH
+    | OP_RSH
     | OP_ASSIGN
+    | OP_PLUS_ASSIGN
+    | OP_MINUS_ASSIGN
+    | OP_TIMES_ASSIGN
+    | OP_DIV_ASSIGN
+    | OP_MOD_ASSIGN
+    | OP_SAT_PLUS_ASSIGN
+    | OP_SAT_MINUS_ASSIGN
+    | OP_SAT_TIMES_ASSIGN
+    | OP_SAT_DIV_ASSIGN
+    | OP_SAT_MOD_ASSIGN
+    | OP_AND_ASSIGN
+    | OP_OR_ASSIGN
+    | OP_XOR_ASSIGN
+    | OP_LSH_ASSIGN
+    | OP_RSH_ASSIGN
+    ;
+
+functionIdent:
+    operator
     | ident
     ;
 
@@ -637,8 +668,10 @@ protoFunction:
 
 functionParamList:
     (functionParam
-    | (functionParam COMMA) NL*?)*?
-    vaFunctionParam?
+    (COMMA functionParam)*?)?
+    |
+    ((functionParam (COMMA functionParam)*?)
+    (COMMA TRIPLE_DOT))
     ;
 
 functionParam:
@@ -646,13 +679,6 @@ functionParam:
     COLON
     type
     (OP_ASSIGN expr)?
-    ;
-
-vaFunctionParam:
-    ident
-    COLON
-    KW_VAARGS
-    (OP_ASSIGN (expr (COMMA expr)*?))?
     ;
 
 // Expressions
@@ -1018,7 +1044,7 @@ functionType:
     (L_PAREN
     typeList?
     (COMMA
-    KW_VAARGS)?
+    TRIPLE_DOT)?
     R_PAREN)
     ARROW
     type
