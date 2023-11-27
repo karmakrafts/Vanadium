@@ -875,8 +875,10 @@ genericParam:
     ;
 
 genericExpr:
-    genericExpr genericOp genericExpr
-    | genericGroupedExpr
+    genericGroupedExpr
+    | OP_NOT genericExpr
+    | L_CHEVRON genericExpr
+    | genericExpr genericOp genericExpr
     ;
 
 genericGroupedExpr:
@@ -1062,8 +1064,7 @@ refType:
     ;
 
 pointerType:
-    typeMod*?
-    ASTERISK+
+    ASTERISK
     type
     ;
 
