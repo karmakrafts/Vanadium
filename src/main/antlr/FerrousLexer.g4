@@ -45,6 +45,7 @@ KW_ALIGNOF: 'alignof';
 KW_VIRTUAL: 'virtual';
 KW_LITERAL: 'literal';
 KW_DEFAULT: 'default';
+KW_UNSAFE: 'unsafe';
 KW_STATIC: 'static';
 KW_SIZEOF: 'sizeof';
 KW_VAARGS: 'vaargs';

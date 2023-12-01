@@ -117,6 +117,7 @@ enumClassBody:
 enumClass:
     attributeList
     accessMod?
+    KW_UNSAFE?
     KW_ENUM
     KW_CLASS
     ident
@@ -158,6 +159,7 @@ structBody:
 struct:
     attributeList
     accessMod?
+    KW_UNSAFE?
     KW_STRUCT
     ident
     genericParamList? // Optional because of chevrons
@@ -177,6 +179,7 @@ interfaceBody:
 interface:
     attributeList
     accessMod?
+    KW_UNSAFE?
     KW_INTERFACE
     ident
     genericParamList? // Optional because of chevrons
@@ -194,6 +197,7 @@ attribBody:
 attrib:
     attributeList
     accessMod?
+    KW_UNSAFE?
     KW_ATTRIB
     ident
     genericParamList? // Optional because of chevrons
@@ -204,6 +208,7 @@ attrib:
 trait:
     attributeList
     accessMod?
+    KW_UNSAFE?
     KW_TRAIT
     ident
     genericParamList? // Optional because of chevrons
@@ -229,12 +234,14 @@ attribUsage:
 
 // Properties
 propertyGetter:
+    KW_UNSAFE?
     KW_GET
     NL*?
     (inlineFunctionBody | functionBody)
     ;
 
 propertySetter:
+    KW_UNSAFE?
     KW_SET
     NL*?
     L_PAREN
@@ -249,6 +256,7 @@ propertySetter:
 property:
     attributeList
     accessMod?
+    KW_UNSAFE?
     NL*?
     (KW_INL NL*)?
     ident
@@ -296,6 +304,7 @@ field:
 // Constructors
 constructor:
     accessMod?
+    KW_UNSAFE?
     ident
     L_PAREN
     functionParamList
@@ -320,12 +329,18 @@ superCall:
 
 // Destructors
 destructor:
+    KW_UNSAFE?
     OP_INV
     ident
     L_PAREN
     functionParamList
     R_PAREN
     (functionBody | inlineFunctionBody)?
+    ;
+
+gotoStatement:
+    KW_GOTO
+    IDENT
     ;
 
 // Statements
@@ -337,8 +352,18 @@ statement:
     | panicStatement
     | destructureStatement
     | returnStatement
+    | gotoStatement
     | KW_UNREACHABLE
     | expr
+    | labelBlock
+    ;
+
+labelBlock:
+    IDENT
+    COLON
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
     ;
 
 // Destrucuring statements
@@ -601,6 +626,7 @@ operator:
     | OP_XOR
     | OP_LSH
     | OP_RSH
+    | OP_INV
     | OP_ASSIGN
     | OP_PLUS_ASSIGN
     | OP_MINUS_ASSIGN
@@ -617,6 +643,15 @@ operator:
     | OP_XOR_ASSIGN
     | OP_LSH_ASSIGN
     | OP_RSH_ASSIGN
+    | (UNDERSCORE OP_INCREMENT)
+    | (OP_INCREMENT UNDERSCORE)
+    | OP_INCREMENT
+    | (UNDERSCORE OP_DECREMENT)
+    | (OP_DECREMENT UNDERSCORE)
+    | OP_DECREMENT
+    | (UNDERSCORE OP_INV_ASSIGN)
+    | (OP_INV_ASSIGN UNDERSCORE)
+    | OP_INV_ASSIGN
     ;
 
 functionIdent:
@@ -627,10 +662,6 @@ functionIdent:
 protoFunction:
     attributeList
     (accessMod
-    NL*)?
-    (KW_EXTERN
-    NL*)?
-    (KW_STATIC
     NL*)?
     (functionMod
     NL*)*?
@@ -682,8 +713,22 @@ exprList:
     | (expr COMMA))+
     ;
 
+unsafeBlock:
+    KW_UNSAFE
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
+    ;
+
+unsafeExpr:
+    KW_UNSAFE
+    expr
+    ;
+
 primary:
-    ifExpr
+    unsafeBlock
+    | unsafeExpr
+    | ifExpr
     | whenExpr
     | lambdaExpr
     | spreadExpr
@@ -1006,6 +1051,9 @@ functionMod:
     | KW_VIRTUAL
     | KW_OVERRIDE
     | KW_OP
+    | KW_STATIC
+    | KW_EXTERN
+    | KW_UNSAFE
     ;
 
 storageMod:
