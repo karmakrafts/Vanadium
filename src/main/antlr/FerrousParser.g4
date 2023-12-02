@@ -343,6 +343,21 @@ gotoStatement:
     IDENT
     ;
 
+continueStatement:
+    KW_CONTINUE
+    IDENT?
+    ;
+
+yieldStatement:
+    KW_YIELD
+    expr
+    ;
+
+breakStatement:
+    KW_BREAK
+    IDENT?
+    ;
+
 // Statements
 statement:
     letStatement
@@ -353,6 +368,9 @@ statement:
     | destructureStatement
     | returnStatement
     | gotoStatement
+    | continueStatement
+    | yieldStatement
+    | breakStatement
     | KW_UNREACHABLE
     | expr
     | labelBlock
@@ -433,6 +451,7 @@ whenBranchBody:
 loop:
     KW_LOOP
     ((expr end)
+    | labelBlock
     | (L_BRACE
     (decl | NL)*?
     R_BRACE))
@@ -452,7 +471,8 @@ simpleWhileLoop:
     ;
 
 whileBody:
-    (L_BRACE
+    labelBlock
+    | (L_BRACE
     (decl | NL)*?
     R_BRACE)
     ;
@@ -499,6 +519,7 @@ forLoop:
     (indexedLoopHead
     | rangedLoopHead)
     ((expr end)
+    | labelBlock
     | (L_BRACE
     (decl | NL)*?
     R_BRACE))
