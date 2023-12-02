@@ -42,6 +42,7 @@ KW_BITFIELD: 'bitfield';
 KW_OVERRIDE: 'override';
 KW_CALLCONV: 'callconv';
 KW_CONTINUE: 'continue';
+KW_VOLATILE: 'volatile';
 KW_ALIGNOF: 'alignof';
 KW_VIRTUAL: 'virtual';
 KW_LITERAL: 'literal';
@@ -142,6 +143,7 @@ OP_EQ: '==';
 OP_NEQ: '!=';
 
 OP_SAFE_PTR_REF: '?->';
+OP_ELVIS: '?:';
 OP_SAFE_DEREF: '*?';
 
 OP_LEQUAL: '<=';

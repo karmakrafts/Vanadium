@@ -291,8 +291,6 @@ field:
     NL*)?
     (KW_MUT
     NL*)?
-    (storageMod
-    NL*)*?
     ident
     NL*?
     COLON
@@ -618,8 +616,6 @@ letStatement:
     KW_LET
     NL*?
     (KW_MUT NL*)?
-    storageMod*?
-    NL*?
     ident
     NL*?
     (COLON type)?
@@ -772,6 +768,9 @@ primary:
 
 expr:
     primary
+    // Ternaries & elvis expressions
+    | expr QMK expr COLON expr
+    | expr OP_ELVIS expr
     // Casts and pattern matching
     | expr (KW_AS | KW_AS_QMK) type
     | expr (KW_IS | KW_IS_NOT) type
@@ -1080,14 +1079,11 @@ functionMod:
     | KW_UNSAFE
     ;
 
-storageMod:
-    KW_CONST
-    | KW_TLS
-    ;
-
 typeMod:
     KW_ATOMIC
     | KW_MUT
+    | KW_TLS
+    | KW_VOLATILE
     ;
 
 // Types
@@ -1096,12 +1092,20 @@ typeList:
     | (type COMMA))+?
     ;
 
+modifiedType:
+    (typeMod NL*)+
+    type
+    ;
+
 type:
-    functionType
+    modifiedType
+    | functionType
     | tupleType
     | sliceType
-    | genericType
-    | simpleType
+    | type (ASTERISK | AMP)
+    | builtinType
+    | qualifiedIdent
+    | ident
     ;
 
 tupleType:
@@ -1121,30 +1125,6 @@ functionType:
     type
     ;
 
-simpleType:
-    pointerType
-    | refType
-    | builtinType
-    | qualifiedIdent
-    | ident
-    ;
-
-refType:
-    KW_MUT?
-    AMP
-    type
-    ;
-
-pointerType:
-    ASTERISK
-    type
-    ;
-
-genericType:
-    simpleType
-    genericList
-    ;
-
 sliceType:
     L_BRACKET
     type
@@ -1152,10 +1132,9 @@ sliceType:
     ;
 
 builtinType:
-    typeMod*?
-    (intType
+    intType
     | floatType
-    | miscType)
+    | miscType
     ;
 
 miscType:
