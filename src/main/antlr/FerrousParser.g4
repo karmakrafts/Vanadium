@@ -1154,6 +1154,9 @@ sintType:
     | KW_I16
     | KW_I32
     | KW_I64
+    | KW_I128
+    | KW_I256
+    | KW_I512
     | KW_ISIZE
     ;
 
@@ -1162,12 +1165,17 @@ uintType:
     | KW_U16
     | KW_U32
     | KW_U64
+    | KW_U128
+    | KW_U256
+    | KW_U512
     | KW_USIZE
     ;
 
 floatType:
-    KW_F32
+    KW_F16
+    | KW_F32
     | KW_F64
+    | KW_F128
     ;
 
 // Identifiers
