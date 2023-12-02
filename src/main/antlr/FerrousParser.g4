@@ -344,8 +344,9 @@ gotoStatement:
     ;
 
 continueStatement:
-    KW_CONTINUE
-    IDENT?
+    (KW_CONTINUE
+    IDENT)
+    | KW_CONTINUE
     ;
 
 yieldStatement:
@@ -354,8 +355,9 @@ yieldStatement:
     ;
 
 breakStatement:
-    KW_BREAK
-    IDENT?
+    (KW_BREAK
+    IDENT)
+    | KW_BREAK
     ;
 
 // Statements
@@ -412,8 +414,9 @@ panicStatement:
 
 // Return statements
 returnStatement:
-    KW_RETURN
-    expr?
+    (KW_RETURN
+    expr)
+    | KW_RETURN
     ;
 
 // When expressions
