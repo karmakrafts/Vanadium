@@ -839,6 +839,8 @@ lambdaExpr:
     L_PAREN
     functionParamList
     R_PAREN
+    (ARROW
+    type)?
     L_BRACE
     (decl | NL)*?
     R_BRACE
@@ -941,13 +943,13 @@ stackInitExpr:
 // Generics
 genericParamList:
     L_CHEVRON
-    (genericParam
-    | (genericParam COMMA))+
+    genericParam
+    (COMMA genericParam)*?
     R_CHEVRON
     ;
 
 genericParam:
-    ident
+    IDENT
     TRIPLE_DOT?
     (COLON genericExpr)?
     (OP_ASSIGN type)?
@@ -956,8 +958,8 @@ genericParam:
 genericExpr:
     genericGroupedExpr
     | OP_NOT genericExpr
-    | L_CHEVRON genericExpr
     | genericExpr genericOp genericExpr
+    | type
     ;
 
 genericGroupedExpr:
