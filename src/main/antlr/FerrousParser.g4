@@ -338,22 +338,27 @@ destructor:
 
 gotoStatement:
     KW_GOTO
+    COLON
     IDENT
     ;
 
 continueStatement:
     (KW_CONTINUE
+    COLON
     IDENT)
     | KW_CONTINUE
     ;
 
 yieldStatement:
     KW_YIELD
+    (COLON
+    IDENT)?
     expr
     ;
 
 breakStatement:
     (KW_BREAK
+    COLON
     IDENT)
     | KW_BREAK
     ;
@@ -361,9 +366,6 @@ breakStatement:
 // Statements
 statement:
     letStatement
-    | forLoop
-    | whileLoop
-    | loop
     | panicStatement
     | destructureStatement
     | returnStatement
@@ -759,6 +761,9 @@ primary:
     | sliceInitExpr
     | exhaustiveIfExpr
     | exhaustiveWhenExpr
+    | forLoop
+    | whileLoop
+    | loop
     | alignofExpr
     | sizeofExpr
     | literal
@@ -988,24 +993,20 @@ intLiteral:
     ;
 
 sintLiteral:
-    LITERAL_I8
-    | LITERAL_I16
-    | LITERAL_I32
-    | LITERAL_I64
+    LITERAL_INT
     | LITERAL_ISIZE
     ;
 
 uintLiteral:
-    LITERAL_U8
-    | LITERAL_U16
-    | LITERAL_U32
-    | LITERAL_U64
+    LITERAL_UINT
     | LITERAL_USIZE
     ;
 
 floatLiteral:
-    LITERAL_F32
+    LITERAL_F16
+    | LITERAL_F32
     | LITERAL_F64
+    | LITERAL_F128
     ;
 
 stringLiteral:
@@ -1150,24 +1151,12 @@ intType:
     ;
 
 sintType:
-    KW_I8
-    | KW_I16
-    | KW_I32
-    | KW_I64
-    | KW_I128
-    | KW_I256
-    | KW_I512
+    KW_ITYPE
     | KW_ISIZE
     ;
 
 uintType:
-    KW_U8
-    | KW_U16
-    | KW_U32
-    | KW_U64
-    | KW_U128
-    | KW_U256
-    | KW_U512
+    KW_UTYPE
     | KW_USIZE
     ;
 
