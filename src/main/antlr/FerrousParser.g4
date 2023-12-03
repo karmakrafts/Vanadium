@@ -374,8 +374,14 @@ statement:
     | yieldStatement
     | breakStatement
     | KW_UNREACHABLE
-    | expr
     | labelBlock
+    | label
+    | expr
+    ;
+
+label:
+    IDENT
+    COLON
     ;
 
 labelBlock:
