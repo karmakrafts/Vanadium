@@ -113,8 +113,8 @@ KW_F32: 'f32';
 KW_F64: 'f64';
 KW_F128: 'f128';
 
-KW_ITYPE: 'i' [1-9]+;
-KW_UTYPE: 'u' [1-9]+;
+KW_ITYPE: 'i' [0-9]+;
+KW_UTYPE: 'u' [0-9]+;
 
 // Operators
 OP_INCL_RANGE: '..=';
