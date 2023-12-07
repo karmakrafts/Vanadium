@@ -39,8 +39,7 @@ sourceFile:
     ;
 
 decl:
-    modBlock
-    | modUseStatement
+    modUseStatement
     | useStatement
     | udt
     | typeAlias
@@ -59,16 +58,6 @@ typeAlias:
     genericParamList?
     OP_ASSIGN
     type
-    ;
-
-modBlock:
-    attributeList
-    accessMod?
-    KW_MOD
-    (qualifiedIdent | ident)
-    L_BRACE
-    (decl | NL)*?
-    R_BRACE
     ;
 
 useStatement:
@@ -759,7 +748,6 @@ primary:
     | ifExpr
     | whenExpr
     | lambdaExpr
-    | spreadExpr
     | heapInitExpr
     | stackInitExpr
     | stackAllocExpr
@@ -777,27 +765,26 @@ primary:
     | ident
     ;
 
-expr:
+expr: // C++ operator precedence used as a reference
     primary
+    | L_PAREN expr R_PAREN
+    | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
+    | expr L_BRACKET exprList R_BRACKET
+    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
+    | <assoc=right> (
+        OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS |
+        OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | AMP
+    ) expr
+
     // Ternaries & elvis expressions
-    | expr QMK expr COLON expr
+    | <assoc=right> expr QMK expr COLON expr
     | expr OP_ELVIS expr
     // Casts and pattern matching
     | expr (KW_AS | KW_AS_QMK) type
     | expr (KW_IS | KW_IS_NOT) type
     | expr (KW_IN | KW_IN_NOT) expr
-    // (De)References
-    | (DOUBLE_COLON | AMP | ASTERISK | OP_SAFE_DEREF) expr
-    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
     // Calls, indexing
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
-    | expr L_BRACKET exprList R_BRACKET
-    // Grouped expressions
-    | groupedExpr
-    // Unary expressions
-    | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
-    | (OP_PLUS | OP_MINUS | OP_INCREMENT | OP_DECREMENT) expr
-    | (OP_INV_ASSIGN | OP_INV | OP_NOT) expr
     // Binary expressions (left-associative)
     | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) expr
     | expr (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) expr
@@ -830,6 +817,8 @@ expr:
         | OP_MOD_ASSIGN
         | OP_SWAP
     ) expr
+    // Spread
+    | expr TRIPLE_DOT
     // Ranges
     | expr (DOUBLE_DOT | OP_INCL_RANGE) expr
     ;
@@ -864,17 +853,6 @@ sizeofExpr:
     NL*?
     ident
     NL*?
-    R_PAREN
-    ;
-
-spreadExpr:
-    TRIPLE_DOT
-    expr
-    ;
-
-groupedExpr:
-    L_PAREN
-    expr
     R_PAREN
     ;
 
