@@ -716,6 +716,7 @@ functionParamList:
     ;
 
 functionParam:
+    KW_MUT?
     ident
     COLON
     type
