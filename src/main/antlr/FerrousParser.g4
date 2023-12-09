@@ -777,36 +777,32 @@ primary:
 expr: // C++ operator precedence used as a reference
     primary
     | L_PAREN expr R_PAREN
-    | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
-    | expr L_BRACKET exprList R_BRACKET
-    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
-    | <assoc=right> (
-        OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS |
-        OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | AMP
-    ) expr
-
-    // Ternaries & elvis expressions
-    | <assoc=right> expr QMK expr COLON expr
-    | expr OP_ELVIS expr
-    // Casts and pattern matching
     | expr (KW_AS | KW_AS_QMK) type
     | expr (KW_IS | KW_IS_NOT) type
     | expr (KW_IN | KW_IN_NOT) expr
-    // Calls, indexing
+    | expr (DOUBLE_DOT | OP_INCL_RANGE) expr
+    | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
-    // Binary expressions (left-associative)
-    | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) expr
-    | expr (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) expr
-    | expr (OP_LSH | OP_RSH) expr
-    | expr OP_COMPARE expr
+    | expr L_BRACKET exprList R_BRACKET
+    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
+    | <assoc=right> (
+        OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS
+        | OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | AMP
+    ) expr
+    | expr (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) (expr | TRIPLE_DOT)
+    | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) (expr | TRIPLE_DOT)
+    | expr (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) (expr | TRIPLE_DOT)
+    | expr (OP_LSH | OP_RSH) (expr | TRIPLE_DOT)
+    | expr OP_COMPARE (expr | TRIPLE_DOT)
     | expr (OP_LEQUAL | OP_GEQUAL | L_CHEVRON | R_CHEVRON) expr
     | expr (OP_EQ | OP_NEQ) expr
-    | expr AMP expr
-    | expr OP_XOR expr
-    | expr PIPE expr
-    | expr OP_SHORTC_AND expr
-    | expr OP_SHORTC_OR expr
-    // Binary expressions (right associative)
+    | expr AMP (expr | TRIPLE_DOT)
+    | expr OP_XOR (expr | TRIPLE_DOT)
+    | expr PIPE (expr | TRIPLE_DOT)
+    | expr OP_SHORTC_AND (expr | TRIPLE_DOT)
+    | expr OP_SHORTC_OR (expr | TRIPLE_DOT)
+    | expr OP_ELVIS expr
+    | <assoc=right> expr QMK expr COLON expr
     | <assoc=right> expr (
         OP_ASSIGN
         | OP_SAT_PLUS_ASSIGN
@@ -826,10 +822,7 @@ expr: // C++ operator precedence used as a reference
         | OP_MOD_ASSIGN
         | OP_SWAP
     ) expr
-    // Spread
     | expr TRIPLE_DOT
-    // Ranges
-    | expr (DOUBLE_DOT | OP_INCL_RANGE) expr
     ;
 
 lambdaExpr:

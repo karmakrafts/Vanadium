@@ -134,6 +134,8 @@ OP_NEQ: '!=';
 OP_SAFE_PTR_REF: '?->';
 OP_ELVIS: '?:';
 OP_SAFE_DEREF: '*?';
+OP_MEMBER_DEREF: '.*';
+OP_MEMBER_PTR_DEREF: '->*';
 
 OP_LEQUAL: '<=';
 OP_GEQUAL: '>=';
