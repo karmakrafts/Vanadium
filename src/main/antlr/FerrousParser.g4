@@ -135,8 +135,9 @@ enumConstantList:
     ;
 
 enumConstant:
-    (ident
-    | (ident COMMA))
+    ident
+    (OP_ASSIGN
+    expr)?
     ;
 
 structBody:
@@ -450,7 +451,10 @@ loop:
     KW_LOOP
     ((expr end)
     | labelBlock
-    | (L_BRACE
+    | ((NL*
+    KW_DEFAULT
+    expr)?
+    L_BRACE
     (decl | NL)*?
     R_BRACE))
     ;
@@ -470,7 +474,10 @@ simpleWhileLoop:
 
 whileBody:
     labelBlock
-    | (L_BRACE
+    | ((NL*
+    KW_DEFAULT
+    expr)?
+    L_BRACE
     (decl | NL)*?
     R_BRACE)
     ;
@@ -518,7 +525,10 @@ forLoop:
     | rangedLoopHead)
     ((expr end)
     | labelBlock
-    | (L_BRACE
+    | ((NL*
+    KW_DEFAULT
+    expr)?
+    L_BRACE
     (decl | NL)*?
     R_BRACE))
     ;
@@ -553,8 +563,8 @@ indexedLoopHead:
 
 // If expressions
 ifExpr:
-    KW_CONST?
-    NL*
+    (KW_CONST
+    NL*)?
     KW_IF
     NL*
     L_PAREN
@@ -562,9 +572,7 @@ ifExpr:
     expr
     NL*
     R_PAREN
-    NL*
-    ((decl end)
-    | ifBody)
+    ifBody
     elseIfExpr*?
     elseExpr?
     ;
@@ -592,9 +600,10 @@ elseExpr:
     ;
 
 ifBody:
-    L_BRACE
+    (L_BRACE
     (statement | NL)*?
-    R_BRACE
+    R_BRACE)
+    | statement
     ;
 
 // Functions
