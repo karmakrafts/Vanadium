@@ -37,27 +37,11 @@ sourceFile:
     EOF?
     ;
 
-externBlock:
-    KW_EXTERN
-    L_BRACE
-    (decl | NL)*?
-    R_BRACE
-    ;
-
-attribBlock:
-    (attribUsage NL*)*?
-    L_BRACE
-    (decl | NL)*?
-    R_BRACE
-    ;
-
 decl:
     modUseStatement
     | useStatement
     | udt
     | typeAlias
-    | externBlock
-    | attribBlock
     | function
     | constructor
     | destructor
@@ -743,8 +727,11 @@ exprList:
     | (expr COMMA))+
     ;
 
-unsafeBlock:
-    KW_UNSAFE
+anonScope:
+    (attribUsage NL*)*?
+    accessMod?
+    KW_UNSAFE?
+    KW_EXTERN?
     L_BRACE
     (decl | NL)*?
     R_BRACE
@@ -762,8 +749,7 @@ paramRef:
     ;
 
 primary:
-    unsafeBlock
-    | unsafeExpr
+    unsafeExpr
     | ifExpr
     | whenExpr
     | lambdaExpr
@@ -777,6 +763,7 @@ primary:
     | forLoop
     | whileLoop
     | loop
+    | anonScope
     | alignofExpr
     | sizeofExpr
     | paramRef
