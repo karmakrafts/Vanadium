@@ -136,6 +136,7 @@ OP_ELVIS: '?:';
 OP_SAFE_DEREF: '*?';
 OP_MEMBER_DEREF: '.*';
 OP_MEMBER_PTR_DEREF: '->*';
+OP_LABEL_ADDR: '&:';
 
 OP_LEQUAL: '<=';
 OP_GEQUAL: '>=';

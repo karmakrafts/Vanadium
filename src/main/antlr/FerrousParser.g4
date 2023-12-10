@@ -9,7 +9,6 @@ options {
     tokenVocab = FerrousLexer;
 }
 
-// Files
 file:
     moduleFile
     | sourceFile
@@ -38,11 +37,27 @@ sourceFile:
     EOF?
     ;
 
+externBlock:
+    KW_EXTERN
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
+    ;
+
+attribBlock:
+    (attribUsage NL*)*?
+    L_BRACE
+    (decl | NL)*?
+    R_BRACE
+    ;
+
 decl:
     modUseStatement
     | useStatement
     | udt
     | typeAlias
+    | externBlock
+    | attribBlock
     | function
     | constructor
     | destructor
@@ -85,7 +100,6 @@ useType:
     ident)?
     ;
 
-// User defined types
 udt:
     enumClass
     | enum
@@ -104,7 +118,7 @@ enumClassBody:
     ;
 
 enumClass:
-    attributeList
+    (attribUsage NL*)*?
     accessMod?
     KW_UNSAFE?
     KW_ENUM
@@ -121,7 +135,7 @@ enumBody:
     ;
 
 enum:
-    attributeList
+    (attribUsage NL*)*?
     accessMod?
     KW_ENUM
     ident
@@ -147,7 +161,7 @@ structBody:
     ;
 
 struct:
-    attributeList
+    (attribUsage NL*)*?
     accessMod?
     KW_UNSAFE?
     KW_STRUCT
@@ -167,7 +181,7 @@ interfaceBody:
     ;
 
 interface:
-    attributeList
+    (attribUsage NL*)*?
     accessMod?
     KW_UNSAFE?
     KW_INTERFACE
@@ -185,7 +199,7 @@ attribBody:
     ;
 
 attrib:
-    attributeList
+    (attribUsage NL*)*?
     accessMod?
     KW_UNSAFE?
     KW_ATTRIB
@@ -196,7 +210,7 @@ attrib:
     ;
 
 trait:
-    attributeList
+    (attribUsage NL*)*?
     accessMod?
     KW_UNSAFE?
     KW_TRAIT
@@ -204,11 +218,6 @@ trait:
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
     structBody
-    ;
-
-// Attributes
-attributeList:
-    (attribUsage end?)*?
     ;
 
 attribUsage:
@@ -222,7 +231,6 @@ attribUsage:
     R_PAREN)?
     ;
 
-// Properties
 propertyGetter:
     KW_UNSAFE?
     KW_GET
@@ -244,7 +252,7 @@ propertySetter:
     ;
 
 property:
-    attributeList
+    (attribUsage NL*)*?
     accessMod?
     KW_UNSAFE?
     NL*?
@@ -272,9 +280,8 @@ propertyBody:
     R_BRACE
     ;
 
-// Fields
 field:
-    attributeList
+    (attribUsage NL*)*?
     (accessMod
     NL*)?
     (KW_STATIC
@@ -289,7 +296,6 @@ field:
     (NL* OP_ASSIGN NL* (expr | QMK))?
     ;
 
-// Constructors
 constructor:
     accessMod?
     KW_UNSAFE?
@@ -315,7 +321,6 @@ superCall:
     R_PAREN
     ;
 
-// Destructors
 destructor:
     KW_UNSAFE?
     OP_INV
@@ -330,6 +335,12 @@ gotoStatement:
     KW_GOTO
     COLON
     IDENT
+    ;
+
+gotoAddressStatement:
+    KW_GOTO
+    ASTERISK
+    expr
     ;
 
 continueStatement:
@@ -353,12 +364,12 @@ breakStatement:
     | KW_BREAK
     ;
 
-// Statements
 statement:
     letStatement
     | panicStatement
     | destructureStatement
     | returnStatement
+    | gotoAddressStatement
     | gotoStatement
     | continueStatement
     | yieldStatement
@@ -382,7 +393,6 @@ labelBlock:
     R_BRACE
     ;
 
-// Destrucuring statements
 destructureStatement:
     KW_LET
     KW_MUT?
@@ -399,7 +409,6 @@ inferredParamList:
     (COMMA ident)*)?
     ;
 
-// Panic statements
 panicStatement:
     KW_CONST?
     KW_PANIC
@@ -408,17 +417,17 @@ panicStatement:
     R_PAREN
     ;
 
-// Return statements
 returnStatement:
     (KW_RETURN
     expr)
     | KW_RETURN
     ;
 
-// When expressions
 whenExpr:
     KW_WHEN
+    L_PAREN
     expr
+    R_PAREN
     L_BRACE
     (whenBranch | NL)*?
     defaultWhenBranch?
@@ -434,7 +443,7 @@ whenBranch:
     ;
 
 defaultWhenBranch:
-    UNDERSCORE
+    KW_DEFAULT
     ARROW
     ((expr end)
     | whenBranchBody)
@@ -446,7 +455,6 @@ whenBranchBody:
     R_BRACE
     ;
 
-// Loops
 loop:
     KW_LOOP
     ((expr end)
@@ -459,7 +467,6 @@ loop:
     R_BRACE))
     ;
 
-// While loops
 whileLoop:
     whileDoLoop
     | simpleWhileLoop
@@ -517,7 +524,6 @@ doBody:
     R_BRACE)
     ;
 
-// For loops
 forLoop:
     KW_FOR
     NL*?
@@ -561,7 +567,6 @@ indexedLoopHead:
     R_PAREN
     ;
 
-// If expressions
 ifExpr:
     (KW_CONST
     NL*)?
@@ -606,7 +611,6 @@ ifBody:
     | statement
     ;
 
-// Functions
 functionBody:
     L_BRACE
     (statement | NL)*?
@@ -686,7 +690,7 @@ functionIdent:
     ;
 
 protoFunction:
-    attributeList
+    (attribUsage NL*)*?
     (accessMod
     NL*)?
     (functionMod
@@ -723,7 +727,6 @@ functionParam:
     (OP_ASSIGN expr)?
     ;
 
-// Expressions
 namedExpr:
     ident
     OP_ASSIGN
@@ -752,6 +755,12 @@ unsafeExpr:
     expr
     ;
 
+paramRef:
+    KW_FUN
+    DOT
+    ident
+    ;
+
 primary:
     unsafeBlock
     | unsafeExpr
@@ -770,6 +779,7 @@ primary:
     | loop
     | alignofExpr
     | sizeofExpr
+    | paramRef
     | literal
     | qualifiedIdent
     | ident
@@ -788,7 +798,7 @@ expr: // C++ operator precedence used as a reference
     | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
     | <assoc=right> (
         OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS
-        | OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | AMP
+        | OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | OP_LABEL_ADDR | AMP
     ) expr
     | expr (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) (expr | TRIPLE_DOT)
     | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) (expr | TRIPLE_DOT)
@@ -859,7 +869,6 @@ sizeofExpr:
     R_PAREN
     ;
 
-// Control flow expressions
 exhaustiveIfExpr:
     KW_IF
     expr
@@ -879,7 +888,6 @@ exhaustiveWhenExpr:
     R_BRACE
     ;
 
-// Array expressions
 sizedSliceExpr:
     L_BRACKET
     (type | sizedSliceExpr)
@@ -894,7 +902,6 @@ sliceInitExpr:
     R_BRACKET
     ;
 
-// stackalloc expressions
 stackAllocExpr:
     KW_STACKALLOC
     L_BRACKET
@@ -904,7 +911,6 @@ stackAllocExpr:
     R_BRACKET
     ;
 
-// Initialization expressions
 heapInitExpr:
     KW_NEW
     (sizedSliceExpr
@@ -921,7 +927,6 @@ stackInitExpr:
     R_BRACE
     ;
 
-// Generics
 genericParamList:
     L_CHEVRON
     genericParam
@@ -961,7 +966,6 @@ genericList:
     R_CHEVRON
     ;
 
-// Literals
 literal:
     boolLiteral
     | intLiteral
@@ -1040,7 +1044,6 @@ cmlStringLiteral:
     | EMPTY_CML_STRING
     ;
 
-// Modifiers
 accessMod:
     (KW_PUB
     L_PAREN
@@ -1076,7 +1079,6 @@ typeMod:
     | KW_VOLATILE
     ;
 
-// Types
 typeList:
     (type
     | (type COMMA))+?
@@ -1156,7 +1158,6 @@ floatType:
     | KW_F128
     ;
 
-// Identifiers
 qualifiedIdent:
     ident
     (DOUBLE_COLON ident)+
