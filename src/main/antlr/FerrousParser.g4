@@ -18,23 +18,23 @@ moduleFile:
     NL*
     module
     (modUseStatement | NL)*?
-    EOF?
+    EOF
+    ;
+
+sourceFile:
+    (decl | NL)*?
+    EOF
     ;
 
 module:
     KW_MOD
-    (qualifiedIdent | ident)
+    (qualifiedIdent | IDENT)
     ;
 
 modUseStatement:
     KW_USE
     KW_MOD
-    (qualifiedIdent | ident)
-    ;
-
-sourceFile:
-    (decl | NL)*?
-    EOF?
+    (qualifiedIdent | IDENT)
     ;
 
 decl:
@@ -48,12 +48,11 @@ decl:
     | (protoFunction end)
     | (property end)
     | (field end)
-    | (statement end)
     ;
 
 typeAlias:
     KW_TYPE
-    ident
+    IDENT
     genericParamList?
     OP_ASSIGN
     type
@@ -61,7 +60,7 @@ typeAlias:
 
 useStatement:
     KW_USE
-    (qualifiedIdent | ident)
+    (qualifiedIdent | IDENT)
     (DOUBLE_COLON useList)?
     ;
 
@@ -81,7 +80,7 @@ useTypeList:
 useType:
     type
     (KW_AS
-    ident)?
+    IDENT)?
     ;
 
 udt:
@@ -107,7 +106,7 @@ enumClass:
     KW_UNSAFE?
     KW_ENUM
     KW_CLASS
-    ident
+    IDENT
     (COLON typeList)?
     enumClassBody
     ;
@@ -122,7 +121,7 @@ enum:
     (attribUsage NL*)*?
     accessMod?
     KW_ENUM
-    ident
+    IDENT
     enumBody
     ;
 
@@ -133,7 +132,7 @@ enumConstantList:
     ;
 
 enumConstant:
-    ident
+    IDENT
     (OP_ASSIGN
     expr)?
     ;
@@ -149,7 +148,7 @@ struct:
     accessMod?
     KW_UNSAFE?
     KW_STRUCT
-    ident
+    IDENT
     genericParamList? // Optional because of chevrons
     (COLON
     typeList)?
@@ -169,7 +168,7 @@ interface:
     accessMod?
     KW_UNSAFE?
     KW_INTERFACE
-    ident
+    IDENT
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
     interfaceBody
@@ -187,7 +186,7 @@ attrib:
     accessMod?
     KW_UNSAFE?
     KW_ATTRIB
-    ident
+    IDENT
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
     attribBody
@@ -198,7 +197,7 @@ trait:
     accessMod?
     KW_UNSAFE?
     KW_TRAIT
-    ident
+    IDENT
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
     structBody
@@ -206,7 +205,7 @@ trait:
 
 attribUsage:
     AT
-    (qualifiedIdent | ident)
+    (qualifiedIdent | IDENT)
     (NL*
     L_PAREN
     NL*
@@ -228,7 +227,7 @@ propertySetter:
     NL*?
     L_PAREN
     NL*?
-    ident
+    IDENT
     NL*?
     R_PAREN
     NL*?
@@ -241,7 +240,7 @@ property:
     KW_UNSAFE?
     NL*?
     (KW_INL NL*)?
-    ident
+    IDENT
     NL*?
     COLON
     NL*?
@@ -272,7 +271,7 @@ field:
     NL*)?
     (KW_MUT
     NL*)?
-    ident
+    IDENT
     NL*?
     COLON
     NL*?
@@ -283,7 +282,7 @@ field:
 constructor:
     accessMod?
     KW_UNSAFE?
-    ident
+    IDENT
     L_PAREN
     functionParamList
     R_PAREN
@@ -308,7 +307,7 @@ superCall:
 destructor:
     KW_UNSAFE?
     OP_INV
-    ident
+    IDENT
     L_PAREN
     functionParamList
     R_PAREN
@@ -389,8 +388,8 @@ destructureStatement:
     ;
 
 inferredParamList:
-    (ident
-    (COMMA ident)*)?
+    (IDENT
+    (COMMA IDENT)*)?
     ;
 
 panicStatement:
@@ -526,7 +525,7 @@ forLoop:
 rangedLoopHead:
     L_PAREN
     NL*?
-    ident
+    IDENT
     NL*?
     KW_IN
     NL*?
@@ -597,7 +596,7 @@ ifBody:
 
 functionBody:
     L_BRACE
-    (statement | NL)*?
+    (statement | decl | NL)*?
     R_BRACE
     ;
 
@@ -610,7 +609,7 @@ letStatement:
     KW_LET
     NL*?
     (KW_MUT NL*)?
-    ident
+    IDENT
     NL*?
     (COLON type)?
     (OP_ASSIGN (expr | QMK))?
@@ -670,7 +669,7 @@ operator:
 
 functionIdent:
     operator
-    | ident
+    | IDENT
     ;
 
 protoFunction:
@@ -705,14 +704,14 @@ functionParamList:
 
 functionParam:
     KW_MUT?
-    ident
+    IDENT
     COLON
     type
     (OP_ASSIGN expr)?
     ;
 
 namedExpr:
-    ident
+    IDENT
     OP_ASSIGN
     expr
     ;
@@ -745,7 +744,7 @@ unsafeExpr:
 paramRef:
     KW_FUN
     DOT
-    ident
+    IDENT
     ;
 
 primary:
@@ -769,7 +768,7 @@ primary:
     | paramRef
     | literal
     | qualifiedIdent
-    | ident
+    | IDENT
     ;
 
 expr: // C++ operator precedence used as a reference
@@ -782,7 +781,7 @@ expr: // C++ operator precedence used as a reference
     | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
     | expr L_BRACKET exprList R_BRACKET
-    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
+    | expr (DOT | ARROW | OP_SAFE_PTR_REF) IDENT
     | <assoc=right> (
         OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS
         | OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | OP_LABEL_ADDR | AMP
@@ -840,7 +839,7 @@ alignofExpr:
     NL*?
     L_PAREN
     NL*?
-    ident
+    IDENT
     NL*?
     R_PAREN
     ;
@@ -851,7 +850,7 @@ sizeofExpr:
     (TRIPLE_DOT NL*)?
     L_PAREN
     NL*?
-    ident
+    IDENT
     NL*?
     R_PAREN
     ;
@@ -1084,7 +1083,7 @@ type:
     | type (ASTERISK | AMP)
     | builtinType
     | qualifiedIdent
-    | ident
+    | IDENT
     ;
 
 tupleType:
@@ -1146,35 +1145,11 @@ floatType:
     ;
 
 qualifiedIdent:
-    ident
-    (DOUBLE_COLON ident)+
-    ;
-
-lerpIdent:
-    (TOKEN_LERP_BEGIN
-    (MACRO_IDENT
-    | specialToken)
-    R_BRACE)+
-    ;
-
-ident:
-    lerpIdent
-    | UNDERSCORE
-    | IDENT
-    ;
-
-specialToken:
-    DOLLAR
-    | COMMA
-    | DOUBLE_COLON
-    | COLON
-    | TRIPLE_DOT
-    | DOUBLE_DOT
-    | DOT
+    IDENT
+    (DOUBLE_COLON IDENT)+
     ;
 
 end:
     SEMICOLON
     | NL
-    | EOF
     ;

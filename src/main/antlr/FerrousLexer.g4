@@ -60,7 +60,6 @@ KW_ATOMIC: 'atomic';
 KW_PANIC: 'panic';
 KW_TOKEN: 'token';
 KW_WHILE: 'while';
-KW_MACRO: 'macro';
 KW_CONST: 'const';
 KW_CLASS: 'class';
 KW_TRAIT: 'trait';
@@ -221,16 +220,8 @@ LITERAL_F128: F_LITERAL_FLOAT KW_F128;
 fragment F_ESCAPED_CHAR: '\\' [nrbt0];
 LITERAL_CHAR: '\'' (F_ESCAPED_CHAR | .) '\'';
 
-// Token interpolation
-TOKEN_LERP_BEGIN: '${' -> pushMode(DEFAULT_MODE);
+IDENT: [a-zA-Z_]+[a-zA-Z0-9_]*;
 
-// Identifier(s)
-fragment F_IDENT: [a-zA-Z_]+[a-zA-Z0-9_]*;
-MACRO_IDENT: '$' F_IDENT;
-IDENT: F_IDENT;
-
-// More multi-purpose tokens
-// Continuation of the list above because of lexing precedence.
 SINGLE_QUOTE: '\'';
 DOLLAR: '$';
 HASH: '#';
