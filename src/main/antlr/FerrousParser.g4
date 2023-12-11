@@ -269,9 +269,11 @@ field:
     NL*)?
     (KW_STATIC
     NL*)?
+    (KW_CONST
+    NL*)?
     (KW_MUT
     NL*)?
-    IDENT
+    (softKeyword | IDENT)
     NL*?
     COLON
     NL*?
@@ -284,7 +286,7 @@ constructor:
     KW_UNSAFE?
     IDENT
     L_PAREN
-    functionParamList
+    paramList
     R_PAREN
     (COLON (thisCall | superCall))?
     (functionBody | inlineFunctionBody)?
@@ -309,7 +311,7 @@ destructor:
     OP_INV
     IDENT
     L_PAREN
-    functionParamList
+    paramList
     R_PAREN
     (functionBody | inlineFunctionBody)?
     ;
@@ -608,8 +610,9 @@ function:
 letStatement:
     KW_LET
     NL*?
+    (KW_STATIC NL*)?
     (KW_MUT NL*)?
-    IDENT
+    (softKeyword | IDENT)
     NL*?
     (COLON type)?
     (OP_ASSIGN (expr | QMK))?
@@ -688,23 +691,24 @@ protoFunction:
     NL*)?
     (L_PAREN
     NL*
-    functionParamList
+    paramList
     NL*
     R_PAREN)?
     (COLON NL*? type)?
     ;
 
-functionParamList:
-    (functionParam
-    (COMMA functionParam)*?)?
+paramList:
+    (param
+    (COMMA param)*?)?
     |
-    ((functionParam (COMMA functionParam)*?)
+    ((param (COMMA param)*?)
     (COMMA TRIPLE_DOT))
     ;
 
-functionParam:
+param:
+    KW_CONST?
     KW_MUT?
-    IDENT
+    (softKeyword | IDENT)
     COLON
     type
     (OP_ASSIGN expr)?
@@ -781,12 +785,12 @@ expr: // C++ operator precedence used as a reference
     | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
     | expr L_BRACKET exprList R_BRACKET
-    | expr (DOT | ARROW | OP_SAFE_PTR_REF) IDENT
+    | expr (DOT | ARROW | OP_SAFE_PTR_REF) (softKeyword | IDENT)
     | <assoc=right> (
         OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS
         | OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | OP_LABEL_ADDR | AMP
     ) expr
-    | expr (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) (expr | TRIPLE_DOT)
+    | expr (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) (softKeyword | IDENT)
     | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) (expr | TRIPLE_DOT)
     | expr (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) (expr | TRIPLE_DOT)
     | expr (OP_LSH | OP_RSH) (expr | TRIPLE_DOT)
@@ -825,7 +829,7 @@ expr: // C++ operator precedence used as a reference
 lambdaExpr:
     callConvMod?
     L_PAREN
-    functionParamList
+    paramList
     R_PAREN
     (ARROW
     type)?
@@ -924,7 +928,7 @@ genericParam:
     IDENT
     TRIPLE_DOT?
     (COLON genericExpr)?
-    (OP_ASSIGN type)?
+    (OP_ASSIGN (expr | type))?
     ;
 
 genericExpr:
@@ -932,6 +936,7 @@ genericExpr:
     | OP_NOT genericExpr
     | genericExpr genericOp genericExpr
     | type
+    | (KW_CONST? KW_FUN)
     ;
 
 genericGroupedExpr:
@@ -1048,7 +1053,7 @@ callConvMod:
     ;
 
 functionMod:
-    KW_CONST
+    (KW_CONST QMK?)
     | KW_INL
     | KW_VIRTUAL
     | KW_OVERRIDE
@@ -1147,6 +1152,12 @@ floatType:
 qualifiedIdent:
     IDENT
     (DOUBLE_COLON IDENT)+
+    ;
+
+softKeyword:
+    KW_GET
+    | KW_SET
+    | KW_MOD
     ;
 
 end:
