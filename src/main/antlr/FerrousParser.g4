@@ -1075,20 +1075,20 @@ typeList:
     | (type COMMA))+?
     ;
 
-modifiedType:
-    (typeMod NL*)+
-    type
+primaryType:
+    attribUsage*? // Allow applying attributes to type usages
+    typeMod*?
+    (functionType
+    | tupleType
+    | sliceType
+    | builtinType
+    | qualifiedIdent
+    | IDENT)
     ;
 
 type:
-    modifiedType
-    | functionType
-    | tupleType
-    | sliceType
-    | type (ASTERISK | AMP)
-    | builtinType
-    | qualifiedIdent
-    | IDENT
+    primaryType
+    | type typeMod*? (ASTERISK | AMP)
     ;
 
 tupleType:
