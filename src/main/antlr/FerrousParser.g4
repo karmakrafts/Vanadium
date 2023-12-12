@@ -28,13 +28,13 @@ sourceFile:
 
 module:
     KW_MOD
-    (qualifiedIdent | IDENT)
+    ident
     ;
 
 modUseStatement:
     KW_USE
     KW_MOD
-    (qualifiedIdent | IDENT)
+    anyIdent
     ;
 
 decl:
@@ -52,7 +52,7 @@ decl:
 
 typeAlias:
     KW_TYPE
-    IDENT
+    ident
     genericParamList?
     OP_ASSIGN
     (expr | type)
@@ -60,7 +60,7 @@ typeAlias:
 
 useStatement:
     KW_USE
-    (qualifiedIdent | IDENT)
+    anyIdent
     (DOUBLE_COLON useList)?
     ;
 
@@ -80,7 +80,7 @@ useTypeList:
 useType:
     type
     (KW_AS
-    IDENT)?
+    anyIdent)?
     ;
 
 udt:
@@ -106,7 +106,7 @@ enumClass:
     KW_UNSAFE?
     KW_ENUM
     KW_CLASS
-    IDENT
+    ident
     (COLON typeList)?
     enumClassBody
     ;
@@ -121,7 +121,7 @@ enum:
     (attribUsage NL*)*?
     accessMod?
     KW_ENUM
-    IDENT
+    ident
     enumBody
     ;
 
@@ -132,7 +132,7 @@ enumConstantList:
     ;
 
 enumConstant:
-    IDENT
+    ident
     (OP_ASSIGN
     expr)?
     ;
@@ -148,7 +148,7 @@ struct:
     accessMod?
     KW_UNSAFE?
     KW_STRUCT
-    IDENT
+    ident
     genericParamList? // Optional because of chevrons
     (COLON
     typeList)?
@@ -168,7 +168,7 @@ interface:
     accessMod?
     KW_UNSAFE?
     KW_INTERFACE
-    IDENT
+    ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
     interfaceBody
@@ -186,7 +186,7 @@ attrib:
     accessMod?
     KW_UNSAFE?
     KW_ATTRIB
-    IDENT
+    ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
     attribBody
@@ -197,7 +197,7 @@ trait:
     accessMod?
     KW_UNSAFE?
     KW_TRAIT
-    IDENT
+    ident
     genericParamList? // Optional because of chevrons
     (COLON typeList)?
     structBody
@@ -205,7 +205,7 @@ trait:
 
 attribUsage:
     AT
-    (qualifiedIdent | IDENT)
+    anyIdent
     (NL*
     L_PAREN
     NL*
@@ -227,7 +227,7 @@ propertySetter:
     NL*?
     L_PAREN
     NL*?
-    IDENT
+    ident
     NL*?
     R_PAREN
     NL*?
@@ -240,7 +240,7 @@ property:
     KW_UNSAFE?
     NL*?
     (KW_INL NL*)?
-    IDENT
+    ident
     NL*?
     COLON
     NL*?
@@ -273,7 +273,7 @@ field:
     NL*)?
     (KW_MUT
     NL*)?
-    (softKeyword | IDENT)
+    ident
     NL*?
     COLON
     NL*?
@@ -284,7 +284,7 @@ field:
 constructor:
     accessMod?
     KW_UNSAFE?
-    IDENT
+    ident
     L_PAREN
     paramList
     R_PAREN
@@ -309,7 +309,7 @@ superCall:
 destructor:
     KW_UNSAFE?
     OP_INV
-    IDENT
+    ident
     L_PAREN
     paramList
     R_PAREN
@@ -319,7 +319,7 @@ destructor:
 gotoStatement:
     KW_GOTO
     COLON
-    IDENT
+    ident
     ;
 
 gotoAddressStatement:
@@ -331,21 +331,21 @@ gotoAddressStatement:
 continueStatement:
     (KW_CONTINUE
     COLON
-    IDENT)
+    ident)
     | KW_CONTINUE
     ;
 
 yieldStatement:
     KW_YIELD
     (COLON
-    IDENT)?
+    ident)?
     expr
     ;
 
 breakStatement:
     (KW_BREAK
     COLON
-    IDENT)
+    ident)
     | KW_BREAK
     ;
 
@@ -366,12 +366,12 @@ statement:
     ;
 
 label:
-    IDENT
+    ident
     COLON
     ;
 
 labelBlock:
-    IDENT
+    ident
     COLON
     L_BRACE
     (decl | NL)*?
@@ -390,8 +390,8 @@ destructureStatement:
     ;
 
 inferredParamList:
-    (IDENT
-    (COMMA IDENT)*)?
+    ident
+    (COMMA ident)*
     ;
 
 panicStatement:
@@ -527,7 +527,7 @@ forLoop:
 rangedLoopHead:
     L_PAREN
     NL*?
-    IDENT
+    ident
     NL*?
     KW_IN
     NL*?
@@ -612,7 +612,7 @@ letStatement:
     NL*?
     (KW_STATIC NL*)?
     (KW_MUT NL*)?
-    (softKeyword | IDENT)
+    ident
     NL*?
     (COLON type)?
     (OP_ASSIGN (expr | QMK))?
@@ -672,7 +672,7 @@ operator:
 
 functionIdent:
     operator
-    | IDENT
+    | ident
     ;
 
 protoFunction:
@@ -708,14 +708,14 @@ paramList:
 param:
     KW_CONST?
     KW_MUT?
-    (softKeyword | IDENT)
+    ident
     COLON
     type
     (OP_ASSIGN expr)?
     ;
 
 namedExpr:
-    IDENT
+    ident
     OP_ASSIGN
     expr
     ;
@@ -748,7 +748,7 @@ unsafeExpr:
 paramRef:
     KW_FUN
     DOT
-    IDENT
+    ident
     ;
 
 typeExpr:
@@ -761,7 +761,7 @@ typeExpr:
 identExpr:
     KW_IDENT
     L_PAREN
-    (qualifiedIdent | softKeyword | IDENT)
+    anyIdent
     R_PAREN
     ;
 
@@ -806,12 +806,11 @@ primary:
     | literalExpr
     | expressionExpr
     | tokenExpr
+    | identExpr
     | unsafeExpr
     | paramRef
     | literal
-    | qualifiedIdent
-    | softKeyword
-    | IDENT
+    | anyIdent
     ;
 
 expr: // C++ operator precedence used as a reference
@@ -824,12 +823,12 @@ expr: // C++ operator precedence used as a reference
     | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
     | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
     | expr L_BRACKET exprList R_BRACKET
-    | expr (DOT | ARROW | OP_SAFE_PTR_REF) (softKeyword | IDENT)
+    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
     | <assoc=right> (
         OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS
         | OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | OP_LABEL_ADDR | AMP
     ) expr
-    | expr (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) (softKeyword | IDENT)
+    | expr (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) ident
     | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) (expr | TRIPLE_DOT)
     | expr (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) (expr | TRIPLE_DOT)
     | expr (OP_LSH | OP_RSH) (expr | TRIPLE_DOT)
@@ -882,7 +881,7 @@ alignofExpr:
     NL*?
     L_PAREN
     NL*?
-    IDENT
+    anyIdent
     NL*?
     R_PAREN
     ;
@@ -893,7 +892,7 @@ sizeofExpr:
     (TRIPLE_DOT NL*)?
     L_PAREN
     NL*?
-    IDENT
+    anyIdent
     NL*?
     R_PAREN
     ;
@@ -964,7 +963,7 @@ genericParamList:
     ;
 
 genericParam:
-    IDENT
+    ident
     TRIPLE_DOT?
     (COLON genericExpr)?
     (OP_ASSIGN (expr | type))?
@@ -1092,7 +1091,7 @@ accessMod:
 callConvMod:
     KW_CALLCONV
     L_PAREN
-    IDENT
+    ident
     R_PAREN
     ;
 
@@ -1203,8 +1202,8 @@ floatType:
     ;
 
 qualifiedIdent:
-    (softKeyword | IDENT)
-    (DOUBLE_COLON (softKeyword | IDENT))+
+    ident
+    (DOUBLE_COLON ident)+
     ;
 
 softKeyword:
@@ -1212,6 +1211,16 @@ softKeyword:
     | KW_SET
     | KW_MOD
     | imaginaryType // All imaginary types are also soft keywords
+    ;
+
+ident:
+    softKeyword
+    | IDENT
+    ;
+
+anyIdent:
+    qualifiedIdent
+    | ident
     ;
 
 end:
