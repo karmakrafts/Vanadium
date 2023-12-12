@@ -55,7 +55,7 @@ typeAlias:
     IDENT
     genericParamList?
     OP_ASSIGN
-    type
+    (expr | type)
     ;
 
 useStatement:
@@ -751,9 +751,42 @@ paramRef:
     IDENT
     ;
 
+typeExpr:
+    KW_TYPE
+    L_PAREN
+    type
+    R_PAREN
+    ;
+
+identExpr:
+    KW_IDENT
+    L_PAREN
+    (qualifiedIdent | softKeyword | IDENT)
+    R_PAREN
+    ;
+
+literalExpr:
+    KW_LITERAL
+    L_PAREN
+    literal
+    R_PAREN
+    ;
+
+expressionExpr:
+    KW_EXPR
+    L_PAREN
+    expr
+    R_PAREN
+    ;
+
+tokenExpr:
+    TOKEN_BEGIN
+    TOKEN_MODE_TOKEN
+    R_PAREN
+    ;
+
 primary:
-    unsafeExpr
-    | ifExpr
+    ifExpr
     | whenExpr
     | lambdaExpr
     | heapInitExpr
@@ -769,16 +802,22 @@ primary:
     | anonScope
     | alignofExpr
     | sizeofExpr
+    | typeExpr
+    | literalExpr
+    | expressionExpr
+    | tokenExpr
+    | unsafeExpr
     | paramRef
     | literal
     | qualifiedIdent
+    | softKeyword
     | IDENT
     ;
 
 expr: // C++ operator precedence used as a reference
     primary
     | L_PAREN expr R_PAREN
-    | expr (KW_AS | KW_AS_QMK) type
+    | expr (KW_AS | KW_AS_QMK) (UNDERSCORE | type)
     | expr (KW_IS | KW_IS_NOT) type
     | expr (KW_IN | KW_IN_NOT) expr
     | expr (DOUBLE_DOT | OP_INCL_RANGE) expr
@@ -931,12 +970,17 @@ genericParam:
     (OP_ASSIGN (expr | type))?
     ;
 
+primaryGenericExpr:
+    KW_CONST?
+    (typeMod*? type)
+    | KW_FUN
+    ;
+
 genericExpr:
-    genericGroupedExpr
+    primaryGenericExpr
+    | genericGroupedExpr
     | OP_NOT genericExpr
     | genericExpr genericOp genericExpr
-    | type
-    | (KW_CONST? KW_FUN)
     ;
 
 genericGroupedExpr:
@@ -1075,6 +1119,15 @@ typeList:
     | (type COMMA))+?
     ;
 
+imaginaryType:
+    KW_TYPE
+    | KW_EXPR
+    | KW_IDENT
+    | KW_LITERAL
+    | KW_TOKEN
+    | KW_STRING
+    ;
+
 primaryType:
     attribUsage*? // Allow applying attributes to type usages
     typeMod*?
@@ -1082,6 +1135,7 @@ primaryType:
     | tupleType
     | sliceType
     | builtinType
+    | imaginaryType
     | qualifiedIdent
     | IDENT)
     ;
@@ -1124,7 +1178,6 @@ miscType:
     KW_VOID
     | KW_BOOL
     | KW_CHAR
-    | KW_STRING
     ;
 
 intType:
@@ -1150,14 +1203,15 @@ floatType:
     ;
 
 qualifiedIdent:
-    IDENT
-    (DOUBLE_COLON IDENT)+
+    (softKeyword | IDENT)
+    (DOUBLE_COLON (softKeyword | IDENT))+
     ;
 
 softKeyword:
     KW_GET
     | KW_SET
     | KW_MOD
+    | imaginaryType // All imaginary types are also soft keywords
     ;
 
 end:

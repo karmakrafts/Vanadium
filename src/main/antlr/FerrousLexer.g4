@@ -34,6 +34,9 @@ EMPTY_ML_STRING: '#""#';
 CML_STRING_BEGIN: '/"' -> pushMode(CML_STRING_MODE);
 ML_STRING_BEGIN: '#"' -> pushMode(ML_STRING_MODE);
 
+// Token expressions
+TOKEN_BEGIN: KW_TOKEN WS*? L_PAREN -> pushMode(TOKEN_MODE);
+
 // Keywords
 KW_UNREACHABLE: 'unreachable';
 KW_STACKALLOC: 'stackalloc';
@@ -252,3 +255,8 @@ CML_STRING_MODE_CML_STRING_END: CML_STRING_END -> popMode, type(CML_STRING_END);
 CML_STRING_MODE_ESCAPED_CHAR: F_ESCAPED_CHAR;
 CML_STRING_MODE_LERP_BEGIN: '${' -> pushMode(DEFAULT_MODE);
 CML_STRING_MODE_TEXT: ~('\\' | '"' | '$')+ | '$';
+
+mode TOKEN_MODE;
+
+TOKEN_MODE_END: R_PAREN -> popMode, type(R_PAREN);
+TOKEN_MODE_TOKEN: ~(')')+;
