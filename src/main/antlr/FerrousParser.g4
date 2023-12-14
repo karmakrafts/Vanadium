@@ -61,24 +61,19 @@ typeAlias:
 useStatement:
     KW_USE
     anyIdent
-    (DOUBLE_COLON useList)?
-    ;
-
-useList:
+    (DOUBLE_COLON
     L_BRACE
-    NL*?
-    useTypeList
-    NL*?
-    R_BRACE
+    useTypeList?
+    R_BRACE)?
     ;
 
 useTypeList:
-    (useType
-    | (useType COMMA NL*?))+?
+    useType
+    (COMMA useType)*?
     ;
 
 useType:
-    type
+    anyIdent
     (KW_AS
     anyIdent)?
     ;
@@ -1114,8 +1109,8 @@ typeMod:
     ;
 
 typeList:
-    (type
-    | (type COMMA))+?
+    type
+    (COMMA type)*?
     ;
 
 imaginaryType:
@@ -1141,6 +1136,7 @@ primaryType:
 
 type:
     primaryType
+    | type L_CHEVRON typeList R_CHEVRON
     | type typeMod*? (ASTERISK | AMP)
     ;
 
