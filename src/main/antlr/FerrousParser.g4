@@ -45,9 +45,9 @@ decl:
     | function
     | constructor
     | destructor
-    | (protoFunction end)
-    | (property end)
-    | (field end)
+    | (protoFunction end?)
+    | (property end?)
+    | (field end?)
     ;
 
 typeAlias:
