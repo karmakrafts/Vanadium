@@ -41,7 +41,6 @@ TOKEN_BEGIN: KW_TOKEN WS*? L_PAREN -> pushMode(TOKEN_MODE);
 KW_UNREACHABLE: 'unreachable';
 KW_STACKALLOC: 'stackalloc';
 KW_INTERFACE: 'interface';
-KW_BITFIELD: 'bitfield';
 KW_OVERRIDE: 'override';
 KW_CALLCONV: 'callconv';
 KW_CONTINUE: 'continue';
