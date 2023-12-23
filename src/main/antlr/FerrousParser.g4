@@ -369,7 +369,7 @@ labelBlock:
     ident
     COLON
     L_BRACE
-    (decl | NL)*?
+    (statement | decl | NL)*?
     R_BRACE
     ;
 
@@ -431,7 +431,7 @@ defaultWhenBranch:
 
 whenBranchBody:
     L_BRACE
-    (decl | NL)*?
+    (statement | decl | NL)*?
     R_BRACE
     ;
 
@@ -443,7 +443,7 @@ loop:
     KW_DEFAULT
     expr)?
     L_BRACE
-    (decl | NL)*?
+    (statement | decl | NL)*?
     R_BRACE))
     ;
 
@@ -465,7 +465,7 @@ whileBody:
     KW_DEFAULT
     expr)?
     L_BRACE
-    (decl | NL)*?
+    (statement | decl | NL)*?
     R_BRACE)
     ;
 
