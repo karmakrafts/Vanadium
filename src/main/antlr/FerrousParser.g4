@@ -558,7 +558,7 @@ ifExpr:
     NL*
     R_PAREN
     ifBody
-    elseIfExpr*?
+    elseIfExpr+?
     elseExpr?
     ;
 
@@ -897,7 +897,7 @@ exhaustiveIfExpr:
     expr
     ((decl end)
     | ifBody)
-    elseIfExpr*?
+    elseIfExpr+?
     elseExpr
     ;
 
