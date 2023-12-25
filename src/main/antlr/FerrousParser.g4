@@ -345,7 +345,7 @@ breakStatement:
     ;
 
 statement:
-    letStatement
+    (letStatement
     | panicStatement
     | destructureStatement
     | returnStatement
@@ -357,7 +357,8 @@ statement:
     | KW_UNREACHABLE
     | labelBlock
     | label
-    | expr
+    | expr)
+    end?
     ;
 
 label:
