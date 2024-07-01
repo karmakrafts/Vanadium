@@ -63,39 +63,41 @@ tasks.withType<KotlinCompile> {
     dependsOn(generateKotlinGrammarSource)
 }
 
-publishing {
-    repositories {
-        maven {
-            url = uri("${System.getenv("CI_API_V4_URL").replace("http://", "https://")}/projects/136/packages/maven")
-            name = "GitLab"
-            credentials(HttpHeaderCredentials::class) {
-                name = "Job-Token"
-                value = System.getenv("CI_JOB_TOKEN")
-            }
-            authentication {
-                create("header", HttpHeaderAuthentication::class)
+System.getenv("CI_API_V4_URL")?.let { apiUrl ->
+    publishing {
+        repositories {
+            maven {
+                url = uri("${apiUrl.replace("http://", "https://")}/projects/136/packages/maven")
+                name = "GitLab"
+                credentials(HttpHeaderCredentials::class) {
+                    name = "Job-Token"
+                    value = System.getenv("CI_JOB_TOKEN")
+                }
+                authentication {
+                    create("header", HttpHeaderAuthentication::class)
+                }
             }
         }
-    }
-    publications.configureEach {
-        if (this is MavenPublication) {
-            pom {
-                name.set(project.name)
-                description.set("Lexer-parser frontend for the Ferrous compiler toolchain.")
-                url.set("https://git.karmakrafts.dev/kk/ferrous-project/vanadium")
-                licenses {
-                    license {
-                        name.set("Apache License 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("KitsuneAlex")
-                    }
-                }
-                scm {
+        publications.configureEach {
+            if (this is MavenPublication) {
+                pom {
+                    name.set(project.name)
+                    description.set("Lexer-parser frontend for the Ferrous compiler toolchain.")
                     url.set("https://git.karmakrafts.dev/kk/ferrous-project/vanadium")
+                    licenses {
+                        license {
+                            name.set("Apache License 2.0")
+                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("KitsuneAlex")
+                        }
+                    }
+                    scm {
+                        url.set("https://git.karmakrafts.dev/kk/ferrous-project/vanadium")
+                    }
                 }
             }
         }
