@@ -1,9 +1,9 @@
-image: java:11-jdk
+image: java:17-jdk
 stages:
   - build
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
-  - export JAVA_HOME=/home/sdks/zulu-11
+  - export JAVA_HOME=/home/sdks/zulu-17
 cache:
   paths:
     - .gradle/wrapper

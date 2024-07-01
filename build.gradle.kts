@@ -13,6 +13,8 @@ version = "${libs.versions.vanadium.get()}.${System.getenv("CI_PIPELINE_IID") ?:
 repositories {
     mavenCentral()
     google()
+    mavenLocal()
+    maven("https://git.karmakrafts.dev/api/v4/projects/136/packages/maven")
 }
 
 kotlin {
