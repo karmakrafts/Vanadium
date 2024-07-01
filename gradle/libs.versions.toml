@@ -1,0 +1,11 @@
+[versions]
+vanadium = "2.0.0"
+kotlin = "2.0.0"
+antlr = "1.0.0-RC4"
+
+[libraries]
+antlrRuntime = { module = "com.strumenta:antlr-kotlin-runtime", version.ref = "antlr" }
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+antlr = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr" }
