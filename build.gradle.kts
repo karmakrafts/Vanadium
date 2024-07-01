@@ -66,7 +66,7 @@ tasks.withType<KotlinCompile> {
 publishing {
     repositories {
         maven {
-            url = uri("${System.getenv("CI_API_V4_URL")}/projects/136/packages/maven")
+            url = uri("${System.getenv("CI_API_V4_URL").replace("http://", "https://")}/projects/136/packages/maven")
             name = "GitLab"
             credentials(HttpHeaderCredentials::class) {
                 name = "Job-Token"
