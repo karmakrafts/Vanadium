@@ -1,4 +1,4 @@
-rootProject.name = "Vanadium"
+rootProject.name = "vanadium"
 
 pluginManagement {
     repositories {
