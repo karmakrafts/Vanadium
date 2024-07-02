@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.antlr)
-    id("maven-publish")
+    `maven-publish`
 }
 
 group = "io.karma.vanadium"

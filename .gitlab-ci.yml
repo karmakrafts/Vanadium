@@ -8,14 +8,11 @@ cache:
   paths:
     - .gradle/wrapper
     - .gradle/caches
+    - .kotlin
 build:
   stage: build
   script:
-    - ./gradlew build publish --info --no-daemon
-  artifacts:
-    paths:
-      - build/libs/*.jar
-    expire_in: 1 days
+    - ./gradlew build publish --no-daemon
   only:
     - master
   tags:
