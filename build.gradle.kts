@@ -35,7 +35,6 @@ kotlin {
             sharedLib()
         }
     }
-    applyDefaultHierarchyTemplate()
     sourceSets {
         commonMain {
             kotlin {
