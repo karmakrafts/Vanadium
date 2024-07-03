@@ -62,6 +62,20 @@ tasks.withType<KotlinCompile> {
     dependsOn(generateKotlinGrammarSource)
 }
 
+val generateDummyKlib by tasks.registering(Zip::class) {
+    group = "KT-52344"
+    description = "workaround for KT-52344 - create an empty klib, since this project has no source code"
+    destinationDirectory.set(temporaryDir)
+    archiveFileName.set("vanadium.klib")
+    from(resources.text.fromString("intentionally empty file, as a workaround for https://youtrack.jetbrains.com/issue/KT-52344")) {
+        rename { "empty.txt" }
+    }
+}
+
+tasks.withType<AbstractPublishToMaven> {
+    dependsOn(generateDummyKlib)
+}
+
 System.getenv("CI_API_V4_URL")?.let { apiUrl ->
     publishing {
         repositories {
