@@ -1,4 +1,5 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -49,7 +50,6 @@ kotlin {
 }
 
 val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
-    dependsOn("cleanGenerateKotlinGrammarSource")
     source = fileTree(layout.projectDirectory.dir("src/main/antlr")) {
         include("*.g4")
     }
@@ -59,8 +59,8 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
     outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
 }
 
-tasks.withType<AbstractCompile> {
-    dependsOn(generateKotlinGrammarSource)
+tasks.withType<KotlinCompile> {
+    mustRunAfter(generateKotlinGrammarSource)
 }
 
 System.getenv("CI_API_V4_URL")?.let { apiUrl ->
