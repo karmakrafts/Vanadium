@@ -1,6 +1,6 @@
 [versions]
 vanadium = "2.0.0"
-kotlin = "2.0.0"
+kotlin = "2.0.20-Beta2"
 antlr = "1.0.0-RC4"
 
 [libraries]

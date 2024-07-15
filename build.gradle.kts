@@ -1,5 +1,4 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -18,6 +17,7 @@ repositories {
 }
 
 kotlin {
+    jvm()
     linuxX64 {
         binaries {
             sharedLib()
@@ -35,6 +35,7 @@ kotlin {
             sharedLib()
         }
     }
+    applyDefaultHierarchyTemplate()
     sourceSets {
         commonMain {
             kotlin {
@@ -58,22 +59,8 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
     outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<AbstractCompile> {
     dependsOn(generateKotlinGrammarSource)
-}
-
-val generateDummyKlib by tasks.registering(Zip::class) {
-    group = "KT-52344"
-    description = "workaround for KT-52344 - create an empty klib, since this project has no source code"
-    destinationDirectory.set(temporaryDir)
-    archiveFileName.set("vanadium.klib")
-    from(resources.text.fromString("intentionally empty file, as a workaround for https://youtrack.jetbrains.com/issue/KT-52344")) {
-        rename { "empty.txt" }
-    }
-}
-
-tasks.withType<AbstractPublishToMaven> {
-    dependsOn(generateDummyKlib)
 }
 
 System.getenv("CI_API_V4_URL")?.let { apiUrl ->
@@ -94,22 +81,24 @@ System.getenv("CI_API_V4_URL")?.let { apiUrl ->
         publications.configureEach {
             if (this is MavenPublication) {
                 pom {
-                    name.set(project.name)
-                    description.set("Lexer-parser frontend for the Ferrous compiler toolchain.")
-                    url.set("https://git.karmakrafts.dev/kk/ferrous-project/vanadium")
+                    name = project.name
+                    description = "Lexer-parser frontend for the Ferrous compiler toolchain"
+                    url = "https://git.karmakrafts.dev/kk/ferrous-project/vanadium"
                     licenses {
                         license {
-                            name.set("Apache License 2.0")
-                            url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                            name = "Apache License 2.0"
+                            url = "https://www.apache.org/licenses/LICENSE-2.0"
                         }
                     }
                     developers {
                         developer {
-                            id.set("KitsuneAlex")
+                            id = "kitsunealex"
+                            name = "KitsuneAlex"
+                            url = "https://git.karmakrafts.dev/KitsuneAlex"
                         }
                     }
                     scm {
-                        url.set("https://git.karmakrafts.dev/kk/ferrous-project/vanadium")
+                        url = "https://git.karmakrafts.dev/kk/ferrous-project/vanadium"
                     }
                 }
             }
