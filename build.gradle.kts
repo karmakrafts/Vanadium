@@ -1,5 +1,5 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -49,7 +49,9 @@ kotlin {
     }
 }
 
+// This needs to be run manually or by CI
 val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+    dependsOn("cleanGenerateKotlinGrammarSource")
     source = fileTree(layout.projectDirectory.dir("src/main/antlr")) {
         include("*.g4")
     }
@@ -57,10 +59,6 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
     arguments = listOf("-visitor")
     val outDir = "generatedAntlr/${packageName!!.replace(".", "/")}"
     outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
-}
-
-tasks.withType<KotlinCompile> {
-    mustRunAfter(generateKotlinGrammarSource)
 }
 
 System.getenv("CI_API_V4_URL")?.let { apiUrl ->
