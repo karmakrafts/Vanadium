@@ -12,7 +12,7 @@ cache:
 build:
   stage: build
   script:
-    - ./gradlew generateKotlinGrammarSource publish --no-daemon
+    - ./gradlew clean publish --no-daemon
   only:
     - master
   tags:
