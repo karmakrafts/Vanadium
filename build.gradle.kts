@@ -1,5 +1,9 @@
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
+import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -55,10 +59,22 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
     source = fileTree(layout.projectDirectory.dir("src/main/antlr")) {
         include("*.g4")
     }
-    packageName = "io.karma.vanadium"
+    packageName = project.group.toString()
     arguments = listOf("-visitor")
-    val outDir = "generatedAntlr/${packageName!!.replace(".", "/")}"
-    outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
+    outputDirectory =
+        layout.buildDirectory.dir("generatedAntlr/${project.group.toString().replace('.', '/')}").get().asFile
+}
+
+tasks.withType<AbstractKotlinCompile<*>> {
+    dependsOn(generateKotlinGrammarSource)
+}
+
+tasks.withType<KotlinNativeCompile> {
+    dependsOn(generateKotlinGrammarSource)
+}
+
+tasks.withType<Jar> {
+    dependsOn(generateKotlinGrammarSource)
 }
 
 System.getenv("CI_API_V4_URL")?.let { apiUrl ->
