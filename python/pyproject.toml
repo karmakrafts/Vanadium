@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vanadium"
-version = "1.0.0"
+dynamic = ["version"]
 authors = [
     { name="Karma Krafts", email="support@karmakrafts.dev" },
 ]
