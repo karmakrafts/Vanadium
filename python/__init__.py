@@ -1,3 +1,3 @@
-from . import FerrousLexer
-from . import FerrousParser
-from . import FerrousParserListener
+from .FerrousLexer import FerrousLexer
+from .FerrousParser import FerrousParser
+from .FerrousParserListener import FerrousParserListener
