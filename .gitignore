@@ -2,3 +2,5 @@
 build/
 .kotlin/
 gen/
+dist/
+vanadium.egg-info/
