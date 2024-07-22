@@ -59,6 +59,8 @@ KW_STRUCT: 'struct';
 KW_ATTRIB: 'attrib';
 KW_DELETE: 'delete';
 KW_ATOMIC: 'atomic';
+KW_EXPECT: 'expect'; // Reserved for multiplatform support
+KW_ACTUAL: 'actual'; // Reserved for multiplatform support
 KW_PANIC: 'panic';
 KW_TOKEN: 'token';
 KW_WHILE: 'while';
@@ -69,6 +71,7 @@ KW_IDENT: 'ident';
 KW_SUPER: 'super';
 KW_YIELD: 'yield';
 KW_BREAK: 'break';
+KW_INIT: 'init';
 KW_WHEN: 'when';
 KW_ELSE: 'else';
 KW_LOOP: 'loop';
@@ -78,7 +81,6 @@ KW_ENUM: 'enum';
 KW_GOTO: 'goto';
 KW_NULL: 'null';
 KW_THIS: 'this';
-KW_NEW: 'new';
 KW_FOR: 'for';
 KW_PUB: 'pub';
 KW_USE: 'use';

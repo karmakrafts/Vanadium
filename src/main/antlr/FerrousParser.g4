@@ -16,31 +16,31 @@ file:
 
 moduleFile:
     NL*
-    module
-    (modUseStatement | NL)*?
+    moduleDeclaration
+    (useModuleStatement | NL)*?
     EOF
     ;
 
 sourceFile:
-    (decl | NL)*?
+    (declaration | NL)*?
     EOF
     ;
 
-module:
+moduleDeclaration:
     KW_MOD
-    ident
+    identifier
     ;
 
-modUseStatement:
+useModuleStatement:
     KW_USE
     KW_MOD
-    anyIdent
+    anyIdentifier
     ;
 
-decl:
-    modUseStatement
+declaration:
+    useModuleStatement
     | useStatement
-    | udt
+    | userDefinedType
     | typeAlias
     | function
     | constructor
@@ -52,15 +52,15 @@ decl:
 
 typeAlias:
     KW_TYPE
-    ident
-    genericParamList?
+    identifier
+    genericParameterList?
     OP_ASSIGN
-    (expr | type)
+    (expression | type)
     ;
 
 useStatement:
     KW_USE
-    anyIdent
+    anyIdentifier
     (DOUBLE_COLON
     L_BRACE
     useTypeList?
@@ -73,17 +73,18 @@ useTypeList:
     ;
 
 useType:
-    anyIdent
+    anyIdentifier
     (KW_AS
-    anyIdent)?
+    anyIdentifier)?
     ;
 
-udt:
+userDefinedType:
     enumClass
     | enum
     | struct
+    | class
     | interface
-    | attrib
+    | attribute
     | trait
     ;
 
@@ -91,17 +92,17 @@ enumClassBody:
     L_BRACE
     enumConstantList
     (SEMICOLON
-    (decl | NL)*?)?
+    (declaration | NL)*?)?
     R_BRACE
     ;
 
 enumClass:
-    (attribUsage NL*)*?
-    accessMod?
+    (attributeUsage NL*)*?
+    accessModifier?
     KW_UNSAFE?
     KW_ENUM
     KW_CLASS
-    ident
+    identifier
     (COLON typeList)?
     enumClassBody
     ;
@@ -113,10 +114,10 @@ enumBody:
     ;
 
 enum:
-    (attribUsage NL*)*?
-    accessMod?
+    (attributeUsage NL*)*?
+    accessModifier?
     KW_ENUM
-    ident
+    identifier
     enumBody
     ;
 
@@ -127,84 +128,106 @@ enumConstantList:
     ;
 
 enumConstant:
-    ident
+    identifier
     (OP_ASSIGN
-    expr)?
+    expression)?
     ;
 
 structBody:
     L_BRACE
-    (decl | NL)*?
+    (declaration | NL)*?
     R_BRACE
     ;
 
 struct:
-    (attribUsage NL*)*?
-    accessMod?
+    (attributeUsage NL*)*?
+    accessModifier?
     KW_UNSAFE?
     KW_STRUCT
-    ident
-    genericParamList? // Optional because of chevrons
+    identifier
+    genericParameterList? // Optional because of chevrons
     (COLON
     typeList)?
     structBody
     ;
 
+classBody:
+    L_BRACE
+    (declaration | NL)*?
+    R_BRACE
+    ;
+
+class:
+    (attributeUsage NL*)*?
+    (accessModifier NL*)?
+    (KW_UNSAFE NL*)?
+    (KW_CLASS NL*)?
+    (L_PAREN
+    (KW_ATOMIC NL*)?
+    uintType
+    R_PAREN NL*)?
+    identifier
+    genericParameterList? // Optional because of chevrons
+    (COLON
+    typeList)?
+    classBody
+    ;
+
 interfaceBody:
     L_BRACE
-    (decl
+    (declaration
     | protoFunction
     | NL)*?
     R_BRACE
     ;
 
 interface:
-    (attribUsage NL*)*?
-    accessMod?
+    (attributeUsage NL*)*?
+    accessModifier?
     KW_UNSAFE?
     KW_INTERFACE
-    ident
-    genericParamList? // Optional because of chevrons
+    identifier
+    genericParameterList? // Optional because of chevrons
     (COLON typeList)?
     interfaceBody
     ;
 
-attribBody:
+attributeBody:
     L_BRACE
-    (decl
+    (declaration
     | NL)*?
     R_BRACE
     ;
 
-attrib:
-    (attribUsage NL*)*?
-    accessMod?
+attribute:
+    (attributeUsage NL*)*?
+    accessModifier?
     KW_UNSAFE?
     KW_ATTRIB
-    ident
-    genericParamList? // Optional because of chevrons
+    identifier
+    genericParameterList? // Optional because of chevrons
     (COLON typeList)?
-    attribBody
+    attributeBody
     ;
 
 trait:
-    (attribUsage NL*)*?
-    accessMod?
+    (attributeUsage NL*)*?
+    accessModifier?
     KW_UNSAFE?
     KW_TRAIT
-    ident
-    genericParamList? // Optional because of chevrons
+    identifier
+    genericParameterList? // Optional because of chevrons
     (COLON typeList)?
     structBody
     ;
 
-attribUsage:
+attributeUsage:
     AT
-    anyIdent
+    anyIdentifier
     (NL*
     L_PAREN
     NL*
-    (namedExprList | exprList)
+    (namedExpressionList | expressionList)
     NL*
     R_PAREN)?
     ;
@@ -222,7 +245,7 @@ propertySetter:
     NL*?
     L_PAREN
     NL*?
-    ident
+    identifier
     NL*?
     R_PAREN
     NL*?
@@ -230,12 +253,12 @@ propertySetter:
     ;
 
 property:
-    (attribUsage NL*)*?
-    accessMod?
+    (attributeUsage NL*)*?
+    accessModifier?
     KW_UNSAFE?
     NL*?
     (KW_INL NL*)?
-    ident
+    identifier
     NL*?
     COLON
     NL*?
@@ -246,7 +269,7 @@ property:
 
 inlinePropertyBody:
     ARROW
-    expr
+    expression
     ;
 
 propertyBody:
@@ -259,29 +282,32 @@ propertyBody:
     ;
 
 field:
-    (attribUsage NL*)*?
-    (accessMod
-    NL*)?
-    (KW_STATIC
-    NL*)?
-    (KW_CONST
-    NL*)?
-    (KW_MUT
-    NL*)?
-    ident
+    (attributeUsage NL*)*?
+    (accessModifier NL*)?
+    (fieldModifier NL*)*?
+    identifier
     NL*?
     COLON
     NL*?
     type
-    (NL* OP_ASSIGN NL* (expr | QMK))?
+    (NL* OP_ASSIGN NL* (expression | QMK))?
+    ;
+
+fieldModifier:
+    KW_STATIC
+    | KW_CONST
+    | KW_MUT
+    | KW_EXPECT
+    | KW_ACTUAL
+    | KW_TLS
     ;
 
 constructor:
-    accessMod?
+    accessModifier?
     KW_UNSAFE?
-    ident
+    identifier
     L_PAREN
-    paramList
+    parameterList
     R_PAREN
     (COLON (thisCall | superCall))?
     (functionBody | inlineFunctionBody)?
@@ -290,23 +316,23 @@ constructor:
 thisCall:
     KW_THIS
     L_PAREN
-    exprList
+    expressionList
     R_PAREN
     ;
 
 superCall:
     KW_SUPER
     L_PAREN
-    exprList
+    expressionList
     R_PAREN
     ;
 
 destructor:
     KW_UNSAFE?
     OP_INV
-    ident
+    identifier
     L_PAREN
-    paramList
+    parameterList
     R_PAREN
     (functionBody | inlineFunctionBody)?
     ;
@@ -314,33 +340,33 @@ destructor:
 gotoStatement:
     KW_GOTO
     COLON
-    ident
+    identifier
     ;
 
 gotoAddressStatement:
     KW_GOTO
     ASTERISK
-    expr
+    expression
     ;
 
 continueStatement:
     (KW_CONTINUE
     COLON
-    ident)
+    identifier)
     | KW_CONTINUE
     ;
 
 yieldStatement:
     KW_YIELD
     (COLON
-    ident)?
-    expr
+    identifier)?
+    expression
     ;
 
 breakStatement:
     (KW_BREAK
     COLON
-    ident)
+    identifier)
     | KW_BREAK
     ;
 
@@ -357,20 +383,20 @@ statement:
     | KW_UNREACHABLE
     | labelBlock
     | label
-    | expr)
+    | expression)
     end?
     ;
 
 label:
-    ident
+    identifier
     COLON
     ;
 
 labelBlock:
-    ident
+    identifier
     COLON
     L_BRACE
-    (statement | decl | NL)*?
+    (statement | declaration | NL)*?
     R_BRACE
     ;
 
@@ -382,12 +408,12 @@ destructureStatement:
     inferredParamList
     R_BRACKET
     OP_ASSIGN
-    expr
+    expression
     ;
 
 inferredParamList:
-    ident
-    (COMMA ident)*
+    identifier
+    (COMMA identifier)*
     ;
 
 panicStatement:
@@ -400,14 +426,14 @@ panicStatement:
 
 returnStatement:
     (KW_RETURN
-    expr)
+    expression)
     | KW_RETURN
     ;
 
-whenExpr:
+whenExpression:
     KW_WHEN
     L_PAREN
-    expr
+    expression
     R_PAREN
     L_BRACE
     (whenBranch | NL)*?
@@ -417,34 +443,34 @@ whenExpr:
     ;
 
 whenBranch:
-    exprList
+    expressionList
     ARROW
-    ((expr end)
+    ((expression end)
     | whenBranchBody)
     ;
 
 defaultWhenBranch:
     KW_DEFAULT
     ARROW
-    ((expr end)
+    ((expression end)
     | whenBranchBody)
     ;
 
 whenBranchBody:
     L_BRACE
-    (statement | decl | NL)*?
+    (statement | declaration | NL)*?
     R_BRACE
     ;
 
 loop:
     KW_LOOP
-    ((expr end)
+    ((expression end)
     | labelBlock
     | ((NL*
     KW_DEFAULT
-    expr)?
+    expression)?
     L_BRACE
-    (statement | decl | NL)*?
+    (statement | declaration | NL)*?
     R_BRACE))
     ;
 
@@ -456,7 +482,7 @@ whileLoop:
 
 simpleWhileLoop:
     whileHead
-    ((expr end)
+    ((expression end)
     | whileBody)
     ;
 
@@ -464,9 +490,9 @@ whileBody:
     labelBlock
     | ((NL*
     KW_DEFAULT
-    expr)?
+    expression)?
     L_BRACE
-    (statement | decl | NL)*?
+    (statement | declaration | NL)*?
     R_BRACE)
     ;
 
@@ -487,7 +513,7 @@ whileHead:
     NL*?
     (L_PAREN
     NL*?
-    expr
+    expression
     NL*?
     R_PAREN)
     ;
@@ -495,13 +521,13 @@ whileHead:
 doStatement:
     KW_DO
     NL*?
-    ((expr end)
+    ((expression end)
     | doBody)
     ;
 
 doBody:
     (L_BRACE
-    (decl | NL)*?
+    (declaration | NL)*?
     R_BRACE)
     ;
 
@@ -510,24 +536,24 @@ forLoop:
     NL*?
     (indexedLoopHead
     | rangedLoopHead)
-    ((expr end)
+    ((expression end)
     | labelBlock
     | ((NL*
     KW_DEFAULT
-    expr)?
+    expression)?
     L_BRACE
-    (decl | NL)*?
+    (declaration | NL)*?
     R_BRACE))
     ;
 
 rangedLoopHead:
     L_PAREN
     NL*?
-    ident
+    identifier
     NL*?
     KW_IN
     NL*?
-    expr
+    expression
     NL*?
     R_PAREN
     ;
@@ -539,50 +565,46 @@ indexedLoopHead:
     NL*?
     SEMICOLON
     NL*?
-    expr?
+    expression?
     NL*?
     SEMICOLON
     NL*?
-    expr?
+    expression?
     NL*?
     R_PAREN
     ;
 
-ifExpr:
-    (KW_CONST
-    NL*)?
+ifExpression:
+    (KW_CONST NL*)?
     KW_IF
     NL*
     L_PAREN
-    NL*
-    expr
-    NL*
+    expression
     R_PAREN
+    NL*
     ifBody
-    elseIfExpr+?
-    elseExpr?
+    elseIfExpression+?
+    elseExpression?
     ;
 
-elseIfExpr:
+elseIfExpression:
     KW_ELSE
     NL*
     KW_IF
     NL*
     L_PAREN
     NL*
-    expr
+    expression
     NL*
     R_PAREN
     NL*
-    ((statement end)
-    | ifBody)
+    ifBody
     ;
 
-elseExpr:
+elseExpression:
     KW_ELSE
     NL*
-    ((statement end)
-    | ifBody)
+    ifBody
     ;
 
 ifBody:
@@ -594,7 +616,7 @@ ifBody:
 
 functionBody:
     L_BRACE
-    (statement | decl | NL)*?
+    (statement | declaration | NL)*?
     R_BRACE
     ;
 
@@ -608,15 +630,15 @@ letStatement:
     NL*?
     (KW_STATIC NL*)?
     (KW_MUT NL*)?
-    ident
+    identifier
     NL*?
     (COLON type)?
-    (OP_ASSIGN (expr | QMK))?
+    (OP_ASSIGN (expression | QMK))?
     ;
 
 inlineFunctionBody:
     ARROW
-    expr
+    expression
     end
     ;
 
@@ -668,177 +690,185 @@ operator:
 
 functionIdent:
     operator
-    | ident
+    | identifier
     ;
 
 protoFunction:
-    (attribUsage NL*)*?
-    (accessMod
+    (attributeUsage NL*)*?
+    (accessModifier
     NL*)?
-    (functionMod
+    (functionModifier
     NL*)*?
-    (callConvMod
+    (callingConvention
     NL*)?
     KW_FUN
     NL*?
     functionIdent
     NL*?
-    (genericParamList
+    (genericParameterList
     NL*)?
     (L_PAREN
     NL*
-    paramList
+    parameterList
     NL*
     R_PAREN)?
     (COLON NL*? type)?
     ;
 
-paramList:
-    (param
-    (COMMA param)*?)?
+parameterList:
+    (parameter
+    (COMMA parameter)*?)?
     |
-    ((param (COMMA param)*?)
+    ((parameter (COMMA parameter)*?)
     (COMMA TRIPLE_DOT))
     ;
 
-param:
-    KW_CONST?
-    KW_MUT?
-    ident
-    COLON
-    type
-    (OP_ASSIGN expr)?
+parameter:
+    (parameterModifier NL*)?
+    identifier NL*
+    COLON NL*
+    type NL*
+    (OP_ASSIGN NL* expression)?
     ;
 
-namedExpr:
-    ident
+parameterModifier:
+    KW_CONST
+    | KW_MUT
+    | KW_INIT // Allows passing uninitialized memory, implies initialization
+    ;
+
+namedExpression:
+    identifier
     OP_ASSIGN
-    expr
+    expression
     ;
 
-namedExprList:
-    (namedExpr
-    | (namedExpr COMMA))+
+namedExpressionList:
+    (namedExpression
+    | (namedExpression COMMA))+
     ;
 
-exprList:
-    (expr
-    | (expr COMMA))+
+expressionList:
+    (expression
+    | (expression COMMA))+
     ;
 
-anonScope:
-    (attribUsage NL*)*?
-    accessMod?
-    KW_UNSAFE?
-    KW_EXTERN?
+scopeLabel:
+    identifier
+    AT
+    ;
+
+anonymousScope:
+    (attributeUsage NL*)*?
+    (KW_UNSAFE NL*)?
+    (scopeLabel NL*)?
     L_BRACE
-    (decl | NL)*?
+    (declaration | NL)*?
     R_BRACE
     ;
 
-unsafeExpr:
+unsafeExpression:
     KW_UNSAFE
-    expr
+    expression
     ;
 
-paramRef:
+parameterReference:
     KW_FUN
     DOT
-    ident
+    identifier
     ;
 
-typeExpr:
+typeExpression:
     KW_TYPE
     L_PAREN
     type
     R_PAREN
     ;
 
-identExpr:
+identifierExpression:
     KW_IDENT
     L_PAREN
-    anyIdent
+    anyIdentifier
     R_PAREN
     ;
 
-literalExpr:
+literalExpression:
     KW_LITERAL
     L_PAREN
     literal
     R_PAREN
     ;
 
-expressionExpr:
+expressionExpression:
     KW_EXPR
     L_PAREN
-    expr
+    expression
     R_PAREN
     ;
 
-tokenExpr:
+tokenExpression:
     TOKEN_BEGIN
     TOKEN_MODE_TOKEN
     R_PAREN
     ;
 
 primary:
-    ifExpr
-    | whenExpr
-    | lambdaExpr
-    | heapInitExpr
-    | stackInitExpr
-    | stackAllocExpr
-    | sizedSliceExpr
-    | sliceInitExpr
-    | exhaustiveIfExpr
-    | exhaustiveWhenExpr
+    ifExpression
+    | whenExpression
+    | lambdaExpression
+    | initExpression
+    | stackAllocExpression
+    | sizedSliceExpression
+    | sliceInitExpression
+    | exhaustiveIfExpression
+    | exhaustiveWhenExpression
     | forLoop
     | whileLoop
     | loop
-    | anonScope
-    | alignofExpr
-    | sizeofExpr
-    | typeExpr
-    | literalExpr
-    | expressionExpr
-    | tokenExpr
-    | identExpr
-    | unsafeExpr
-    | paramRef
+    | anonymousScope
+    | alignofExpression
+    | sizeofExpression
+    | typeExpression
+    | literalExpression
+    | expressionExpression
+    | tokenExpression
+    | identifierExpression
+    | unsafeExpression
+    | parameterReference
     | literal
-    | anyIdent
+    | anyIdentifier
     ;
 
-expr: // C++ operator precedence used as a reference
+expression: // C++ operator precedence used as a reference
     primary
-    | L_PAREN expr R_PAREN
-    | expr (KW_AS | KW_AS_QMK) (UNDERSCORE | type)
-    | expr (KW_IS | KW_IS_NOT) type
-    | expr (KW_IN | KW_IN_NOT) expr
-    | expr (DOUBLE_DOT | OP_INCL_RANGE) expr
-    | expr (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
-    | expr genericList? L_PAREN (namedExprList | exprList)? R_PAREN
-    | expr L_BRACKET exprList R_BRACKET
-    | expr (DOT | ARROW | OP_SAFE_PTR_REF) ident
+    | L_PAREN expression R_PAREN
+    | expression (KW_AS | KW_AS_QMK) (UNDERSCORE | type)
+    | expression (KW_IS | KW_IS_NOT) type
+    | expression (KW_IN | KW_IN_NOT) expression
+    | expression (DOUBLE_DOT | OP_INCL_RANGE) expression
+    | expression (OP_INCREMENT | OP_DECREMENT | OP_INV_ASSIGN)
+    | expression genericList? L_PAREN (namedExpressionList | expressionList)? R_PAREN
+    | expression L_BRACKET expressionList R_BRACKET
+    | expression (DOT | ARROW | OP_SAFE_PTR_REF) identifier
     | <assoc=right> (
         OP_INCREMENT | OP_DECREMENT | OP_PLUS | OP_MINUS
         | OP_INV | OP_NOT | ASTERISK | OP_SAFE_DEREF | OP_LABEL_ADDR | AMP
-    ) expr
-    | expr (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) ident
-    | expr (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) (expr | TRIPLE_DOT)
-    | expr (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) (expr | TRIPLE_DOT)
-    | expr (OP_LSH | OP_RSH) (expr | TRIPLE_DOT)
-    | expr OP_COMPARE (expr | TRIPLE_DOT)
-    | expr (OP_LEQUAL | OP_GEQUAL | L_CHEVRON | R_CHEVRON) expr
-    | expr (OP_EQ | OP_NEQ) expr
-    | expr AMP (expr | TRIPLE_DOT)
-    | expr OP_XOR (expr | TRIPLE_DOT)
-    | expr PIPE (expr | TRIPLE_DOT)
-    | expr OP_SHORTC_AND (expr | TRIPLE_DOT)
-    | expr OP_SHORTC_OR (expr | TRIPLE_DOT)
-    | expr OP_ELVIS expr
-    | <assoc=right> expr QMK expr COLON expr
-    | <assoc=right> expr (
+    ) expression
+    | expression (OP_MEMBER_DEREF | OP_MEMBER_PTR_DEREF) identifier
+    | expression (ASTERISK | OP_DIV | OP_MOD | OP_SAT_TIMES | OP_SAT_DIV | OP_SAT_MOD) (expression | TRIPLE_DOT)
+    | expression (OP_PLUS | OP_MINUS | OP_SAT_PLUS | OP_SAT_MINUS) (expression | TRIPLE_DOT)
+    | expression (OP_LSH | OP_RSH) (expression | TRIPLE_DOT)
+    | expression OP_COMPARE (expression | TRIPLE_DOT)
+    | expression (OP_LEQUAL | OP_GEQUAL | L_CHEVRON | R_CHEVRON) expression
+    | expression (OP_EQ | OP_NEQ) expression
+    | expression AMP (expression | TRIPLE_DOT)
+    | expression OP_XOR (expression | TRIPLE_DOT)
+    | expression PIPE (expression | TRIPLE_DOT)
+    | expression OP_SHORTC_AND (expression | TRIPLE_DOT)
+    | expression OP_SHORTC_OR (expression | TRIPLE_DOT)
+    | expression OP_ELVIS expression
+    | <assoc=right> expression QMK expression COLON expression
+    | <assoc=right> expression (
         OP_ASSIGN
         | OP_SAT_PLUS_ASSIGN
         | OP_SAT_MINUS_ASSIGN
@@ -856,55 +886,57 @@ expr: // C++ operator precedence used as a reference
         | OP_LSH_ASSIGN
         | OP_MOD_ASSIGN
         | OP_SWAP
-    ) expr
-    | expr TRIPLE_DOT
+    ) expression
+    | expression TRIPLE_DOT
     ;
 
-lambdaExpr:
-    callConvMod?
+lambdaExpression:
+    callingConvention?
     L_PAREN
-    paramList
+    parameterList
     R_PAREN
     (ARROW
     type)?
     L_BRACE
-    (decl | NL)*?
+    (declaration | NL)*?
     R_BRACE
     ;
 
-alignofExpr:
+alignofExpression:
     KW_ALIGNOF
     NL*?
     L_PAREN
     NL*?
-    anyIdent
+    anyIdentifier
     NL*?
     R_PAREN
     ;
 
-sizeofExpr:
+sizeofExpression:
     KW_SIZEOF
     NL*?
     (TRIPLE_DOT NL*)?
     L_PAREN
     NL*?
-    anyIdent
+    anyIdentifier
     NL*?
     R_PAREN
     ;
 
-exhaustiveIfExpr:
+exhaustiveIfExpression:
     KW_IF
-    expr
-    ((decl end)
+    L_PAREN
+    expression
+    R_PAREN
+    ((declaration end)
     | ifBody)
-    elseIfExpr+?
-    elseExpr
+    elseIfExpression+?
+    elseExpression
     ;
 
-exhaustiveWhenExpr:
+exhaustiveWhenExpression:
     KW_WHEN
-    expr
+    expression
     L_BRACE
     (whenBranch | NL)*?
     defaultWhenBranch
@@ -912,75 +944,66 @@ exhaustiveWhenExpr:
     R_BRACE
     ;
 
-sizedSliceExpr:
+sizedSliceExpression:
     L_BRACKET
-    (type | sizedSliceExpr)
+    (type | sizedSliceExpression)
     COMMA
     intLiteral
     R_BRACKET
     ;
 
-sliceInitExpr:
+sliceInitExpression:
     L_BRACKET
-    exprList
+    expressionList
     R_BRACKET
     ;
 
-stackAllocExpr:
+stackAllocExpression:
     KW_STACKALLOC
     L_BRACKET
-    (type | sizedSliceExpr)?
+    (type | sizedSliceExpression)?
     COMMA
-    expr
+    expression
     R_BRACKET
     ;
 
-heapInitExpr:
-    KW_NEW
-    (sizedSliceExpr
-    | (type?
-    L_PAREN
-    (namedExprList | exprList)?
-    R_PAREN))
-    ;
-
-stackInitExpr:
+initExpression:
     type?
     L_BRACE
-    (namedExprList | exprList)?
+    (namedExpressionList | expressionList)?
     R_BRACE
     ;
 
-genericParamList:
+genericParameterList:
     L_CHEVRON
-    genericParam
-    (COMMA genericParam)*?
+    genericParameter
+    (COMMA genericParameter)*?
     R_CHEVRON
     ;
 
-genericParam:
-    ident
+genericParameter:
+    identifier
     TRIPLE_DOT?
-    (COLON genericExpr)?
-    (OP_ASSIGN (expr | type))?
+    (COLON genericExpression)?
+    (OP_ASSIGN (expression | type))?
     ;
 
-primaryGenericExpr:
+primaryGenericExpression:
     KW_CONST?
     (typeMod*? type)
     | KW_FUN
     ;
 
-genericExpr:
-    primaryGenericExpr
-    | genericGroupedExpr
-    | OP_NOT genericExpr
-    | genericExpr genericOp genericExpr
+genericExpression:
+    primaryGenericExpression
+    | genericGroupedExpression
+    | OP_NOT genericExpression
+    | genericExpression genericOp genericExpression
     ;
 
-genericGroupedExpr:
+genericGroupedExpression:
     L_PAREN
-    genericExpr
+    genericExpression
     R_PAREN
     ;
 
@@ -1044,7 +1067,7 @@ simpleStringLiteral:
     | STRING_MODE_ESCAPED_STRING_END
     | STRING_MODE_ESCAPED_CHAR
     | (STRING_MODE_LERP_BEGIN
-    expr*?
+    expression*?
     R_BRACE))+
     DOUBLE_QUOTE)
     | EMPTY_STRING
@@ -1056,7 +1079,7 @@ mlStringLiteral:
     | ML_STRING_MODE_ESCAPED_ML_STRING_END
     | ML_STRING_MODE_ESCAPED_CHAR
     | (ML_STRING_MODE_LERP_BEGIN
-    expr*?
+    expression*?
     R_BRACE))+
     ML_STRING_END)
     | EMPTY_ML_STRING
@@ -1068,13 +1091,13 @@ cmlStringLiteral:
     | CML_STRING_MODE_ESCAPED_CML_STRING_END
     | CML_STRING_MODE_ESCAPED_CHAR
     | (CML_STRING_MODE_LERP_BEGIN
-    expr*?
+    expression*?
     R_BRACE))+
     CML_STRING_END)
     | EMPTY_CML_STRING
     ;
 
-accessMod:
+accessModifier:
     (KW_PUB
     L_PAREN
     (KW_MOD
@@ -1084,14 +1107,14 @@ accessMod:
     | KW_PUB
     ;
 
-callConvMod:
+callingConvention:
     KW_CALLCONV
     L_PAREN
-    ident
+    identifier
     R_PAREN
     ;
 
-functionMod:
+functionModifier:
     (KW_CONST QMK?)
     | KW_INL
     | KW_VIRTUAL
@@ -1100,6 +1123,8 @@ functionMod:
     | KW_STATIC
     | KW_EXTERN
     | KW_UNSAFE
+    | KW_EXPECT
+    | KW_ACTUAL
     ;
 
 typeMod:
@@ -1107,6 +1132,8 @@ typeMod:
     | KW_MUT
     | KW_TLS
     | KW_VOLATILE
+    | KW_EXPECT
+    | KW_ACTUAL
     ;
 
 typeList:
@@ -1124,21 +1151,21 @@ imaginaryType:
     ;
 
 primaryType:
-    attribUsage*? // Allow applying attributes to type usages
+    attributeUsage*? // Allow applying attributes to type usages
     typeMod*?
     (functionType
     | tupleType
     | sliceType
     | builtinType
     | imaginaryType
-    | qualifiedIdent
+    | qualifiedIdentifier
     | IDENT)
     ;
 
 type:
-    primaryType
-    | type L_CHEVRON typeList R_CHEVRON
+    type L_CHEVRON typeList R_CHEVRON
     | type typeMod*? (ASTERISK | AMP)
+    | primaryType
     ;
 
 tupleType:
@@ -1148,7 +1175,7 @@ tupleType:
     ;
 
 functionType:
-    callConvMod?
+    callingConvention?
     (L_PAREN
     typeList?
     (COMMA
@@ -1198,9 +1225,9 @@ floatType:
     | KW_F128
     ;
 
-qualifiedIdent:
-    ident
-    (DOUBLE_COLON ident)+
+qualifiedIdentifier:
+    identifier
+    (DOUBLE_COLON identifier)+
     ;
 
 softKeyword:
@@ -1210,14 +1237,14 @@ softKeyword:
     | imaginaryType // All imaginary types are also soft keywords
     ;
 
-ident:
+identifier:
     softKeyword
     | IDENT
     ;
 
-anyIdent:
-    qualifiedIdent
-    | ident
+anyIdentifier:
+    qualifiedIdentifier
+    | identifier
     ;
 
 end:

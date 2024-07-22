@@ -1,15 +1,19 @@
 image: java:17-jdk
+
 stages:
   - build
+
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - export JAVA_HOME=/home/sdks/zulu-17
+
 cache:
   paths:
     - .gradle/wrapper
     - .gradle/caches
     - .kotlin
-build:
+
+build_kotlin:
   stage: build
   script:
     - ./gradlew clean publish --no-daemon
@@ -18,3 +22,13 @@ build:
   tags:
     - linux
 
+build_python:
+  stage: build
+  script:
+    - cd python/
+    - ./build.sh
+    - python3 -m twine upload --repository gitlab dist/*
+  only:
+    - master
+  tags:
+    - linux

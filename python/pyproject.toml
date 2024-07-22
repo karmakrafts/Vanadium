@@ -1,0 +1,23 @@
+[build-system]
+requires = [
+    "setuptools>=61.0",
+    "twine>=5.1.1",
+    "antlr4-python3-runtime>=4.13.1"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vanadium"
+version = "1.0.0"
+authors = [
+    { name="Karma Krafts", email="support@karmakrafts.dev" },
+]
+description = "An ANTLRv4 based lexer/parser frontend for the Ferrous programming language."
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.packages]
+find = {}
