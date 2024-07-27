@@ -6,5 +6,5 @@ if not buildNumber:
     buildNumber = "0"
 
 setup(
-    version=f"2.0.0.{buildNumber}"
+    version=f"2.0.{buildNumber}"
 )

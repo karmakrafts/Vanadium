@@ -1,8 +1,9 @@
 [build-system]
 requires = [
-    "setuptools>=61.0",
-    "twine>=5.1.1",
-    "antlr4-python3-runtime>=4.13.1"
+    "build==1.2.1",
+    "setuptools==61.0",
+    "twine==5.1.1",
+    "antlr4-python3-runtime==4.13.1"
 ]
 build-backend = "setuptools.build_meta"
 
